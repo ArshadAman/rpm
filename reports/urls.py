@@ -1,0 +1,3 @@
+urlpatterns = [
+    path('/upload-report/')
+]
