@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class Reports(models.Model):
-    patient = models.ForeignKey('rpm_users.Patient', on_delete=models.CASCADE)
+    patient = models.ForeignKey('rpm_users.Patient', on_delete=models.CASCADE, related_name='reports')
     blood_pressure = models.CharField(max_length=10, blank=True, null=True)
     heart_rate = models.CharField(max_length=10, blank=True, null=True)
     heart_rate = models.CharField(max_length=10, blank=True, null=True)
@@ -11,6 +11,7 @@ class Reports(models.Model):
     symptoms = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
     
     def __str__(self):
         return f'{self.patient.first_name} {self.patient.last_name}'

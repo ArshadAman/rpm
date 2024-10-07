@@ -42,11 +42,13 @@ INSTALLED_APPS = [
     
     # System apps
     'rpm_users',
+    'reports',
     
     # Core apps
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'grappelli',
     
 ]
 
@@ -83,6 +85,8 @@ TEMPLATES = [
         },
     },
 ]
+
+
 
 WSGI_APPLICATION = 'rpm.wsgi.application'
 

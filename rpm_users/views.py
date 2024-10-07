@@ -3,7 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 import requests
+
+from reports.models import Reports
+from reports.serializers import ReportSerializer
 from .models import Patient, Moderator
+from .serializers import PatientSerializer, ModeratorSerializer
 
 
 @api_view(["POST"])
@@ -99,8 +103,65 @@ def create_moderator(request):
             )
 
 @api_view(['POST'])            
-def assign_patient(request):
-    pass
+def assign_patient(request, patient_id, moderator_id):
+    patient = Patient.objects.get(id=patient)
+    moderator = Moderator.objects.get(id=moderator_id)
+    patient.moderator_assigned = moderator
+    patient.save()
+    
+@api_view(['POST'])
+def moderator_actions(request, patient_id, action):
+    # So the moderator assigned will be something like the moderator can access the patient details, update the patient data
+    # get the moderator
+    email - request.email
+    moderator = Moderator.objects.get(email=email)
+    patient = Patient.objects.get(id=patient_id)
+     
+    if action == 'access'.lower():
+        # access patient details
+        serializer = PatientSerializer(patient)
+        return Response(serializer.data)
+    
+    elif action == 'update'.lower():
+        # update patient data
+        serializer = PatientSerializer(patient, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    elif action == 'delete':
+        # delete patient
+        patient.delete()
+        return Response({"success": True}, status=status.HTTP_204_NO_CONTENT)
+    
+    elif action == 'update-report':
+        # update patient's report
+        report_id = request.data.get('report_id')
+        report = Reports.objects.get(id=report_id)
+        if not report.patient == patient:
+            return Response({"error": "This report does not belong to this patient."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ReportSerializer(report, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif action == 'delete-report':
+        # delete patient's report
+        report_id = request.data.get('report_id')
+        report = Reports.objects.get(id=report_id)
+        if not report.patient == patient:
+            return Response({"error": "This report does not belong to this patient."}, status=status.HTTP_400_BAD_REQUEST)
+        report.delete()
+        return Response({"success": True}, status=status.HTTP_204_NO_CONTENT)
+    
+def all_moderators(request):
+    moderators = Moderator.objects.all()
+    serializer = ModeratorSerializer(moderators, many=True)
+    return Response(serializer.data)
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])

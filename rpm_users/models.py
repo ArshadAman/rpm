@@ -8,7 +8,7 @@ class Patient(models.Model):
     last_name = models.CharField(max_length=255, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     height = models.IntegerField(blank=True, null=True)
-    wight = models.IntegerField(blank=True, null=True)
+    weight = models.IntegerField(blank=True, null=True)
     insurance = models.CharField(blank=True, null=True, max_length=255)
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
