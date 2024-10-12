@@ -14,4 +14,4 @@ class Reports(models.Model):
     
     
     def __str__(self):
-        return f'{self.patient.first_name} {self.patient.last_name}'
+        return f'{self.patient.user.first_name} {self.patient.user.last_name}'

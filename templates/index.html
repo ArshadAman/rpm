@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vitals Summary</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+
+      .patient-details {
+        background-color: #003366;
+        color: white;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .patient-details div {
+        margin: 0 15px;
+      }
+
+      .tabs {
+        background-color: #ccc;
+        display: flex;
+        padding: 10px;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .tabs div {
+        margin-right: 15px;
+        cursor: pointer;
+      }
+
+      .tabs div.active {
+        background-color: white;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+
+      .content {
+        padding: 20px;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        width: 100%;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        text-align: center;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      .left-col {
+        text-align: left;
+        background-color: #f9f9f9;
+      }
+
+      @media (max-width: 768px) {
+        table,
+        th,
+        td {
+          font-size: 12px;
+          padding: 5px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Patient Information Section -->
+    <div class="patient-details">
+      <div>
+        <strong>Patient Name:</strong> {{patient.user.first_name}}
+        {{patient.user.last_name}}
+      </div>
+      <div><strong>DOB:</strong> {{patient.date_of_birth}}</div>
+      <div><strong>Sex:</strong> {{patient.sex}}</div>
+      <div><strong>Weight:</strong> {{patient.weight}} kg</div>
+      <div><strong>Height:</strong> {{patient.height}} cm</div>
+      <div><strong>BMI: {{patient.bmi}}</strong></div>
+    </div>
+
+    <!-- Tabs for Navigation -->
+    <div class="tabs">
+      <div class="active" onclick="showTab('results')">Results</div>
+      <div onclick="showTab('orders')">Orders</div>
+      <div onclick="showTab('documentation')">Documentation</div>
+      <div onclick="showTab('allergies')">Allergies</div>
+      <div onclick="showTab('ptinfo')">PT Info</div>
+      <div onclick="showTab('medications')">Medications</div>
+      <div onclick="showTab('pharmacy')">Pharmacy</div>
+    </div>
+
+    <!-- Content Section for Tabs -->
+    <div class="content">
+      <!-- Results Tab -->
+      <div id="results" class="table-container">
+        <h3>Results</h3>
+        <table>
+          <thead>
+            <tr>
+              <th class="left-col">Vital Signs</th>
+              {% for report in reports %}
+              <th>{{report.created_at}}</th>
+              <!-- New column -->
+              {% endfor %}
+              <th>Additional Info</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left-col">SpO2 (%)</td>
+              
+              {% for report in reports %}
+              <td>{{report.spo2}}</td>
+              {% endfor %}
+              <td>Additional details</td>
+            </tr>
+            <tr>
+              <tr>
+                <td class="left-col">Blood Pressure</td>
+                
+                {% for report in reports %}
+                <td>{{report.blood_pressure}}</td>
+                {% endfor %}
+                <td>Additional details</td>
+              </tr>
+            </tr>
+            <tr>
+              <tr>
+                <td class="left-col">Heart Rate</td>
+                
+                {% for report in reports %}
+                <td>{{report.heart_rate}}</td>
+                {% endfor %}
+                <td>Additional details</td>
+              </tr>
+            </tr>
+            <tr>
+              <tr>
+                <td class="left-col">Temperature</td>
+                
+                {% for report in reports %}
+                <td>{{report.temperature}}</td>
+                {% endfor %}
+                <td>Additional details</td>
+              </tr>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Orders Tab -->
+      <div id="orders" class="table-container" style="display: none">
+        <h3>Orders</h3>
+        <table>
+          <thead>
+            <tr>
+              <th class="left-col">Order</th>
+              <th>9/27/2024</th>
+              <th>9/27/2024</th>
+              <th>9/27/2024</th>
+              <th>9/27/2024</th>
+              <th>Additional Info</th>
+              <!-- New column -->
+            </tr>
+            <tr>
+              <th class="left-col"></th>
+              <th>10:37 AM</th>
+              <th>11:24 AM</th>
+              <th>12:10 PM</th>
+              <th>1:32 PM</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left-col">O2</td>
+              <td>Ordered</td>
+              <td>Administered</td>
+              <td>Discontinued</td>
+              <td>---</td>
+              <td>Details</td>
+            </tr>
+            <tr>
+              <td class="left-col">Mobility</td>
+              <td>Initiated</td>
+              <td>On Hold</td>
+              <td>---</td>
+              <td>Restarted</td>
+              <td>Comments</td>
+            </tr>
+            <tr>
+              <td class="left-col">Allergy</td>
+              <td>Penicillin</td>
+              <td>N/A</td>
+              <td>N/A</td>
+              <td>Confirmed</td>
+              <td>Extra info</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <br>
+      <a href="/view-patient/">Back</a>
+
+      <!-- Documentation Tab -->
+      <div id="documentation" class="table-container" style="display: none">
+        <h3>Documentation</h3>
+        <!-- Add your content here -->
+      </div>
+
+      <!-- Allergies Tab -->
+      <div id="allergies" class="table-container" style="display: none">
+        <h3>Allergies</h3>
+        <!-- Add your content here -->
+      </div>
+
+      <!-- PT Info Tab -->
+      <div id="ptinfo" class="table-container" style="display: none">
+        <h3>PT Info</h3>
+        <!-- Add your content here -->
+      </div>
+
+      <!-- Medications Tab -->
+      <div id="medications" class="table-container" style="display: none">
+        <h3>Medications</h3>
+        <!-- Add your content here -->
+      </div>
+
+      <!-- Pharmacy Tab -->
+      <div id="pharmacy" class="table-container" style="display: none">
+        <h3>Pharmacy</h3>
+        <!-- Add your content here -->
+      </div>
+    </div>
+
+    <script>
+      function showTab(tabId) {
+        const tabs = document.querySelectorAll(".table-container");
+        const tabButtons = document.querySelectorAll(".tabs div");
+
+        tabs.forEach((tab) => (tab.style.display = "none"));
+        tabButtons.forEach((button) => button.classList.remove("active"));
+
+        document.getElementById(tabId).style.display = "block";
+        event.target.classList.add("active");
+      }
+    </script>
+  </body>
+</html>
