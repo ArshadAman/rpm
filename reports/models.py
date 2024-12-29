@@ -15,3 +15,19 @@ class Reports(models.Model):
     
     def __str__(self):
         return f'{self.patient.user.first_name} {self.patient.user.last_name}'
+    
+class Documentation(models.Model):
+    report = models.ForeignKey(Reports, on_delete=models.CASCADE, related_name='documentations')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    cheif_complaint = models.TextField(max_length=255, blank=True, null=True)
+    subjective = models.TextField(max_length=255, blank=True, null=True)
+    objective = models.TextField(max_length=255, blank=True, null=True)
+    assessment = models.TextField(max_length=255, blank=True, null=True)
+    plan = models.TextField(max_length=255, blank=True, null=True)
+    file = models.FileField(upload_to='documentations/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.title

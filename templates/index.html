@@ -232,7 +232,33 @@
       <!-- Documentation Tab -->
       <div id="documentation" class="table-container" style="display: none">
         <h3>Documentation</h3>
-        <!-- Add your content here -->
+        <form method="get" action="{% url 'view_documentation' %}">
+          <label for="date">Select Date:</label>
+          <input type="date" id="date" name="date">
+          <button type="submit">View</button>
+      </form>
+      <div id="documentation-details">
+          {% if documentations %}
+              <ul>
+                  {% for doc in documentations %}
+                      <li>
+                          <h4>{{ doc.title }}</h4>
+                          <p>{{ doc.description }}</p>
+                          <p><strong>Chief Complaint:</strong> {{ doc.cheif_complaint }}</p>
+                          <p><strong>Subjective:</strong> {{ doc.subjective }}</p>
+                          <p><strong>Objective:</strong> {{ doc.objective }}</p>
+                          <p><strong>Assessment:</strong> {{ doc.assessment }}</p>
+                          <p><strong>Plan:</strong> {{ doc.plan }}</p>
+                          <p><strong>File:</strong> <a href="{{ doc.file.url }}">Download</a></p>
+                          <p><strong>Created At:</strong> {{ doc.created_at }}</p>
+                          <p><strong>Updated At:</strong> {{ doc.updated_at }}</p>
+                      </li>
+                  {% endfor %}
+              </ul>
+          {% else %}
+              <p>No documentation found for the selected date.</p>
+          {% endif %}
+      </div>
       </div>
 
       <!-- Allergies Tab -->

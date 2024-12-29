@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 import requests
 
-from reports.models import Reports
+from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from .models import Patient, Moderator
 from .serializers import PatientSerializer, ModeratorSerializer
@@ -15,6 +15,7 @@ from django.http import HttpResponse, Http404
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from .form import DocumentationForm
 
 @api_view(["POST"])
 @permission_classes([])
@@ -262,3 +263,23 @@ def view_assigned_patient(request):
         'patient_obj': patient_obj,
     }
     return render(request, 'view_assigned_patient.html', context)
+
+
+def write_document(request, report_id):
+    report = Reports.objects.get(id=report_id)
+    if request.method == 'POST':
+        form = DocumentationForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.report = report
+            document.save()
+            return redirect('view_all_assigned_patient')
+    else:
+        form = DocumentationForm()
+    
+    return render(request, 'write_document.html', {'form': form, 'report': report})
+
+def view_documentation(request):
+    date = request.GET.get('date')
+    documentations = Documentation.objects.filter(created_at__date=date) if date else None
+    return render(request, 'index.html', {'documentations': documentations})
