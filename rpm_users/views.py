@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 import requests
+from django.utils.timezone import localtime
 
 from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
@@ -16,6 +17,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .form import DocumentationForm
+
+from django.http import JsonResponse
 
 @api_view(["POST"])
 @permission_classes([])
@@ -74,59 +77,6 @@ def create_patient(request):
                 {"message": "Patient successfully created"},
                 status=status.HTTP_201_CREATED,
             )
-
-# @api_view(["POST"])
-# @permission_classes([])
-# @authentication_classes([])
-# def create_moderator(request):
-#     data = request.data
-#     email = data.get("email")
-#     password = data.get("password")  # Make sure password is handled securely
-#     first_name = data.get("first_name")
-#     last_name = data.get("last_name")
-#     entered_otp = data.get("entered_otp")
-#     phone_number = data.get("phone_number")
-
-#     # Step 1: Check if the user is already in the SSO (Single Sign-On)
-#     response = requests.post("https://auth.pinksurfing.com/api/signup/", data=data)
-    
-#     if response.status_code == 409:
-#         return Response(
-#             {"error": response.text}, 
-#             status=status.HTTP_409_CONFLICT
-#         )
-#     elif response.status_code != 201:
-#         return Response(
-#             {"error": response.text}, 
-#             status=status.HTTP_400_BAD_REQUEST
-#         )
-
-#     # Step 2: Check if the moderator already exists in the local database
-#     user = User.objects.filter(username=email).first()
-#     if Moderator.objects.filter(user=user).exists():
-#         return Response(
-#             {"message": "User already exists"}, 
-#             status=status.HTTP_409_CONFLICT
-#         )
-
-#     # Step 3: Create a new moderator object in the local database
-#     if not user:
-#         user = User.objects.create(
-#             username=email,
-#             first_name=first_name,
-#             last_name=last_name,
-#             email=email,  # Use the same email as in the SSO for the local user
-#         )
-#     moderator = Moderator.objects.create(
-#         user = user,
-#     )
-
-#     # Step 4: Return success response
-#     return Response(
-#         {"message": "Moderator successfully created"},
-#         status=status.HTTP_201_CREATED
-#     )
-
 
 @api_view(['POST'])            
 def assign_patient(request, patient_id, moderator_id=""):
@@ -281,5 +231,32 @@ def write_document(request, report_id):
 
 def view_documentation(request):
     date = request.GET.get('date')
-    documentations = Documentation.objects.filter(created_at__date=date) if date else None
-    return render(request, 'index.html', {'documentations': documentations})
+    moderator = Moderator.objects.get(user=request.user)
+    patient_ids = Patient.objects.filter(moderator_assigned=moderator).values_list("id", flat=True)
+
+    print(f"Filtering for date: {date}")  # Debugging Step
+
+    if date:
+        documentations = Documentation.objects.filter(report__patient__in=patient_ids, created_at__date=date)
+    else:
+        documentations = Documentation.objects.filter(report__patient__in=patient_ids)
+
+    print(f"Found {documentations.count()} documentations")  # Debugging Step
+
+    data = [
+        {
+            "title": doc.title,
+            "description": doc.description,
+            "cheif_complaint": doc.cheif_complaint,
+            "subjective": doc.subjective,
+            "objective": doc.objective,
+            "assessment": doc.assessment,
+            "plan": doc.plan,
+            "file_url": doc.file.url if doc.file else None,
+            "created_at": localtime(doc.created_at).strftime("%d-%m-%Y %I:%M %p"),
+            "updated_at": localtime(doc.updated_at).strftime("%d-%m-%Y %I:%M %p"),
+        }
+        for doc in documentations
+    ]
+
+    return JsonResponse(data, safe=False)
