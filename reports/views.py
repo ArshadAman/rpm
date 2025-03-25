@@ -28,7 +28,6 @@ def get_your_reports(request, patient_id):
             )
     return Response({"error": "Patient not exists"}, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(["GET"])
 @login_required
 def get_patients_reports(request):
     email = request.user.email
