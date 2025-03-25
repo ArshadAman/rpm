@@ -19,6 +19,7 @@ from django.contrib.auth import authenticate, login, logout
 from .form import DocumentationForm
 
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
 @api_view(["POST"])
 @permission_classes([])
@@ -204,7 +205,7 @@ def moderator_logout(request):
     logout(request)  # Logs out the current user
     return redirect('/')  # Redirect to the login page after logout
 
-
+@login_required
 def view_assigned_patient(request):
     moderator = Moderator.objects.get(user=request.user)
     patient_obj = Patient.objects.filter(moderator_assigned = moderator)
@@ -214,7 +215,7 @@ def view_assigned_patient(request):
     }
     return render(request, 'view_assigned_patient.html', context)
 
-
+@login_required
 def write_document(request, report_id):
     report = Reports.objects.get(id=report_id)
     if request.method == 'POST':
@@ -229,6 +230,7 @@ def write_document(request, report_id):
     
     return render(request, 'write_document.html', {'form': form, 'report': report})
 
+@login_required
 def view_documentation(request):
     date = request.GET.get('date')
     moderator = Moderator.objects.get(user=request.user)

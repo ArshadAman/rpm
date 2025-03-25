@@ -17,27 +17,26 @@ class CustomSSOAuthentication(BaseAuthentication, BasePermission):
         return auth_header[1]
 
     def authenticate(self, request):
-        """
-        Performs authentication using a valid SSO token.
-
-        Attaches user information to the request object.
-        """
+        print("DEBUG: authenticate() called")
         token = self.extract_token(request)
         if not token:
+            print("DEBUG: No token found")
             return None
 
         try:
             decoded_token = jwt.decode(token, 'sso_secret_key_for_jwt_decoding', algorithms=['HS256'])
-            # Directly set user info on the request object
-            request.first_name = decoded_token.get('first_name')
-            request.last_name = decoded_token.get('last_name')
+            print(f"DEBUG: Token Decoded - {decoded_token}")
+
             request.email = decoded_token.get('email')
-            request.phone_number = decoded_token.get('phone_number')
-            user = None  # Create a user-like object
-            return (user, token)  # Return tuple as required by DRF
+            print(f"DEBUG: request.email set to {request.email}")
+
+            return (None, token)
+
         except jwt.ExpiredSignatureError:
+            print("DEBUG: Token expired")
             raise AuthenticationFailed('Token has expired')
         except jwt.InvalidTokenError:
+            print("DEBUG: Invalid token")
             raise AuthenticationFailed('Invalid token')
 
     def has_permission(self, request, view):

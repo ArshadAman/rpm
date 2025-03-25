@@ -5,7 +5,6 @@ class Reports(models.Model):
     patient = models.ForeignKey('rpm_users.Patient', on_delete=models.CASCADE, related_name='reports')
     blood_pressure = models.CharField(max_length=10, blank=True, null=True)
     heart_rate = models.CharField(max_length=10, blank=True, null=True)
-    heart_rate = models.CharField(max_length=10, blank=True, null=True)
     spo2 = models.CharField(max_length=10, blank=True, null=True)
     temperature = models.CharField(max_length=10, blank=True, null=True)
     symptoms = models.TextField(blank=True, null=True)

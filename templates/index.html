@@ -217,48 +217,23 @@
           <thead>
             <tr>
               <th class="left-col">Vital Signs</th>
-              {% for report in reports %}
-              <th>{{report.created_at}}</th>
-              <!-- New column -->
-              {% endfor %}
-              <th>Additional Info</th>
+              <th>Report</th>
             </tr>
           </thead>
           <tbody>
+            {% for report in reports %}
             <tr>
-              <td class="left-col">SpO2 (%)</td>
-              
-              {% for report in reports %}
-              <td>{{report.spo2}}</td>
-              {% endfor %}
-              <td>Additional details</td>
+              <td>{{ report.created_at }}</td>
+              <td><a href="javascript:void(0);" class="view-report" onclick="fetchReportDetails({{ report.id }})">View Report</a></td>
             </tr>
-            <tr>
-              <td class="left-col">Blood Pressure</td>
-              
-              {% for report in reports %}
-              <td>{{report.blood_pressure}}</td>
-              {% endfor %}
-              <td>Additional details</td>
-            </tr>
-            <tr>
-              <td class="left-col">Heart Rate</td>
-              
-              {% for report in reports %}
-              <td>{{report.heart_rate}}</td>
-              {% endfor %}
-              <td>Additional details</td>
-            </tr>
-            <tr>
-              <td class="left-col">Temperature</td>
-              
-              {% for report in reports %}
-              <td>{{report.temperature}}</td>
-              {% endfor %}
-              <td>Additional details</td>
-            </tr>
+            {% endfor %}
           </tbody>
         </table>
+      </div>
+
+      <div id="report-details" class="table-container" style="display: none;">
+        <h3>Report Details</h3>
+        <div id="report-content"></div>
       </div>
 
       <!-- Orders Tab -->
@@ -314,6 +289,8 @@
       </div>
       
       <!-- Back Button -->
+      <br>
+      <br>
       <a href="/view-patient/" class="back-btn">← Back to Patient List</a>
 
       <!-- Documentation Tab -->
@@ -396,6 +373,34 @@
         event.target.classList.add("active");
       }
 
+      function fetchReportDetails(reportId) {
+        fetch(`/reports/get-single-report/${reportId}/`)
+          .then(response => response.json())
+          .then(data => {
+            console.log("DEBUG: Report Data from API:", data); // Debugging
+      
+            if (!data.report) {
+              console.error("Error: Missing 'report' object in response", data);
+              return;
+            }
+      
+            const report = data.report; // Extract report object
+            const reportContainer = document.getElementById("report-content");
+      
+            reportContainer.innerHTML = `
+              <h3>Report Details</h3>
+              <p><strong>Created At:</strong> ${report.created_at}</p>
+              <p><strong>Blood Pressure:</strong> ${report.blood_pressure}</p>
+              <p><strong>Heart Rate:</strong> ${report.heart_rate}</p> <!-- ✅ Fixed -->
+              <p><strong>SpO2:</strong> ${report.spo2}</p>
+              <p><strong>Temperature:</strong> ${report.temperature}</p>
+            `;
+            document.getElementById("report-details").style.display = "block";
+          })
+          .catch(error => console.error("Error fetching report:", error));
+      }
+
+      
       function fetchDocumentation() {
         const date = document.getElementById("date").value;
         if (!date) {
