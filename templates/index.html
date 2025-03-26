@@ -3,29 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <title>Vitals Summary</title>
     <style>
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Roboto', sans-serif; /* Updated font for a sleek, futuristic look */
       }
 
       body {
-        background: linear-gradient(135deg, #e3f2fd, #ffffff);
-        color: #333;
+        background: linear-gradient(135deg, #1e1e2f, #2b2b3c);
+        color: #f0f0f0;
         padding: 30px;
       }
 
       .container {
         max-width: 1100px;
         margin: auto;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px); /* Increased blur for a stronger frosted effect */
         padding: 25px;
-        border-radius: 16px;
-        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 20px; /* Smooth rounded corners */
+        box-shadow: 0px 10px 40px rgba(255, 255, 255, 0.2); /* Soft shadows */
       }
 
       .patient-details {
@@ -33,9 +34,10 @@
         justify-content: space-between;
         flex-wrap: wrap;
         padding: 20px;
-        background: rgba(255, 255, 255, 0.7);
-        border-radius: 12px;
-        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(15px); /* Frosted glass effect */
+        border-radius: 15px; /* Rounded corners */
+        box-shadow: 0px 4px 20px rgba(255, 255, 255, 0.1); /* Soft shadows */
       }
 
       .tabs {
@@ -46,33 +48,55 @@
       }
 
       .tabs div {
-        background: rgba(0, 123, 255, 0.1);
+        background: rgba(0, 123, 255, 0.2);
         padding: 12px 18px;
-        border-radius: 10px;
+        border-radius: 15px; /* Rounded corners */
         cursor: pointer;
         font-weight: 500;
-        transition: all 0.3s ease;
+        transition: all 0.3s ease, transform 0.3s ease;
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); /* Glowing neon effect */
       }
 
       .tabs div.active {
         background: #007BFF;
         color: white;
-        box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3);
+        box-shadow: 0 0 15px rgba(0, 123, 255, 1); /* Enhanced glow for active tab */
       }
 
       .tabs div:hover {
-        background: rgba(0, 123, 255, 0.3);
+        background: rgba(0, 123, 255, 0.5);
+        box-shadow: 0 0 15px rgba(0, 123, 255, 0.7); /* Glow on hover */
+        transform: scale(1.05);
       }
 
       .content {
         padding: 20px;
       }
+      
+      @media (max-width: 768px) {
+        body {
+          padding: 15px;
+        }
+        .container {
+          padding: 15px;
+        }
+        .patient-details {
+          flex-direction: column;
+          gap: 10px;
+        }
+        .tabs {
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+      }
 
       .table-container {
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px); /* Frosted glass effect */
         padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+        border-radius: 15px; /* Rounded corners */
+        box-shadow: 0px 4px 20px rgba(255, 255, 255, 0.1); /* Soft shadows */
         overflow-x: auto;
         width: 100%;
       }
@@ -81,67 +105,63 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 15px;
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 12px;
+        color: #f0f0f0;
       }
 
       th,
       td {
         padding: 12px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3); /* Increased contrast */
         text-align: center;
       }
 
       th {
-        background: rgba(0, 123, 255, 0.15);
+        background: rgba(0, 123, 255, 0.4); /* Increased contrast */
         font-weight: 600;
       }
 
       .left-col {
         text-align: left;
-        background-color: #f9f9f9;
+        background-color: rgba(255, 255, 255, 0.2);
       }
 
       button {
         padding: 12px 16px;
         border: none;
-        border-radius: 6px;
+        border-radius: 10px; /* Rounded corners */
         background: #007BFF;
         color: white;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); /* Glowing neon effect */
       }
 
       button:hover {
         background: #0056b3;
+        box-shadow: 0 0 15px rgba(0, 123, 255, 0.7); /* Glow on hover */
       }
 
       input[type="date"] {
         padding: 12px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3); /* Increased contrast */
         border-radius: 6px;
         outline: none;
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.1);
         font-size: 14px;
-      }
-
-      @media (max-width: 768px) {
-        table,
-        th,
-        td {
-          font-size: 12px;
-          padding: 5px;
-        }
+        color: white;
       }
 
       .documentation-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px); /* Frosted glass effect */
         padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+        border-radius: 15px; /* Rounded corners */
+        box-shadow: 0px 4px 20px rgba(255, 255, 255, 0.1); /* Soft shadows */
         margin: 15px 0;
+        color: #f0f0f0;
       }
 
       .download-btn {
@@ -149,37 +169,41 @@
         background: #007BFF;
         color: white;
         padding: 8px 12px;
-        border-radius: 6px;
+        border-radius: 10px; /* Rounded corners */
         text-decoration: none;
         margin-top: 10px;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); /* Glowing neon effect */
       }
 
       .download-btn:hover {
         background: #0056b3;
+        box-shadow: 0 0 15px rgba(0, 123, 255, 0.7); /* Glow on hover */
       }
 
-      .date-info {
-        font-size: 12px;
-        color: #555;
-        margin-top: 10px;
+      .report-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px); /* Frosted glass effect */
+        border-radius: 15px; /* Rounded corners */
+        box-shadow: 0px 4px 20px rgba(255, 255, 255, 0.1); /* Soft shadows */
       }
 
-      .back-btn {
-        display: inline-block;
-        background: #f8f9fa;
-        color: #007BFF;
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
+      .report-item {
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0px 2px 6px rgba(255, 255, 255, 0.1); /* Soft shadows */
+        text-align: center;
       }
 
-      .back-btn:hover {
-        background: #007BFF;
-        color: white;
+      .report-item strong {
+        display: block;
+        color: #00BFFF;
+        font-size: 14px;
+        margin-bottom: 5px;
       }
     </style>
   </head>
@@ -224,7 +248,7 @@
             {% for report in reports %}
             <tr>
               <td>{{ report.created_at }}</td>
-              <td><a href="javascript:void(0);" class="view-report" onclick="fetchReportDetails({{ report.id }})">View Report</a></td>
+              <td><a href="{% url 'get_single_report' report.id %}" class="view-report">View Report</a></td>
             </tr>
             {% endfor %}
           </tbody>
@@ -232,7 +256,6 @@
       </div>
 
       <div id="report-details" class="table-container" style="display: none;">
-        <h3>Report Details</h3>
         <div id="report-content"></div>
       </div>
 
@@ -389,11 +412,14 @@
       
             reportContainer.innerHTML = `
               <h3>Report Details</h3>
-              <p><strong>Created At:</strong> ${report.created_at}</p>
-              <p><strong>Blood Pressure:</strong> ${report.blood_pressure}</p>
-              <p><strong>Heart Rate:</strong> ${report.heart_rate}</p> <!-- ✅ Fixed -->
-              <p><strong>SpO2:</strong> ${report.spo2}</p>
-              <p><strong>Temperature:</strong> ${report.temperature}</p>
+              <div class="report-grid">
+                <div class="report-item"><strong>Created At:</strong> ${report.created_at}</div>
+                <div class="report-item"><strong>Blood Pressure:</strong> ${report.blood_pressure}</div>
+                <div class="report-item"><strong>Heart Rate:</strong> ${report.heart_rate}</div>
+                <div class="report-item"><strong>SpO2:</strong> ${report.spo2}</div>
+                <div class="report-item"><strong>Temperature:</strong> ${report.temperature}</div>
+                <div class="report-item"><strong>Symptoms:</strong> ${report.symptoms || "N/A"}</div>
+              </div>
             `;
             document.getElementById("report-details").style.display = "block";
           })

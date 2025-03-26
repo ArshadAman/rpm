@@ -2,15 +2,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .models import Reports
+from .models import Reports, Documentation
 from rpm_users.models import Patient, Moderator
 from .serializers import ReportSerializer
 from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
+from .forms import DocumentationForm  # Ensure you have a Django form for validation
 
 from rpm.customPermission import CustomSSOAuthentication
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-# Create your views here.
 
 @api_view(["GET"])
 @permission_classes([CustomSSOAuthentication])
@@ -54,33 +55,26 @@ def get_single_report(request, report_id):
         report = Reports.objects.get(id=report_id)
         print(f"DEBUG: Report Found - ID: {report.id}")
 
-        # Allow access only if the user is a moderator
-        if Moderator.objects.filter(user=user).exists():
-            print("DEBUG: Access granted (Moderator)")
-            report_data = {
-                "id": report.id,
-                "created_at": report.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                "updated_at": report.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-                "patient": {
-                    "id": report.patient.id,
-                    "name": f"{report.patient.user.first_name} {report.patient.user.last_name}",
-                    "email": report.patient.user.email,
-                },
-                "blood_pressure": report.blood_pressure,
-                "heartbeat_rate": report.heart_rate,
-                "spo2": report.spo2,
-                "temperature": report.temperature,
-                "symptoms": report.symptoms,
-            }
-            print(report_data)
-            return JsonResponse({"report": report_data}, status=200)
+        # Allow access if the user is a moderator or the assigned patient
+        if Moderator.objects.filter(user=user).exists() or user == report.patient.user:
+            print("DEBUG: Access granted")
 
-        print("DEBUG: Access denied - Only moderators can access this report")
-        return JsonResponse({"error": "Only moderators can view this report"}, status=403)
+            # Fetch related documentations
+            documentations = report.documentations.all()
+
+            context = {
+                "report": report,
+                "documentations": documentations,
+            }
+
+            return render(request, "reports/report.html", context)
+
+        print("DEBUG: Access denied - Only authorized users can view this report")
+        return render(request, "errors/403.html", {"error": "You are not authorized to view this report"}, status=403)
 
     except Reports.DoesNotExist:
         print("DEBUG: Report not found")
-        return JsonResponse({"error": "Report not found"}, status=404)
+        return render(request, "errors/404.html", {"error": "Report not found"}, status=404)
 
 @api_view(["POST"])
 @permission_classes([CustomSSOAuthentication])
@@ -104,3 +98,26 @@ def create_report(request):
         serializer = ReportSerializer(report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response({"error": "Patient not exists"}, status=status.HTTP_404_NOT_FOUND)
+
+@login_required
+def add_documentation(request, report_id):
+    user = request.user
+
+    # Check if the user is a moderator
+    if not Moderator.objects.filter(user=user).exists():
+        return render(request, "errors/403.html", {"error": "Only moderators can add documentation"}, status=403)
+
+    report = get_object_or_404(Reports, id=report_id)
+
+    if request.method == "POST":
+        form = DocumentationForm(request.POST, request.FILES)
+        if form.is_valid():
+            documentation = form.save(commit=False)
+            documentation.report = report
+            documentation.save()
+            return redirect("get_single_report", report_id=report.id)  # Redirect to the report view after adding
+
+    else:
+        form = DocumentationForm()
+
+    return render(request, "reports/add_docs.html", {"form": form, "report": report})
