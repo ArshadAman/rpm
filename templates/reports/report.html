@@ -99,6 +99,7 @@
         </table>
         
         <h2>Documentation</h2>
+        <a href="{% url 'add_documentation' report.id %}" class="btn">Add Documentation</a>
         <div class="documentation-container">
             {% for doc in documentations %}
                 <div class="documentation-card">
