@@ -96,8 +96,13 @@
         padding: 20px;
         border-radius: 15px; /* Rounded corners */
         box-shadow: 0px 4px 20px rgba(255, 255, 255, 0.1); /* Soft shadows */
-        overflow-x: auto;
         width: 100%;
+      }
+
+      .scrollable {
+        display: block;
+        overflow-x: auto;
+        max-height: 400px;
       }
 
       table {
@@ -121,10 +126,18 @@
         font-weight: 600;
       }
 
-      .left-col {
-        text-align: left;
-        background-color: rgba(255, 255, 255, 0.2);
-      }
+.left-col {
+  text-align: left;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Fixed left column for scrollable tables */
+.fixed-left {
+  position: sticky;
+  left: 0;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 2;
+}
 
       button {
         padding: 12px 16px;
@@ -236,23 +249,48 @@
     <div class="content">
       <!-- Results Tab -->
       <div id="results" class="table-container">
-        <h3>Results</h3>
-        <table>
-          <thead>
-            <tr>
-              <th class="left-col">Date</th>
-              <th>Report</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for report in reports %}
-            <tr>
-              <td>{{ report.created_at }}</td>
-              <td><a href="{% url 'get_single_report' report.id %}" class="view-report">View Report</a></td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <h3>Vitals Summary</h3>
+        <div class="scrollable">
+          <table>
+            <thead>
+              <tr>
+                <th class="fixed-left">Vital Signs</th>
+                <th>09/05 13:00</th>
+                <th>09/05 15:20</th>
+                <th>09/05 17:15</th>
+                <th>09/05 19:30</th>
+                <th>09/05 21:00</th>
+                <th>09/06 22:00</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fixed-left">Temperature (°C)</td>
+                <td>36.6</td><td>36.8</td><td>37.5</td><td>37.1</td><td>37.2</td><td>37.1</td>
+              </tr>
+              <tr>
+                <td class="fixed-left">Heart Rate</td>
+                <td>84</td><td>88</td><td>80</td><td>83</td><td>80</td><td>91</td>
+              </tr>
+              <tr>
+                <td class="fixed-left">Respiratory Rate</td>
+                <td>18</td><td>16</td><td>18</td><td>18</td><td>18</td><td>18</td>
+              </tr>
+              <tr>
+                <td class="fixed-left">NBP Systolic</td>
+                <td>137</td><td>144</td><td>136</td><td>158</td><td>139</td><td>137</td>
+              </tr>
+              <tr>
+                <td class="fixed-left">NBP Diastolic</td>
+                <td>78</td><td>90</td><td>77</td><td>84</td><td>78</td><td>74</td>
+              </tr>
+              <tr>
+                <td class="fixed-left">SpO2</td>
+                <td>98</td><td>98</td><td>96</td><td>99</td><td>95</td><td>99</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div id="report-details" class="table-container" style="display: none;">
@@ -265,7 +303,7 @@
         <table>
           <thead>
             <tr>
-              <th class="left-col">Order</th>
+              <th class="left-col fixed-left">Order</th>
               <th>9/27/2024</th>
               <th>9/27/2024</th>
               <th>9/27/2024</th>
@@ -274,7 +312,7 @@
               <!-- New column -->
             </tr>
             <tr>
-              <th class="left-col"></th>
+              <th class="left-col fixed-left"></th>
               <th>10:37 AM</th>
               <th>11:24 AM</th>
               <th>12:10 PM</th>
