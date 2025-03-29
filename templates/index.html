@@ -22,47 +22,85 @@
       .container {
         max-width: 100%;
         margin: auto;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);    
-        padding: 25px;
-        border-radius: 20px;
-        box-shadow: 0px 10px 40px rgba(157, 80, 187, 0.3);
+        margin-top: 50px;
         display: flex;
         gap: 20px;
-        flex-direction: row-reverse; /* Reverse the flex direction */
+      }
+
+      .left-panel {
+        width: 180px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px);
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0px 10px 40px rgba(157, 80, 187, 0.3);
       }
 
       .main-content {
         flex: 1;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0px 10px 40px rgba(157, 80, 187, 0.3);
         overflow-x: auto;
-        min-width: 0; /* Important for proper flex behavior */
+        min-width: 0;
+      }
+
+      .right-panel {
+        width: 150px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px);
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0px 10px 40px rgba(157, 80, 187, 0.3);
       }
 
       .patient-details {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        padding: 20px;
-        backdrop-filter: blur(15px); /* Frosted glass effect */
-        border-radius: 15px; /* Rounded corners */
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        padding: 15px;
+        backdrop-filter: blur(15px);
+        border-radius: 15px;
         background: rgba(255, 255, 255, 0.2);
         box-shadow: 0px 4px 20px rgba(157, 80, 187, 0.1);
+      }
+
+      .patient-details > div {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        min-height: 60px;
+        justify-content: center;
+      }
+
+      .patient-details strong {
+        color:rgb(191, 96, 232);
+        font-size: 12px;
+      }
+
+      .patient-details span {
+        font-size: 14px;
+        color: #f0e7ff;
       }
 
       .tabs {
         display: flex;
         flex-direction: column;
         gap: 10px;
-        margin: 0;
-        position: sticky;
-        top: 30px;
-        height: fit-content;
-        min-width: 150px;
-        padding-right: 20px; /* Changed from padding-left to padding-right */
-        border-right: 1px solid rgba(255, 255, 255, 0.2); /* Changed from border-left to border-right */
       }
 
-      .tabs div {
+      .right-tabs {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .tabs div, .right-tabs div {
         padding: 12px 18px;
         border-radius: 15px;
         cursor: pointer;
@@ -74,12 +112,12 @@
         text-align: left;
       }
 
-      .tabs div.active {
+      .tabs div.active, .right-tabs div.active {
         background: #9D50BB;
         box-shadow: 0 0 15px rgba(157, 80, 187, 1);
       }
 
-      .tabs div:hover {
+      .tabs div:hover, .right-tabs div:hover {
         background: rgba(157, 80, 187, 0.5);
         box-shadow: 0 0 15px rgba(157, 80, 187, 0.7);
         transform: scale(1.05);
@@ -90,32 +128,22 @@
       }
       
       @media (max-width: 768px) {
-        body {
-          padding: 15px;
-        }
         .container {
+          flex-direction: column;
           padding: 15px;
-          flex-direction: column;
+          gap: 15px;
         }
-        .patient-details {
-          flex-direction: column;
-          gap: 10px;
+        .left-panel, .right-panel {
+          width: 100%;
         }
-        .tabs {
+        .tabs, .right-tabs {
           flex-direction: row;
           flex-wrap: wrap;
-          gap: 10px;
-          padding-right: 0;
-          border-right: none;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-          padding-bottom: 15px;
-          position: relative;
-          top: 0;
-          order: -1; /* This will move the tabs to the top */
-          margin-bottom: 20px;
+          gap: 8px;
         }
-        .main-content {
-          width: 100%;
+        .tabs div, .right-tabs div {
+          padding: 8px 12px;
+          font-size: 12px;
         }
       }
 
@@ -253,18 +281,75 @@
   <body>
     <!-- Patient Information Section -->
     <div class="patient-details">
+      <!-- First Row -->
       <div>
-        <strong>Patient Name:</strong> {{patient.user.first_name}}
-        {{patient.user.last_name}}
+        <strong>Patient Name</strong>
+        <span>{{patient.user.first_name}} {{patient.user.last_name}}</span>
       </div>
-      <div><strong>DOB:</strong> {{patient.date_of_birth}}</div>
-      <div><strong>Sex:</strong> {{patient.sex}}</div>
-      <div><strong>Weight:</strong> {{patient.weight}} kg</div>
-      <div><strong>Height:</strong> {{patient.height}} cm</div>
-      <div><strong>BMI: {{patient.bmi}}</strong></div>
+      <div>
+        <strong>DOB</strong>
+        <span>{{patient.date_of_birth}}</span>
+      </div>
+      <div>
+        <strong>Age</strong>
+        <span>21</span>
+      </div>
+      <div>
+        <strong>Sex</strong>
+        <span>Male</span>
+      </div>
+
+      <div>
+        <strong>Weight</strong>
+        <span>{{patient.weight}} kg</span>
+      </div>
+      <div>
+        <strong>Allergies</strong>
+        <span>Hypertension</span>
+      </div>
+      <div>
+        <strong>Height</strong>
+        <span>{{patient.height}} cm</span>
+      </div>
+      <div>
+        <strong>BMI</strong>
+        <span>{{patient.bmi}}</span>
+      </div>
+      <!-- Second Row -->
+
+      <div>
+        <strong>Code Status</strong>
+        <span>Good</span>
+      </div>
+
+      <div>
+        <strong>Monitoring Start Date</strong>
+        <span>01/01/24</span>
+      </div>
+      {% comment %} <div>
+        <strong>Default Data 1</strong>
+        <span>Value 1</span>
+      </div>
+      <div>
+        <strong>Default Data 2</strong>
+        <span>Value 2</span>
+      </div> {% endcomment %}
     </div>
 
     <div class="container">
+      <!-- Left Panel -->
+      <div class="left-panel">
+        <div class="tabs">
+          <div class="active" onclick="showTab('results')">Results</div>
+          <div onclick="showTab('orders')">Orders</div>
+          <div onclick="showTab('documentation')">Documentation</div>
+          <div onclick="showTab('allergies')">Allergies</div>
+          <div onclick="showTab('ptinfo')">PT Info</div>
+          <div onclick="showTab('medications')">Medications</div>
+          <div onclick="showTab('pharmacy')">Pharmacy</div>
+        </div>
+      </div>
+
       <!-- Main Content Section -->
       <div class="main-content">
         <!-- Content Section for Tabs -->
@@ -445,15 +530,16 @@
         </div>
       </div>
 
-      <!-- Tabs for Navigation -->
-      <div class="tabs">
-        <div class="active" onclick="showTab('results')">Results</div>
-        <div onclick="showTab('orders')">Orders</div>
-        <div onclick="showTab('documentation')">Documentation</div>
-        <div onclick="showTab('allergies')">Allergies</div>
-        <div onclick="showTab('ptinfo')">PT Info</div>
-        <div onclick="showTab('medications')">Medications</div>
-        <div onclick="showTab('pharmacy')">Pharmacy</div>
+      <!-- Right Panel -->
+      <div class="right-panel">
+        <div class="right-tabs">
+          <div class="active" onclick="showRightTab('pmh')">PMH</div>
+          <div onclick="showRightTab('dm')">DM</div>
+          <div onclick="showRightTab('htn')">HTN</div>
+          <div onclick="showRightTab('copd')">COPD</div>
+          <div onclick="showRightTab('pyelo')">Pyelo</div>
+          <div onclick="showRightTab('esrd')">ESRD</div>
+        </div>
       </div>
     </div>
 
@@ -467,6 +553,13 @@
 
         document.getElementById(tabId).style.display = "block";
         event.target.classList.add("active");
+      }
+
+      function showRightTab(tabId) {
+        const tabButtons = document.querySelectorAll(".right-tabs div");
+        tabButtons.forEach((button) => button.classList.remove("active"));
+        event.target.classList.add("active");
+        // Add your right tab content display logic here
       }
 
       function fetchReportDetails(reportId) {
