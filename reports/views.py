@@ -10,6 +10,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from .forms import DocumentationForm  # Ensure you have a Django form for validation
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 from rpm.customPermission import CustomSSOAuthentication
 
@@ -121,3 +124,18 @@ def add_documentation(request, report_id):
         form = DocumentationForm()
 
     return render(request, "reports/add_docs.html", {"form": form, "report": report})
+
+
+@csrf_exempt
+def data_from_mio_connect(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method"}, status=405)
+    
+    try:
+        body = json.loads(request.body)
+        print(f"Receive data from MioConnect: {json.dumps(body)})")
+        result = {"success": True}
+        return JsonResponse(result)
+    except Exception as err:
+        print(err)
+        return JsonResponse({"error": str(err)}, status=400)
