@@ -13,9 +13,12 @@ class Reports(models.Model):
     
     
     def __str__(self):
-        return f'{self.patient.user.first_name} {self.patient.user.last_name}'
+        return f'{self.patient.user.first_name} {self.patient.user.last_name} - {self.created_at.strftime("%Y-%m-%d %H:%M:%S")}'
     
 class Documentation(models.Model):
+    TITLE_CHOICES = (
+        ()
+    )
     report = models.ForeignKey(Reports, on_delete=models.CASCADE, related_name='documentations')
     title = models.CharField(max_length=255)
     description = models.TextField()

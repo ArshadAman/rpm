@@ -90,7 +90,11 @@ def get_all_reports(request, patient_id):
 
     # Fetch reports - If user is a moderator, fetch all reports, else fetch only the patient's reports
     if is_moderator:
-        reports = Reports.objects.filter(patient__user=user)
+        patient = Patient.objects.filter(id=patient_id).first()
+        if not patient:
+            print("DEBUG: Patient not found")
+            return JsonResponse({"error": "Patient not found"}, status=404)
+        reports = Reports.objects.filter(patient=patient).order_by("-created_at")
     else:
         return JsonResponse({"error": "Not a moderator"}, status=404)
 
@@ -102,8 +106,7 @@ def get_all_reports(request, patient_id):
     data = {
         "reports": [
             {
-                "id": report.id,
-                "patient_name": report.patient,
+                "patient_name": report.patient.user.first_name,
                 "created_at": report.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                 "heart_rate": report.heart_rate,
                 "blood_pressure": report.blood_pressure,
@@ -113,7 +116,6 @@ def get_all_reports(request, patient_id):
                         "id": doc.id,
                         "title": doc.title,
                         "file_url": doc.file.url if doc.file else None,
-                        "uploaded_at": doc.uploaded_at.strftime("%Y-%m-%d %H:%M:%S"),
                     }
                     for doc in report.documentations.all()
                 ],
