@@ -103,10 +103,11 @@ def get_all_reports(request, patient_id):
         "reports": [
             {
                 "id": report.id,
-                "patient_name": report.patient.user.get_full_name(),
+                "patient_name": report.patient,
                 "created_at": report.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                "status": report.status,
-                "remarks": report.remarks,
+                "heart_rate": report.heart_rate,
+                "blood_pressure": report.blood_pressure,
+                "temperature": report.temperature,
                 "documentations": [
                     {
                         "id": doc.id,
