@@ -70,7 +70,7 @@ def get_single_report(request, report_id):
                 "documentations": documentations,
             }
 
-            return render(request, "reports/report.html", context)
+            return render(request, "index.html", context)
 
         print("DEBUG: Access denied - Only authorized users can view this report")
         return render(request, "errors/403.html", {"error": "You are not authorized to view this report"}, status=403)
@@ -78,6 +78,50 @@ def get_single_report(request, report_id):
     except Reports.DoesNotExist:
         print("DEBUG: Report not found")
         return render(request, "errors/404.html", {"error": "Report not found"}, status=404)
+
+
+@login_required
+def get_all_reports(request, patient_id):
+    user = request.user  # Get the logged-in user
+    print(f"DEBUG: Logged-in User = {user}")
+
+    # Check if user is a Moderator
+    is_moderator = Moderator.objects.filter(user=user).exists()
+
+    # Fetch reports - If user is a moderator, fetch all reports, else fetch only the patient's reports
+    if is_moderator:
+        reports = Reports.objects.filter(patient__user=user)
+    else:
+        return JsonResponse({"error": "Not a moderator"}, status=404)
+
+    if not reports.exists():
+        print("DEBUG: No reports found")
+        return JsonResponse({"error": "No reports found"}, status=404)
+
+    # Prepare JSON response
+    data = {
+        "reports": [
+            {
+                "id": report.id,
+                "patient_name": report.patient.user.get_full_name(),
+                "created_at": report.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "status": report.status,
+                "remarks": report.remarks,
+                "documentations": [
+                    {
+                        "id": doc.id,
+                        "title": doc.title,
+                        "file_url": doc.file.url if doc.file else None,
+                        "uploaded_at": doc.uploaded_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    }
+                    for doc in report.documentations.all()
+                ],
+            }
+            for report in reports
+        ]
+    }
+
+    return JsonResponse(data, safe=False)
 
 @api_view(["POST"])
 @permission_classes([CustomSSOAuthentication])

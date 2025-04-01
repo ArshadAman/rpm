@@ -10,7 +10,7 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: 'Roboto', sans-serif; /* Updated font for a sleek, futuristic look */
+        font-family: "Roboto", sans-serif; /* Updated font for a sleek, futuristic look */
       }
 
       body {
@@ -79,7 +79,7 @@
       }
 
       .patient-details strong {
-        color:rgb(191, 96, 232);
+        color: rgb(191, 96, 232);
         font-size: 12px;
       }
 
@@ -100,7 +100,8 @@
         gap: 10px;
       }
 
-      .tabs div, .right-tabs div {
+      .tabs div,
+      .right-tabs div {
         padding: 12px 18px;
         border-radius: 15px;
         cursor: pointer;
@@ -112,12 +113,14 @@
         text-align: left;
       }
 
-      .tabs div.active, .right-tabs div.active {
-        background: #9D50BB;
+      .tabs div.active,
+      .right-tabs div.active {
+        background: #9d50bb;
         box-shadow: 0 0 15px rgba(157, 80, 187, 1);
       }
 
-      .tabs div:hover, .right-tabs div:hover {
+      .tabs div:hover,
+      .right-tabs div:hover {
         background: rgba(157, 80, 187, 0.5);
         box-shadow: 0 0 15px rgba(157, 80, 187, 0.7);
         transform: scale(1.05);
@@ -126,22 +129,25 @@
       .content {
         padding: 20px;
       }
-      
+
       @media (max-width: 768px) {
         .container {
           flex-direction: column;
           padding: 15px;
           gap: 15px;
         }
-        .left-panel, .right-panel {
+        .left-panel,
+        .right-panel {
           width: 100%;
         }
-        .tabs, .right-tabs {
+        .tabs,
+        .right-tabs {
           flex-direction: row;
           flex-wrap: wrap;
           gap: 8px;
         }
-        .tabs div, .right-tabs div {
+        .tabs div,
+        .right-tabs div {
           padding: 8px 12px;
           font-size: 12px;
         }
@@ -180,28 +186,28 @@
       }
 
       th {
-        background: linear-gradient(90deg, #9D50BB, #6A0DAD);
+        background: linear-gradient(90deg, #9d50bb, #6a0dad);
         font-weight: 600;
       }
 
-.left-col {
-  text-align: left;
-  background-color: rgba(255, 255, 255, 0.2);
-}
+      .left-col {
+        text-align: left;
+        background-color: rgba(255, 255, 255, 0.2);
+      }
 
-/* Fixed left column for scrollable tables */
-.fixed-left {
-  position: sticky;
-  left: 0;
-  background: rgba(255, 255, 255, 0.1);
-  z-index: 2;
-}
+      /* Fixed left column for scrollable tables */
+      .fixed-left {
+        position: sticky;
+        left: 0;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 2;
+      }
 
       button {
         padding: 12px 16px;
         border: none;
         border-radius: 10px; /* Rounded corners */
-        background: #9D50BB;
+        background: #9d50bb;
         color: white;
         font-weight: 600;
         cursor: pointer;
@@ -210,7 +216,7 @@
       }
 
       button:hover {
-        background: #7A40A2;
+        background: #7a40a2;
         box-shadow: 0 0 15px rgba(157, 80, 187, 1);
       }
 
@@ -236,7 +242,7 @@
 
       .download-btn {
         display: inline-block;
-        background: #9D50BB;
+        background: #9d50bb;
         box-shadow: 0 0 10px rgba(157, 80, 187, 0.7);
         color: white;
         padding: 8px 12px;
@@ -246,7 +252,7 @@
       }
 
       .download-btn:hover {
-        background: #7A40A2;
+        background: #7a40a2;
         box-shadow: 0 0 15px rgba(157, 80, 187, 1);
       }
 
@@ -267,12 +273,11 @@
         border-radius: 8px; /* Rounded corners */
         box-shadow: 0px 2px 6px rgba(255, 255, 255, 0.1); /* Soft shadows */
         text-align: center;
-        
       }
 
       .report-item strong {
         display: block;
-        color: #9D50BB;
+        color: #9d50bb;
         font-size: 14px;
         margin-bottom: 5px;
       }
@@ -326,14 +331,16 @@
         <strong>Monitoring Start Date</strong>
         <span>01/01/24</span>
       </div>
-      {% comment %} <div>
+      {% comment %}
+      <div>
         <strong>Default Data 1</strong>
         <span>Value 1</span>
       </div>
       <div>
         <strong>Default Data 2</strong>
         <span>Value 2</span>
-      </div> {% endcomment %}
+      </div>
+      {% endcomment %}
     </div>
 
     <div class="container">
@@ -373,34 +380,68 @@
                 <tbody>
                   <tr>
                     <td class="fixed-left">Temperature (°C)</td>
-                    <td>36.6</td><td>36.8</td><td>37.5</td><td>37.1</td><td>37.2</td><td>37.1</td>
+                    <td>36.6</td>
+                    <td>36.8</td>
+                    <td>37.5</td>
+                    <td>37.1</td>
+                    <td>37.2</td>
+                    <td>37.1</td>
                   </tr>
                   <tr>
                     <td class="fixed-left">Heart Rate</td>
-                    <td>84</td><td>88</td><td>80</td><td>83</td><td>80</td><td>91</td>
+                    <td>84</td>
+                    <td>88</td>
+                    <td>80</td>
+                    <td>83</td>
+                    <td>80</td>
+                    <td>91</td>
                   </tr>
                   <tr>
                     <td class="fixed-left">Respiratory Rate</td>
-                    <td>18</td><td>16</td><td>18</td><td>18</td><td>18</td><td>18</td>
+                    <td>18</td>
+                    <td>16</td>
+                    <td>18</td>
+                    <td>18</td>
+                    <td>18</td>
+                    <td>18</td>
                   </tr>
                   <tr>
                     <td class="fixed-left">NBP Systolic</td>
-                    <td>137</td><td>144</td><td>136</td><td>158</td><td>139</td><td>137</td>
+                    <td>137</td>
+                    <td>144</td>
+                    <td>136</td>
+                    <td>158</td>
+                    <td>139</td>
+                    <td>137</td>
                   </tr>
                   <tr>
                     <td class="fixed-left">NBP Diastolic</td>
-                    <td>78</td><td>90</td><td>77</td><td>84</td><td>78</td><td>74</td>
+                    <td>78</td>
+                    <td>90</td>
+                    <td>77</td>
+                    <td>84</td>
+                    <td>78</td>
+                    <td>74</td>
                   </tr>
                   <tr>
                     <td class="fixed-left">SpO2</td>
-                    <td>98</td><td>98</td><td>96</td><td>99</td><td>95</td><td>99</td>
+                    <td>98</td>
+                    <td>98</td>
+                    <td>96</td>
+                    <td>99</td>
+                    <td>95</td>
+                    <td>99</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <div id="report-details" class="table-container" style="display: none;">
+          <div
+            id="report-details"
+            class="table-container"
+            style="display: none"
+          >
             <div id="report-content"></div>
           </div>
 
@@ -455,10 +496,10 @@
               </tbody>
             </table>
           </div>
-          
+
           <!-- Back Button -->
-          <br>
-          <br>
+          <br />
+          <br />
           <a href="/view-patient/" class="back-btn">← Back to Patient List</a>
 
           <!-- Documentation Tab -->
@@ -466,41 +507,43 @@
             <h3>Documentation</h3>
             <form id="doc-form">
               <label for="date">Select Date:</label>
-              <input type="date" id="date" name="date">
+              <input type="date" id="date" name="date" />
               <button type="button" onclick="fetchDocumentation()">View</button>
             </form>
             <div id="documentation-details">
-                {% if documentations %}
-                    <ul>
-                        {% for doc in documentations %}
-                            <div class="documentation-card">
-                              <h4>{{ doc.title }}</h4>
-                              <p>{{ doc.description }}</p>
-                              {% if doc.cheif_complaint %}
-                                  <p><strong>Chief Complaint:</strong> {{ doc.cheif_complaint }}</p>
-                              {% endif %}
-                              {% if doc.subjective %}
-                                  <p><strong>Subjective:</strong> {{ doc.subjective }}</p>
-                              {% endif %}
-                              {% if doc.objective %}
-                                  <p><strong>Objective:</strong> {{ doc.objective }}</p>
-                              {% endif %}
-                              {% if doc.assessment %}
-                                  <p><strong>Assessment:</strong> {{ doc.assessment }}</p>
-                              {% endif %}
-                              {% if doc.plan %}
-                                  <p><strong>Plan:</strong> {{ doc.plan }}</p>
-                              {% endif %}
-                              {% if doc.file.url %}
-                                  <a href="{{ doc.file.url }}" class="download-btn">Download File</a>
-                              {% endif %}
-                              <p class="date-info">Created: {{ doc.created_at }} | Updated: {{ doc.updated_at }}</p>
-                            </div>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>No documentation found for the selected date.</p>
-                {% endif %}
+              {% if documentations %}
+              <ul>
+                {% for doc in documentations %}
+                <div class="documentation-card">
+                  <h4>{{ doc.title }}</h4>
+                  <p>{{ doc.description }}</p>
+                  {% if doc.cheif_complaint %}
+                  <p>
+                    <strong>Chief Complaint:</strong> {{ doc.cheif_complaint }}
+                  </p>
+                  {% endif %} {% if doc.subjective %}
+                  <p><strong>Subjective:</strong> {{ doc.subjective }}</p>
+                  {% endif %} {% if doc.objective %}
+                  <p><strong>Objective:</strong> {{ doc.objective }}</p>
+                  {% endif %} {% if doc.assessment %}
+                  <p><strong>Assessment:</strong> {{ doc.assessment }}</p>
+                  {% endif %} {% if doc.plan %}
+                  <p><strong>Plan:</strong> {{ doc.plan }}</p>
+                  {% endif %} {% if doc.file.url %}
+                  <a href="{{ doc.file.url }}" class="download-btn"
+                    >Download File</a
+                  >
+                  {% endif %}
+                  <p class="date-info">
+                    Created: {{ doc.created_at }} | Updated: {{ doc.updated_at
+                    }}
+                  </p>
+                </div>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p>No documentation found for the selected date.</p>
+              {% endif %}
             </div>
           </div>
 
@@ -564,34 +607,86 @@
 
       function fetchReportDetails(reportId) {
         fetch(`/reports/get-single-report/${reportId}/`)
-          .then(response => response.json())
-          .then(data => {
+          .then((response) => response.json())
+          .then((data) => {
             console.log("DEBUG: Report Data from API:", data); // Debugging
-      
+
             if (!data.report) {
               console.error("Error: Missing 'report' object in response", data);
               return;
             }
-      
+
             const report = data.report; // Extract report object
             const reportContainer = document.getElementById("report-content");
-      
+
             reportContainer.innerHTML = `
               <h3>Report Details</h3>
               <div class="report-grid">
-                <div class="report-item"><strong>Created At:</strong> ${report.created_at}</div>
-                <div class="report-item"><strong>Blood Pressure:</strong> ${report.blood_pressure}</div>
-                <div class="report-item"><strong>Heart Rate:</strong> ${report.heart_rate}</div>
-                <div class="report-item"><strong>SpO2:</strong> ${report.spo2}</div>
-                <div class="report-item"><strong>Temperature:</strong> ${report.temperature}</div>
-                <div class="report-item"><strong>Symptoms:</strong> ${report.symptoms || "N/A"}</div>
+                <div class="report-item"><strong>Created At:</strong> ${
+                  report.created_at
+                }</div>
+                <div class="report-item"><strong>Blood Pressure:</strong> ${
+                  report.blood_pressure
+                }</div>
+                <div class="report-item"><strong>Heart Rate:</strong> ${
+                  report.heart_rate
+                }</div>
+                <div class="report-item"><strong>SpO2:</strong> ${
+                  report.spo2
+                }</div>
+                <div class="report-item"><strong>Temperature:</strong> ${
+                  report.temperature
+                }</div>
+                <div class="report-item"><strong>Symptoms:</strong> ${
+                  report.symptoms || "N/A"
+                }</div>
               </div>
             `;
             document.getElementById("report-details").style.display = "block";
           })
-          .catch(error => console.error("Error fetching report:", error));
+          .catch((error) => console.error("Error fetching report:", error));
       }
+      function fetchReportDetails(patient_id) {
+        fetch(`/reports/get-all-reports/${patient_id}/`)
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("DEBUG: Report Data from API:", data); // Debugging
 
+            if (!data.report) {
+              console.error("Error: Missing 'report' object in response", data);
+              return;
+            }
+
+            const reports = data.reports; // Extract report object
+            const reportContainer = document.getElementById("report-content");
+
+            reportContainer.innerHTML = `
+              <h3>Report Details</h3>
+              <div class="report-grid">
+                <div class="report-item"><strong>Created At:</strong> ${
+                  report.created_at
+                }</div>
+                <div class="report-item"><strong>Blood Pressure:</strong> ${
+                  report.blood_pressure
+                }</div>
+                <div class="report-item"><strong>Heart Rate:</strong> ${
+                  report.heart_rate
+                }</div>
+                <div class="report-item"><strong>SpO2:</strong> ${
+                  report.spo2
+                }</div>
+                <div class="report-item"><strong>Temperature:</strong> ${
+                  report.temperature
+                }</div>
+                <div class="report-item"><strong>Symptoms:</strong> ${
+                  report.symptoms || "N/A"
+                }</div>
+              </div>
+            `;
+            document.getElementById("report-details").style.display = "block";
+          })
+          .catch((error) => console.error("Error fetching report:", error));
+      }
 
       function fetchDocumentation() {
         const date = document.getElementById("date").value;
@@ -601,32 +696,63 @@
         }
 
         fetch(`/view_documentation/?date=${date}`)
-          .then(response => response.json())
-          .then(data => {
-            const docContainer = document.getElementById("documentation-details");
+          .then((response) => response.json())
+          .then((data) => {
+            const docContainer = document.getElementById(
+              "documentation-details"
+            );
             if (data.length === 0) {
-              docContainer.innerHTML = "<p>No documentation found for the selected date.</p>";
+              docContainer.innerHTML =
+                "<p>No documentation found for the selected date.</p>";
             } else {
               let content = "";
-              data.forEach(doc => {
+              data.forEach((doc) => {
                 content += `
                   <div class="documentation-card">
                     <h4>${doc.title}</h4>
                     <p>${doc.description}</p>
-                    ${doc.cheif_complaint ? `<p><strong>Chief Complaint:</strong> ${doc.cheif_complaint}</p>` : ""}
-                    ${doc.subjective ? `<p><strong>Subjective:</strong> ${doc.subjective}</p>` : ""}
-                    ${doc.objective ? `<p><strong>Objective:</strong> ${doc.objective}</p>` : ""}
-                    ${doc.assessment ? `<p><strong>Assessment:</strong> ${doc.assessment}</p>` : ""}
-                    ${doc.plan ? `<p><strong>Plan:</strong> ${doc.plan}</p>` : ""}
-                    ${doc.file_url ? `<a href="${doc.file_url}" target="_blank" class="download-btn">Download File</a>` : ""}
-                    <p class="date-info">Created: ${doc.created_at} | Updated: ${doc.updated_at}</p>
+                    ${
+                      doc.cheif_complaint
+                        ? `<p><strong>Chief Complaint:</strong> ${doc.cheif_complaint}</p>`
+                        : ""
+                    }
+                    ${
+                      doc.subjective
+                        ? `<p><strong>Subjective:</strong> ${doc.subjective}</p>`
+                        : ""
+                    }
+                    ${
+                      doc.objective
+                        ? `<p><strong>Objective:</strong> ${doc.objective}</p>`
+                        : ""
+                    }
+                    ${
+                      doc.assessment
+                        ? `<p><strong>Assessment:</strong> ${doc.assessment}</p>`
+                        : ""
+                    }
+                    ${
+                      doc.plan
+                        ? `<p><strong>Plan:</strong> ${doc.plan}</p>`
+                        : ""
+                    }
+                    ${
+                      doc.file_url
+                        ? `<a href="${doc.file_url}" target="_blank" class="download-btn">Download File</a>`
+                        : ""
+                    }
+                    <p class="date-info">Created: ${
+                      doc.created_at
+                    } | Updated: ${doc.updated_at}</p>
                   </div>
                 `;
               });
               docContainer.innerHTML = content;
             }
           })
-          .catch(error => console.error("Error fetching documentation:", error));
+          .catch((error) =>
+            console.error("Error fetching documentation:", error)
+          );
       }
     </script>
   </body>
