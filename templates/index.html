@@ -754,6 +754,40 @@
             console.error("Error fetching documentation:", error)
           );
       }
+
+      function fetchReportDetails(patient_id) {
+        fetch(`/reports/get-all-reports/${patient_id}/`)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log("DEBUG: Report Data from API:", data); // Debugging
+    
+                if (!data.reports || data.reports.length === 0) {
+                    console.error("Error: No reports found in response", data);
+                    return;
+                }
+    
+                const reports = data.reports; // Extract reports array
+                const reportContainer = document.getElementById("report-content");
+    
+                let content = `<h3>Report Details</h3><div class="report-grid">`;
+    
+                reports.forEach((report) => {
+                    content += `
+                        <div class="report-item"><strong>Created At:</strong> ${report.created_at}</div>
+                        <div class="report-item"><strong>Blood Pressure:</strong> ${report.blood_pressure}</div>
+                        <div class="report-item"><strong>Heart Rate:</strong> ${report.heart_rate}</div>
+                        <div class="report-item"><strong>SpO2:</strong> ${report.spo2}</div>
+                        <div class="report-item"><strong>Temperature:</strong> ${report.temperature}</div>
+                        <div class="report-item"><strong>Symptoms:</strong> ${report.symptoms || "N/A"}</div>
+                    `;
+                });
+    
+                content += `</div>`;
+                reportContainer.innerHTML = content;
+                document.getElementById("report-details").style.display = "block";
+            })
+            .catch((error) => console.error("Error fetching report:", error));
+    }
     </script>
   </body>
 </html>
