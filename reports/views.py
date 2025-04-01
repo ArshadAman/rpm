@@ -180,9 +180,12 @@ def data_from_mio_connect(request):
     
     try:
         body = json.loads(request.body)
-        print(f"Receive data from MioConnect: {json.dumps(body)})")
+        print(f"Received data from MioConnect: {json.dumps(body)}")
         
-        result = {"success": True}
+        result = {
+            "success": True,
+            "received_data": body  # Include the received body in the response
+        }
         return JsonResponse(result)
     except Exception as err:
         print(err)
