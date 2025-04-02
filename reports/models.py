@@ -17,12 +17,12 @@ class Reports(models.Model):
     
 class Documentation(models.Model):
     TITLE_CHOICES = (
-        ()
+        ('Progress Note', 'Progress Note'),
     )
     report = models.ForeignKey(Reports, on_delete=models.CASCADE, related_name='documentations')
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, choices=TITLE_CHOICES, default="Progress Note")
     description = models.TextField()
-    cheif_complaint = models.TextField(max_length=255, blank=True, null=True)
+    chief_complaint = models.TextField(max_length=255, blank=True, null=True)
     subjective = models.TextField(max_length=255, blank=True, null=True)
     objective = models.TextField(max_length=255, blank=True, null=True)
     assessment = models.TextField(max_length=255, blank=True, null=True)
