@@ -15,6 +15,7 @@ class Patient(models.Model):
     bmi = models.DecimalField(blank=True, max_digits=10, decimal_places=2, null=True)
     monitoring_parameters = models.CharField(blank=True, max_length=20, null=True, choices=MONITORING_CHOICES)
     device_serial_number = models.IntegerField(null=True, blank=True)
+    pharmacy_info = models.TextField(blank=True, null=True)
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

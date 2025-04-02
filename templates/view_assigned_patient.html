@@ -5,161 +5,261 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Assigned Patients</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-    <!-- Include your CSS here -->
-
     <style>
       /* Global Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
       body {
         font-family: "Inter", sans-serif;
         background: linear-gradient(135deg, #101113, #191526);
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
         color: #E0C3FC;
+        min-height: 100vh;
+        padding: 20px;
       }
 
       /* Container */
       .container {
-        max-width: 900px;
-        width: 100%;
+        max-width: 1200px;
+        margin: 40px auto;
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(15px);
-        padding: 25px;
+        padding: 30px;
         border-radius: 16px;
         box-shadow: 0px 10px 40px rgba(157, 80, 187, 0.3);
         position: relative;
       }
 
-      /* Logout Button */
-      .logout-btn {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        padding: 10px 15px;
-        background: #9D50BB;
-        color: white;
+      /* Header Section */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        padding: 0 20px;
+      }
+
+      h2 {
+        font-size: 28px;
+        font-weight: 600;
+        color: #E0C3FC;
+        text-align: center;
+        flex-grow: 1;
+      }
+
+      /* Button Styles */
+      .btn {
+        padding: 12px 20px;
         border: none;
         border-radius: 8px;
         font-weight: 600;
         text-decoration: none;
         cursor: pointer;
         transition: all 0.3s ease;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .register-btn {
+        background: #9D50BB;
+        color: white;
         box-shadow: 0px 0px 10px rgba(157, 80, 187, 0.7);
       }
 
-      .logout-btn:hover {
+      .register-btn:hover {
         background: #7A40A2;
         box-shadow: 0px 0px 15px rgba(157, 80, 187, 1);
+        transform: translateY(-2px);
       }
 
-      /* Table */
+      .logout-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: #E0C3FC;
+      }
+
+      .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* Table Styles */
+      .table-container {
+        overflow-x: auto;
+        margin-top: 20px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
       table {
         width: 100%;
-        border-collapse: collapse;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        box-shadow: 0px 4px 20px rgba(157, 80, 187, 0.3);
-      }
-
-      th, td {
-        padding: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        text-align: center;
-        color: #E0C3FC;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: transparent;
       }
 
       th {
         background: linear-gradient(90deg, #6A0DAD, #9D50BB);
         color: white;
         font-weight: 600;
+        text-transform: uppercase;
+        font-size: 14px;
+        padding: 16px;
+        text-align: left;
+        letter-spacing: 0.5px;
       }
 
-      tr:nth-child(even) {
-        background: rgba(255, 255, 255, 0.05);
+      th:first-child {
+        border-top-left-radius: 12px;
       }
 
-      tr:hover {
-        background: rgba(157, 80, 187, 0.2);
-        box-shadow: 0px 0px 10px rgba(157, 80, 187, 0.5);
-        cursor: pointer;
+      th:last-child {
+        border-top-right-radius: 12px;
       }
 
-      /* Patient row clickable cards */
-      a.table-link {
+      td {
+        padding: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .table-link {
         display: block;
         text-decoration: none;
         color: inherit;
-        padding: 12px;
-        border-radius: 10px;
         transition: all 0.3s ease;
-        background: rgba(255, 255, 255, 0.1);
       }
 
-      a.table-link:hover {
-        background: rgba(157, 80, 187, 0.3);
-        box-shadow: 0px 0px 15px rgba(157, 80, 187, 0.7);
+      tr:hover {
+        background: rgba(157, 80, 187, 0.1);
+      }
+
+      /* Patient Row Styles */
+      .patient-row {
+        transition: all 0.3s ease;
+      }
+
+      .patient-row:hover {
+        transform: translateX(5px);
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #E0C3FC;
+        font-size: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        margin-top: 20px;
       }
 
       /* Responsive Design */
       @media (max-width: 768px) {
         .container {
           padding: 15px;
+          margin: 20px;
         }
 
-        table {
-          font-size: 14px;
+        .header {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        h2 {
+          margin: 20px 0;
+        }
+
+        .btn {
+          width: 100%;
+          justify-content: center;
         }
 
         th, td {
-          padding: 8px;
+          padding: 12px;
+          font-size: 14px;
         }
+
+        .table-container {
+          margin-top: 15px;
+        }
+      }
+
+      /* Scrollbar Styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #9D50BB;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #7A40A2;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <!-- Logout Button -->
-      <a href="{% url 'moderator_logout' %}" class="logout-btn">Logout</a>
-
-      <h2>Assigned Patients</h2>
+      <div class="header">
+        <a href="{% url 'register_patient' %}" class="btn register-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Register Patient
+        </a>
+        <h2>Assigned Patients</h2>
+        <a href="{% url 'moderator_logout' %}" class="btn logout-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+          Logout
+        </a>
+      </div>
 
       {% if patient_obj %}
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Date of Birth</th>
-            <th>Height (cm)</th>
-            <th>Weight (kg)</th>
-            <th>Insurance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for patient in patient_obj %}
-          <tr>
-            <td colspan="5">
-              <a href="{% url 'moderator_actions' patient.id %}?action=access" class="table-link">
-                <table width="100%">
-                  <tr>
-                    <td>{{ patient.user.first_name }} {{ patient.user.last_name }}</td>
-                    <td>{{ patient.date_of_birth }}</td>
-                    <td>{{ patient.height }}</td>
-                    <td>{{ patient.weight }}</td>
-                    <td>{{ patient.insurance }}</td>
-                  </tr>
-                </table>
-              </a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Date of Birth</th>
+              <th>Height (cm)</th>
+              <th>Weight (kg)</th>
+              <th>Insurance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for patient in patient_obj %}
+            <tr class="patient-row">
+              <td>
+                <a href="{% url 'moderator_actions' patient.id %}?action=access" class="table-link">
+                  {{ patient.user.first_name }} {{ patient.user.last_name }}
+                </a>
+              </td>
+              <td>{{ patient.date_of_birth }}</td>
+              <td>{{ patient.height }}</td>
+              <td>{{ patient.weight }}</td>
+              <td>{{ patient.insurance }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       {% else %}
-      <p>No patients assigned yet.</p>
+      <div class="empty-state">
+        <p>No patients assigned yet.</p>
+      </div>
       {% endif %}
     </div>
   </body>

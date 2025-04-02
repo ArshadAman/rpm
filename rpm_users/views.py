@@ -249,7 +249,7 @@ def view_documentation(request):
         {
             "title": doc.title,
             "description": doc.description,
-            "cheif_complaint": doc.cheif_complaint,
+            "chief_complaint": doc.chief_complaint,
             "subjective": doc.subjective,
             "objective": doc.objective,
             "assessment": doc.assessment,
@@ -262,3 +262,75 @@ def view_documentation(request):
     ]
 
     return JsonResponse(data, safe=False)
+
+@login_required
+def register_patient(request):
+    if request.method == 'POST':
+        data = {
+            'email': request.POST.get('email'),
+            'password': request.POST.get('password'),
+            'first_name': request.POST.get('first_name'), 
+            'last_name': request.POST.get('last_name'),
+            'phone_number': request.POST.get('phone_number'),
+            'date_of_birth': request.POST.get('date_of_birth'),
+            'height': request.POST.get('height'),
+            'weight': request.POST.get('weight'),
+            'insurance': request.POST.get('insurance'),
+            'sex': request.POST.get('sex'),
+            'monitoring_parameters': request.POST.get('monitoring_parameters'),
+            'device_serial_number': request.POST.get('device_serial_number'),
+            'pharmacy_info': request.POST.get('pharmacy_info'),
+        }
+
+        # Check if patient already exists
+        if User.objects.filter(username=data['email']).exists():
+            messages.error(request, 'Patient with this email already exists')
+            return render(request, 'register_patient.html')
+
+        # Create user in SSO
+        response = requests.post("https://auth.pinksurfing.com/api/signup/", data=data)
+        if response.status_code != 201:
+            messages.error(request, 'Error creating user in SSO system')
+            return render(request, 'register_patient.html')
+
+        # Create local user and patient
+        try:
+            user = User.objects.create(
+                username=data['email'],
+                email=data['email'],
+                first_name=data['first_name'],
+                last_name=data['last_name'],
+            )
+            
+            patient = Patient.objects.create(
+                user=user,
+                date_of_birth=data['date_of_birth'],
+                height=data['height'],
+                weight=data['weight'],
+                insurance=data['insurance'],
+                sex=data['sex'],
+                monitoring_parameters=data['monitoring_parameters'],
+                device_serial_number=data['device_serial_number'] if data['device_serial_number'] else None,
+                pharmacy_info=data['pharmacy_info'] if data['pharmacy_info'] else None
+            )
+
+            # Assign the current moderator
+            moderator = Moderator.objects.get(user=request.user)
+            patient.moderator_assigned = moderator
+            patient.save()  # This will also calculate and save BMI
+
+            messages.success(request, 'Patient registered successfully')
+            return redirect('view_all_assigned_patient')
+
+        except ValueError as e:
+            messages.error(request, str(e))  # This will catch the BMI calculation error
+            return render(request, 'register_patient.html')
+        except Exception as e:
+            messages.error(request, f'Error creating patient: {str(e)}')
+            return render(request, 'register_patient.html')
+
+    context = {
+        'sex_choices': Patient.SEX_CHOICES,
+        'monitoring_choices': Patient.MONITORING_CHOICES
+    }
+    return render(request, 'register_patient.html', context)
