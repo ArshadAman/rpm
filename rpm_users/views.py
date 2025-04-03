@@ -288,10 +288,10 @@ def register_patient(request):
             return render(request, 'register_patient.html')
 
         # Create user in SSO
-        response = requests.post("https://auth.pinksurfing.com/api/signup/", data=data)
-        if response.status_code != 201:
-            messages.error(request, 'Error creating user in SSO system')
-            return render(request, 'register_patient.html')
+        # response = requests.post("https://auth.pinksurfing.com/api/signup/", data=data)
+        # if response.status_code != 201:
+        #     messages.error(request, 'Error creating user in SSO system')
+        #     return render(request, 'register_patient.html')
 
         # Create local user and patient
         try:
