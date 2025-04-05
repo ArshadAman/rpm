@@ -214,8 +214,8 @@ def view_assigned_patient(request):
     for patient in patient_obj:
         # Format medications into a list if they exist
         medications = []
-        if patient.current_medications:
-            medications = [med.strip() for med in patient.current_medications.split('\n') if med.strip()]
+        if patient.medications:
+            medications = [med.strip() for med in patient.medications.split('\n') if med.strip()]
 
         # Format pharmacy info into structured data if it exists
         pharmacy_info = {}

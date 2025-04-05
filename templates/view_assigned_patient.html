@@ -275,18 +275,20 @@
             </tr>
           </thead>
           <tbody>
-            {% for patient in patient_obj %}
-            <tr>
-              <td>
-                <a href="{% url 'moderator_actions' patient.id %}?action=access" class="table-link">
-                  {{ patient.user.first_name }} {{ patient.user.last_name }}
-                </a>
-              </td>
-              <td>{{ patient.date_of_birth }}</td>
-              <td>{{ patient.height }}</td>
-              <td>{{ patient.weight }}</td>
-              <td>{{ patient.insurance }}</td>
-            </tr>
+            {% for entry in patient_obj %}
+              {% with entry.patient as patient %} {# Extract the patient object #}
+              <tr>
+                <td>
+                  <a href="{% url 'moderator_actions' patient.id %}?action=access" class="table-link">
+                    {{ patient.user.first_name }} {{ patient.user.last_name }}
+                  </a>
+                </td>
+                <td>{{ patient.date_of_birth }}</td>
+                <td>{{ patient.height }}</td>
+                <td>{{ patient.weight }}</td>
+                <td>{{ patient.insurance }}</td>
+              </tr>
+              {% endwith %}
             {% endfor %}
           </tbody>
         </table>
