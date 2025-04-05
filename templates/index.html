@@ -402,6 +402,296 @@
           padding: 10px 12px;
         }
       }
+
+      .info-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 20px;
+      }
+
+      .info-content {
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .info-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        padding: 40px 20px;
+        color: rgba(255, 255, 255, 0.5);
+        text-align: center;
+      }
+
+      .info-empty svg {
+        opacity: 0.5;
+        width: 40px;
+        height: 40px;
+      }
+
+      .table-container h3 {
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .table-container h3::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        border-radius: 2px;
+      }
+
+      /* Tab content animations */
+      .table-container {
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Update the tabs styling */
+      .tabs div {
+        padding: 14px 20px;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .tabs div::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        background: currentColor;
+        border-radius: 50%;
+        opacity: 0.5;
+        transition: all 0.3s ease;
+      }
+
+      .tabs div.active::before {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+
+      /* Custom styling for specific tabs */
+      .info-section {
+        display: grid;
+        gap: 20px;
+      }
+
+      .info-item {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .info-item strong {
+        display: block;
+        color: var(--secondary);
+        margin-bottom: 8px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .info-item span {
+        color: white;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* Documentation improvements */
+      .documentation-card {
+        margin-bottom: 20px;
+        padding: 25px;
+      }
+
+      .documentation-card h4 {
+        color: white;
+        font-size: 18px;
+        margin-bottom: 15px;
+        font-weight: 500;
+      }
+
+      .documentation-card p {
+        margin-bottom: 15px;
+        line-height: 1.6;
+      }
+
+      .documentation-card strong {
+        color: var(--secondary);
+        font-weight: 500;
+      }
+
+      .date-info {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+      }
+
+      /* Form improvements */
+      #doc-form {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      #doc-form label {
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      /* Mobile responsiveness improvements */
+      @media (max-width: 768px) {
+        .info-card {
+          padding: 15px;
+        }
+        
+        .info-content {
+          padding: 15px;
+        }
+        
+        .documentation-card {
+          padding: 20px;
+        }
+        
+        #doc-form {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        
+        .table-container h3 {
+          font-size: 18px;
+        }
+      }
+
+      .info-section {
+        display: grid;
+        gap: 15px;
+      }
+
+      .info-item {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .info-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--primary);
+        transform: translateX(5px);
+      }
+
+      .item-icon {
+        font-size: 20px;
+        opacity: 0.9;
+      }
+
+      .medication-details {
+        flex: 1;
+      }
+
+      .medication-details span {
+        display: block;
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .table-container h3 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .table-container h3 svg {
+        opacity: 0.9;
+      }
+
+      @media (max-width: 768px) {
+        .info-item {
+          padding: 15px;
+        }
+
+        .item-icon {
+          font-size: 18px;
+        }
+
+        .table-container h3 {
+          font-size: 18px;
+        }
+      }
+
+      .back-btn {
+        margin-left: 30px;  /* Align with the page padding */
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 12px;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .back-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(121, 40, 202, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .back-btn {
+          margin-left: 15px;
+          font-size: 13px;
+          padding: 8px 16px;
+        }
+      }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   </head>
@@ -474,6 +764,11 @@
       </div>
     </div>
 
+    <!-- Back Button - Moved here -->
+    <div style="margin: 20px 0;">
+        <a href="/view-patient/" class="back-btn">← Back to Patient List</a>
+    </div>
+
     <div class="container">
       <!-- Left Panel -->
       <div class="left-panel">
@@ -482,7 +777,7 @@
           <div onclick="showTab('orders')">Orders</div>
           <div onclick="showTab('documentation')">Documentation</div>
           <div onclick="showTab('allergies')">Allergies</div>
-          <div onclick="showTab('ptinfo')">PT Info</div>
+          <div onclick="showTab('family_history')">Family History</div>
           <div onclick="showTab('medications')">Medications</div>
           <div onclick="showTab('pharmacy')">Pharmacy</div>
         </div>
@@ -570,11 +865,6 @@
             </table>
           </div>
 
-          <!-- Back Button -->
-          <br />
-          <br />
-          <a href="/view-patient/" class="back-btn">← Back to Patient List</a>
-
           <!-- Documentation Tab -->
           <div id="documentation" class="table-container" style="display: none">
             <h3>Documentation</h3>
@@ -622,26 +912,121 @@
 
           <!-- Allergies Tab -->
           <div id="allergies" class="table-container" style="display: none">
-            <h3>Allergies</h3>
-            <!-- Add your content here -->
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm1-9h-2v6h2zm0-4h-2v2h2z"/>
+                </svg>
+                Allergies
+            </h3>
+            <div class="info-card">
+                {% if patient.allergies %}
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="item-icon">⚠️</div>
+                            <span>{{ patient.allergies }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="info-empty">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span>No allergies recorded</span>
+                    </div>
+                {% endif %}
+            </div>
           </div>
 
-          <!-- PT Info Tab -->
-          <div id="ptinfo" class="table-container" style="display: none">
-            <h3>PT Info</h3>
-            <!-- Add your content here -->
+          <!-- Family History Tab -->
+          <div id="family_history" class="table-container" style="display: none">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Family History
+            </h3>
+            <div class="info-card">
+                {% if patient.family_history %}
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="item-icon">👥</div>
+                            <span>{{ patient.family_history }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="info-empty">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span>No family history recorded</span>
+                    </div>
+                {% endif %}
+            </div>
           </div>
 
           <!-- Medications Tab -->
           <div id="medications" class="table-container" style="display: none">
-            <h3>Medications</h3>
-            <!-- Add your content here -->
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                </svg>
+                Current Medications
+            </h3>
+            <div class="info-card">
+                {% if patient.medications %}
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="item-icon">💊</div>
+                            <div class="medication-details">
+                                <span style="white-space: pre-line">{{ patient.medications }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="info-empty">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 3v18m0 0l3-3m-3 3l-3-3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+                        </svg>
+                        <span>No medications recorded</span>
+                    </div>
+                {% endif %}
+            </div>
           </div>
 
           <!-- Pharmacy Tab -->
           <div id="pharmacy" class="table-container" style="display: none">
-            <h3>Pharmacy</h3>
-            <!-- Add your content here -->
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/>
+                    <path d="M19 16v3a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-3"/>
+                    <path d="M3 8h18"/>
+                    <path d="M9 12h6"/>
+                </svg>
+                Pharmacy Information
+            </h3>
+            <div class="info-card">
+                {% if patient.pharmacy_info %}
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="item-icon">🏥</div>
+                            <span>{{ patient.pharmacy_info }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="info-empty">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span>No pharmacy information recorded</span>
+                    </div>
+                {% endif %}
+            </div>
           </div>
         </div>
       </div>

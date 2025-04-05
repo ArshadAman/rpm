@@ -208,10 +208,51 @@ def moderator_logout(request):
 @login_required
 def view_assigned_patient(request):
     moderator = Moderator.objects.get(user=request.user)
-    patient_obj = Patient.objects.filter(moderator_assigned = moderator)
+    patient_obj = Patient.objects.filter(moderator_assigned=moderator)
     
+    formatted_patients = []
+    for patient in patient_obj:
+        # Format medications into a list if they exist
+        medications = []
+        if patient.current_medications:
+            medications = [med.strip() for med in patient.current_medications.split('\n') if med.strip()]
+
+        # Format pharmacy info into structured data if it exists
+        pharmacy_info = {}
+        if patient.pharmacy_info:
+            try:
+                lines = patient.pharmacy_info.split('\n')
+                for line in lines:
+                    if ':' in line:
+                        key, value = line.split(':', 1)
+                        pharmacy_info[key.strip()] = value.strip()
+            except:
+                pharmacy_info = {'Details': patient.pharmacy_info}
+
+        # Format allergies into a list if they exist
+        allergies = []
+        if patient.allergies:
+            allergies = [allergy.strip() for allergy in patient.allergies.split(',') if allergy.strip()]
+
+        # Format family history into structured sections if it exists
+        family_history = []
+        if patient.family_history:
+            history_lines = patient.family_history.split('\n')
+            for line in history_lines:
+                if line.strip():
+                    family_history.append(line.strip())
+
+        formatted_patient = {
+            'patient': patient,
+            'formatted_medications': medications,
+            'formatted_pharmacy': pharmacy_info,
+            'formatted_allergies': allergies,
+            'formatted_family_history': family_history
+        }
+        formatted_patients.append(formatted_patient)
+
     context = {
-        'patient_obj': patient_obj,
+        'patient_obj': formatted_patients,
     }
     return render(request, 'view_assigned_patient.html', context)
 
@@ -352,3 +393,36 @@ def register_patient(request):
         'pmh_choices': PastMedicalHistory.PMH_CHOICES
     }
     return render(request, 'register_patient.html', context)
+
+@login_required
+def view_patient(request, patient_id):
+    patient = Patient.objects.get(id=patient_id)
+    
+    # Process allergies
+    allergies_list = []
+    if patient.allergies:
+        allergies_list = [allergy.strip() for allergy in patient.allergies.split(',')]
+    
+    # Process medications
+    medications_list = []
+    if patient.medications:
+        medications_list = [med.strip() for med in patient.medications.split('\n')]
+    
+    # Process family history
+    family_history_list = []
+    if patient.family_history:
+        family_history_list = [history.strip() for history in patient.family_history.split('\n')]
+    
+    # Process pharmacy info
+    pharmacy_info_list = []
+    if patient.pharmacy_info:
+        pharmacy_info_list = [info.strip() for info in patient.pharmacy_info.split('\n')]
+    
+    context = {
+        'patient': patient,
+        'allergies_list': allergies_list,
+        'medications_list': medications_list,
+        'family_history_list': family_history_list,
+        'pharmacy_info_list': pharmacy_info_list,
+    }
+    return render(request, 'index.html', context)
