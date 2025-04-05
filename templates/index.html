@@ -10,13 +10,25 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: "Roboto", sans-serif; /* Updated font for a sleek, futuristic look */
+      }
+
+      :root {
+        --primary: #7928CA;
+        --primary-dark: #6A0DAD;
+        --secondary: #FF0080;
+        --text: #E0C3FC;
+        --background: #0F1116;
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --error: #FF4E4E;
+        --success: #00CC88;
       }
 
       body {
-        background: linear-gradient(135deg, #1e1e2f, #3a2b4c);
-        color: #f0e7ff;
+        font-family: 'Poppins', sans-serif;
+        background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+        color: var(--text);
         padding: 30px;
+        min-height: 100vh;
       }
 
       .container {
@@ -27,107 +39,212 @@
         gap: 20px;
       }
 
-      .left-panel {
+      .left-panel, .right-panel {
         width: 180px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
         padding: 20px;
-        border-radius: 20px;
-        box-shadow: 0px 10px 40px rgba(157, 80, 187, 0.3);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
       }
 
       .main-content {
         flex: 1;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
         padding: 25px;
-        border-radius: 20px;
-        box-shadow: 0px 10px 40px rgba(157, 80, 187, 0.3);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         overflow-x: auto;
         min-width: 0;
-      }
-
-      .right-panel {
-        width: 150px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        padding: 20px;
-        border-radius: 20px;
-        box-shadow: 0px 10px 40px rgba(157, 80, 187, 0.3);
+        position: relative;
       }
 
       .patient-details {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 10px;
-        padding: 15px;
-        backdrop-filter: blur(15px);
-        border-radius: 15px;
-        background: rgba(255, 255, 255, 0.2);
-        box-shadow: 0px 4px 20px rgba(157, 80, 187, 0.1);
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        padding: 25px;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .patient-details::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        z-index: 1;
       }
 
       .patient-details > div {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        padding: 8px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        min-height: 60px;
-        justify-content: center;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 15px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .patient-details > div:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--primary);
       }
 
       .patient-details strong {
-        color: rgb(191, 96, 232);
+        color: var(--secondary);
         font-size: 12px;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 5px;
+        letter-spacing: 0.5px;
       }
 
       .patient-details span {
         font-size: 14px;
-        color: #f0e7ff;
+        color: white;
+        font-weight: 400;
       }
 
-      .tabs {
+      .tabs, .right-tabs {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
       }
 
-      .right-tabs {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .tabs div,
-      .right-tabs div {
+      .tabs div, .right-tabs div {
         padding: 12px 18px;
-        border-radius: 15px;
+        border-radius: 12px;
         cursor: pointer;
         font-weight: 500;
-        transition: all 0.3s ease, transform 0.3s ease;
-        transform: scale(1);
-        background: rgba(157, 80, 187, 0.2);
-        box-shadow: 0 0 10px rgba(157, 80, 187, 0.5);
-        text-align: left;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
 
-      .tabs div.active,
-      .right-tabs div.active {
-        background: #9d50bb;
-        box-shadow: 0 0 15px rgba(157, 80, 187, 1);
+      .tabs div.active, .right-tabs div.active {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-color: transparent;
+        box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
       }
 
-      .tabs div:hover,
-      .right-tabs div:hover {
-        background: rgba(157, 80, 187, 0.5);
-        box-shadow: 0 0 15px rgba(157, 80, 187, 0.7);
-        transform: scale(1.05);
+      .tabs div:hover, .right-tabs div:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.1);
       }
 
-      .content {
+      .table-container {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
         padding: 20px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 15px;
+      }
+
+      th, td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      th {
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      td {
+        background: rgba(255, 255, 255, 0.03);
+        transition: background 0.3s ease;
+      }
+
+      tr:hover td {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .documentation-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 15px;
+        transition: transform 0.3s ease;
+      }
+
+      .documentation-card:hover {
+        transform: translateY(-2px);
+      }
+
+      button, .back-btn, .download-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        font-family: 'Poppins', sans-serif;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      button:hover, .back-btn:hover, .download-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+      }
+
+      input[type="date"] {
+        padding: 12px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        color: white;
+        font-family: 'Poppins', sans-serif;
+        margin-right: 10px;
+      }
+
+      /* Scrollbar styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-dark);
       }
 
       @media (max-width: 768px) {
@@ -136,157 +253,161 @@
           padding: 15px;
           gap: 15px;
         }
-        .left-panel,
-        .right-panel {
+        .left-panel, .right-panel {
           width: 100%;
         }
-        .tabs,
-        .right-tabs {
+        .tabs, .right-tabs {
           flex-direction: row;
           flex-wrap: wrap;
-          gap: 8px;
         }
-        .tabs div,
-        .right-tabs div {
-          padding: 8px 12px;
-          font-size: 12px;
+        .patient-details {
+          grid-template-columns: repeat(2, 1fr);
+          padding: 15px;
+          gap: 10px;
         }
       }
 
-      .table-container {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0px 4px 20px rgba(255, 255, 255, 0.1);
-        min-width: 800px;
-      }
-
-      .scrollable {
-        display: block;
-        overflow-x: auto;
-        max-height: 400px;
-        width: 100%;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-        background: rgba(255, 255, 255, 0.1);
+      .section-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 12px 18px;
         border-radius: 12px;
-        color: #f0f0f0;
-      }
-
-      th,
-      td {
-        padding: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.3); /* Increased contrast */
-        text-align: center;
-      }
-
-      th {
-        background: linear-gradient(90deg, #9d50bb, #6a0dad);
         font-weight: 600;
+        margin-bottom: 15px;
       }
 
-      .left-col {
-        text-align: left;
-        background-color: rgba(255, 255, 255, 0.2);
+      .pmh-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
 
-      /* Fixed left column for scrollable tables */
-      .fixed-left {
-        position: sticky;
-        left: 0;
-        background: rgba(255, 255, 255, 0.1);
-        z-index: 2;
+      .pmh-item {
+        padding: 10px 15px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--text);
       }
 
-      button {
-        padding: 12px 16px;
-        border: none;
-        border-radius: 10px; /* Rounded corners */
-        background: #9d50bb;
+      .pmh-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .medical-history-section {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .section-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
         color: white;
+        padding: 15px;
+        border-radius: 12px;
         font-weight: 600;
-        cursor: pointer;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 15px;
+        letter-spacing: 0.5px;
+      }
+
+      .header-icon {
+        opacity: 0.9;
+      }
+
+      .pmh-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 5px;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+      }
+
+      .pmh-item {
+        padding: 12px 15px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 12px;
         transition: all 0.3s ease;
-        box-shadow: 0 0 10px rgba(157, 80, 187, 0.7);
+        position: relative;
+        overflow: hidden;
       }
 
-      button:hover {
-        background: #7a40a2;
-        box-shadow: 0 0 15px rgba(157, 80, 187, 1);
+      .pmh-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--primary);
+        transform: translateX(5px);
       }
 
-      input[type="date"] {
-        padding: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.3); /* Increased contrast */
-        border-radius: 6px;
-        outline: none;
-        background: rgba(255, 255, 255, 0.1);
-        font-size: 14px;
-        color: white;
+      .condition-marker {
+        width: 8px;
+        height: 8px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        flex-shrink: 0;
       }
 
-      .documentation-card {
-        backdrop-filter: blur(15px); /* Frosted glass effect */
-        padding: 15px;
-        border-radius: 15px; /* Rounded corners */
-        background: rgba(255, 255, 255, 0.1);
-        box-shadow: 0px 4px 20px rgba(157, 80, 187, 0.1);
-        margin: 15px 0;
-        color: #f0f0f0;
-      }
-
-      .download-btn {
-        display: inline-block;
-        background: #9d50bb;
-        box-shadow: 0 0 10px rgba(157, 80, 187, 0.7);
-        color: white;
-        padding: 8px 12px;
-        border-radius: 10px; /* Rounded corners */
-        text-decoration: none;
-        margin-top: 10px;
-      }
-
-      .download-btn:hover {
-        background: #7a40a2;
-        box-shadow: 0 0 15px rgba(157, 80, 187, 1);
-      }
-
-      .report-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
+      .pmh-empty {
         padding: 20px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px); /* Frosted glass effect */
-        border-radius: 15px; /* Rounded corners */
-        box-shadow: 0px 4px 20px rgba(255, 255, 255, 0.1); /* Soft shadows */
-      }
-
-      .report-item {
-        padding: 15px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 8px; /* Rounded corners */
-        box-shadow: 0px 2px 6px rgba(255, 255, 255, 0.1); /* Soft shadows */
         text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
       }
 
-      .report-item strong {
-        display: block;
-        color: #9d50bb;
-        font-size: 14px;
-        margin-bottom: 5px;
+      .pmh-empty svg {
+        opacity: 0.5;
+        width: 32px;
+        height: 32px;
+      }
+
+      /* Custom scrollbar for pmh-list */
+      .pmh-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .pmh-list::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 3px;
+      }
+
+      .pmh-list::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 3px;
+      }
+
+      .pmh-list::-webkit-scrollbar-thumb:hover {
+        background: var(--secondary);
+      }
+
+      @media (max-width: 768px) {
+        .pmh-list {
+          max-height: none;
+        }
+        
+        .pmh-item {
+          padding: 10px 12px;
+        }
       }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   </head>
   <body>
     <!-- Patient Information Section -->
     <div class="patient-details">
-      <!-- First Row -->
       <div>
         <strong>Patient Name</strong>
         <span>{{patient.user.first_name}} {{patient.user.last_name}}</span>
@@ -303,14 +424,9 @@
         <strong>Sex</strong>
         <span>{{patient.sex}}</span>
       </div>
-
       <div>
         <strong>Weight</strong>
         <span>{{patient.weight}} kg</span>
-      </div>
-      <div>
-        <strong>Allergies</strong>
-        <span>{{patient.monitoring_parameters}}</span>
       </div>
       <div>
         <strong>Height</strong>
@@ -320,27 +436,42 @@
         <strong>BMI</strong>
         <span>{{patient.bmi}}</span>
       </div>
-      <!-- Second Row -->
-
       <div>
-        <strong>Code Status</strong>
-        <span>Good</span>
-      </div>
-
-      <div>
-        <strong>Monitoring Start Date</strong>
-        <span>{{patient.created_at}}</span>
-      </div>
-      {% comment %}
-      <div>
-        <strong>Default Data 1</strong>
-        <span>Value 1</span>
+        <strong>Insurance</strong>
+        <span>{{patient.insurance}}</span>
       </div>
       <div>
-        <strong>Default Data 2</strong>
-        <span>Value 2</span>
+        <strong>Monitoring Parameters</strong>
+        <span>{{patient.monitoring_parameters}}</span>
       </div>
-      {% endcomment %}
+      <div>
+        <strong>Device ID</strong>
+        <span>{{patient.device_serial_number}}</span>
+      </div>
+      <div>
+        <strong>Drink</strong>
+        <span>{{patient.drink}}</span>
+      </div>
+      <div>
+        <strong>Smoke</strong>
+        <span>{{patient.smoke}}</span>
+      </div>
+      <div>
+        <strong>Allergies</strong>
+        <span>{{patient.allergies|default:"None"}}</span>
+      </div>
+      <div>
+        <strong>Start Date</strong>
+        <span>{{patient.created_at|date:"d/m/Y"}}</span>
+      </div>
+      <div>
+        <strong>Last Updated</strong>
+        <span>{{patient.updated_at|date:"d/m/Y"}}</span>
+      </div>
+      <div>
+        <strong>Assigned Moderator</strong>
+        <span>{{patient.moderator_assigned.user.username}}</span>
+      </div>
     </div>
 
     <div class="container">
@@ -517,13 +648,31 @@
 
       <!-- Right Panel -->
       <div class="right-panel">
-        <div class="right-tabs">
-          <div class="active" onclick="showRightTab('pmh')">PMH</div>
-          <div onclick="showRightTab('dm')">DM</div>
-          <div onclick="showRightTab('htn')">HTN</div>
-          <div onclick="showRightTab('copd')">COPD</div>
-          <div onclick="showRightTab('pyelo')">Pyelo</div>
-          <div onclick="showRightTab('esrd')">ESRD</div>
+        <div class="medical-history-section">
+          <div class="section-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="header-icon">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            Past Medical History
+          </div>
+          <div class="pmh-list">
+            {% if patient.medical_history.all %}
+                {% for condition in patient.medical_history.all %}
+                    <div class="pmh-item">
+                        <div class="condition-marker"></div>
+                        <span>{{ condition.pmh }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="pmh-empty">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <span>No past medical history recorded</span>
+                </div>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>

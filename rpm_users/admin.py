@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Moderator, Patient
+from .models import Moderator, Patient, PastMedicalHistory
 from reports.models import Reports
 
 # class ReportInline(admin.TabularInline):
@@ -23,3 +23,4 @@ from reports.models import Reports
 # Register with the customized admin class
 admin.site.register(Patient)
 admin.site.register(Moderator)
+admin.site.register(PastMedicalHistory)

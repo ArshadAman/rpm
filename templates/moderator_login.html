@@ -5,109 +5,212 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moderator Login</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}"> <!-- Include your CSS here -->
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Global Styles */
-        body {
+        * {
             margin: 0;
             padding: 0;
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #101113, #191526);
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            color: #E0C3FC;
+            justify-content: center;
         }
 
-        /* Login Container */
         .login-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0px 10px 30px rgba(157, 80, 187, 0.3);
-            max-width: 400px;
             width: 100%;
-            text-align: center;
+            max-width: 450px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Heading */
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
         h2 {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            color: #9D50BB;
-        }
-
-        /* Form */
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Labels */
-        label {
-            text-align: left;
-            margin-bottom: 0.5rem;
-            color: #E0C3FC;
-        }
-
-        /* Input Fields */
-        input[type="text"], input[type="password"] {
-            padding: 0.75rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(157, 80, 187, 0.4);
-            border-radius: 5px;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            color: #E0C3FC;
-            outline: none;
-        }
-
-        /* Buttons */
-        button {
-            background: #9D50BB;
+            text-align: center;
             color: white;
-            padding: 0.75rem;
+            margin-bottom: 40px;
+            font-size: 32px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .form-group:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .form-group:hover label {
+            color: white;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(121, 40, 202, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .messages {
+            margin-bottom: 25px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            border-left: 4px solid var(--error);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .messages li {
+            color: var(--error);
+            list-style: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px 32px;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 12px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0px 0px 10px rgba(157, 80, 187, 0.7);
+            font-size: 16px;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
         }
 
         button:hover {
-            background: #7A40A2;
-            box-shadow: 0px 0px 15px rgba(157, 80, 187, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
         }
 
-        /* Error Messages */
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin-bottom: 1rem;
-        }
-
-        li {
-            background: rgba(255, 87, 87, 0.2);
-            color: #ff5757;
-            border: 1px solid #ff8787;
-            padding: 0.5rem;
-            border-radius: 5px;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Responsive Design */
         @media (max-width: 768px) {
             .login-container {
-                padding: 1.5rem;
-                max-width: 90%;
+                padding: 30px 20px;
+                margin: 20px;
             }
 
             h2 {
-                font-size: 1.75rem;
+                font-size: 28px;
+                margin-bottom: 30px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            button {
+                padding: 14px 28px;
             }
         }
     </style>
@@ -117,20 +220,38 @@
         <h2>Moderator Login</h2>
         
         {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
+        <div class="messages">
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </div>
         {% endif %}
         
         <form method="POST">
             {% csrf_token %}
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder="Enter your username" 
+                    required
+                    autocomplete="username"
+                >
+            </div>
 
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="Enter your password" 
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
 
             <button type="submit">Login</button>
         </form>

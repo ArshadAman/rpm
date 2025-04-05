@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Patient, Moderator
+from .models import Patient, Moderator, PastMedicalHistory
 from reports.models import Reports
 from reports.serializers import ReportSerializer
 from django.contrib.auth.models import User
@@ -22,3 +22,11 @@ class PatientSerializer(ModelSerializer):
     class Meta:
         model = Patient
         fields = '__all__'
+        
+
+class PastMedicalHistorySerializer(ModelSerializer):
+    patient = PatientSerializer()
+    class Meta:
+        model = PastMedicalHistory
+        fields = '__all__'
+

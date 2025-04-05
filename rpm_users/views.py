@@ -7,7 +7,7 @@ from django.utils.timezone import localtime
 
 from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
-from .models import Patient, Moderator
+from .models import Patient, Moderator, PastMedicalHistory
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
@@ -280,6 +280,11 @@ def register_patient(request):
             'monitoring_parameters': request.POST.get('monitoring_parameters'),
             'device_serial_number': request.POST.get('device_serial_number'),
             'pharmacy_info': request.POST.get('pharmacy_info'),
+            'allergies': request.POST.get('allergies'),
+            'drink_smoke': request.POST.get('drink_smoke', 'NO'),
+            'family_history': request.POST.get('family_history'),
+            'medications': request.POST.get('medications'),
+            'past_medical_history': request.POST.getlist('past_medical_history', [])
         }
 
         # Check if patient already exists
@@ -311,8 +316,20 @@ def register_patient(request):
                 sex=data['sex'],
                 monitoring_parameters=data['monitoring_parameters'],
                 device_serial_number=data['device_serial_number'] if data['device_serial_number'] else None,
-                pharmacy_info=data['pharmacy_info'] if data['pharmacy_info'] else None
+                pharmacy_info=data['pharmacy_info'] if data['pharmacy_info'] else None,
+                allergies=data['allergies'] if data['allergies'] else None,
+                drink=data['drink'],
+                smoke=data['smoke'],
+                family_history=data['family_history'] if data['family_history'] else None,
+                medications=data['medications'] if data['medications'] else None
             )
+
+            # Create past medical history records
+            for pmh in data['past_medical_history']:
+                PastMedicalHistory.objects.create(
+                    patient=patient,
+                    pmh=pmh
+                )
 
             # Assign the current moderator
             moderator = Moderator.objects.get(user=request.user)
@@ -331,6 +348,7 @@ def register_patient(request):
 
     context = {
         'sex_choices': Patient.SEX_CHOICES,
-        'monitoring_choices': Patient.MONITORING_CHOICES
+        'monitoring_choices': Patient.MONITORING_CHOICES,
+        'pmh_choices': PastMedicalHistory.PMH_CHOICES
     }
     return render(request, 'register_patient.html', context)

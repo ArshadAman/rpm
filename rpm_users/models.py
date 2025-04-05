@@ -17,6 +17,13 @@ class Patient(models.Model):
     monitoring_parameters = models.CharField(blank=True, max_length=20, null=True, choices=MONITORING_CHOICES)
     device_serial_number = models.IntegerField(null=True, blank=True)
     pharmacy_info = models.TextField(blank=True, null=True)
+    allergies = models.TextField(blank=True, null=True)
+    smoke = models.CharField(choices=(('YES', 'YES'), ('NO', 'NO'),), default='NO', max_length=3)
+    drink = models.CharField(choices=(('YES', 'YES'), ('NO', 'NO'),), default='NO', max_length=3)
+    family_history = models.TextField(null=True, blank=True)
+    medications = models.TextField(null=True, blank=True)
+    
+    # Kuch kuch information
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -47,6 +54,74 @@ def save(self, *args, **kwargs):
     self.bmi = self.weight / (height_in_meters ** 2)  # Calculate BMI
 
     super().save(*args, **kwargs)
+    
+    
+class PastMedicalHistory(models.Model):
+    PMH_CHOICES = ((
+        ('GBS', 'Guillain-Barré Syndrome'),
+        ('ALS', 'Amyotrophic Lateral Sclerosis'),
+        ('SLE', 'Systemic Lupus Erythematosus'),
+        ('ITP', 'Idiopathic Thrombocytopenic Purpura'),
+        ('MG', 'Myasthenia Gravis'),
+        ('DKA', 'Diabetic Ketoacidosis'),
+        ('ARDS', 'Acute Respiratory Distress Syndrome'),
+        ('LCa', 'Lung Cancer'),
+        ('PCa', 'Pancreatic Cancer'),
+        ('CCa', 'Colon Cancer'),
+        ('TCa', 'Thyroid Cancer'),
+        ('SCa', 'Skin Cancer'),
+        ('GCa', 'Gastric Cancer'),
+        ('PCa', 'Prostate Cancer'),
+        ('TeCa', 'Testicular Cancer'),
+        ('BrCa', 'Breast Cancer'),
+        ('OvCa', 'Ovarian Cancer'),
+        ('TTP', 'Thrombotic Thrombocytopenic Purpura'),
+        ('HLH', 'Hemophagocytic Lymphohistiocytosis'),
+        ('HSP', 'Henoch-Schönlein Purpura'),
+        ('SCID', 'Severe Combined Immunodeficiency'),
+        ('PKU', 'Phenylketonuria'),
+        ('POTS', 'Postural Orthostatic Tachycardia Syndrome'),
+        ('CRPS', 'Complex Regional Pain Syndrome'),
+        ('NMO', 'Neuromyelitis Optica'),
+        ('HUS', 'Hemolytic Uremic Syndrome'),
+        ('SMA', 'Spinal Muscular Atrophy'),
+        ('DM', 'Diabetes Mellitus'),
+        ('HTN', 'Hypertension'),
+        ('AF', 'Atrial Fibrillation'),
+        ('CHF', 'Congestive Heart Failure'),
+        ('COPD', 'Chronic Obstructive Pulmonary Disease'),
+        ('Hpxa', 'Hypoxia'),
+        ('Hyca', 'Hypercapnea'),
+        ('CKD', 'Chronic Kidney Disease'),
+        ('ESRD', 'End Stage Renal Disease'),
+        ('GERD', 'Gastroesophageal Reflux Disease'),
+        ('OA', 'Osteoarthritis'),
+        ('CAD', 'Coronary Artery Disease'),
+        ('RA', 'Rheumatoid Arthritis'),
+        ('UTI', 'Urinary Tract Infection'),
+        ('URI', 'Upper Respiratory Infection'),
+        ('BPH', 'Benign Prostatic Hyperplasia'),
+        ('HLD', 'Hyperlipidemia'),
+        ('TIA', 'Transient Ischemic Attack'),
+        ('CVA', 'Cerebrovascular Accident (Stroke)'),
+        ('MI', 'Myocardial Infarction'),
+        ('PNA', 'Pneumonia'),
+        ('TB', 'Tuberculosis'),
+        ('HIV', 'Human Immunodeficiency Virus'),
+        ('ADHD', 'Attention-Deficit/Hyperactivity Disorder'),
+        ('ASD', 'Autism Spectrum Disorder'),
+        ('MDD', 'Major Depressive Disorder'),
+        ('GAD', 'Generalized Anxiety Disorder'),
+        ('PTSD', 'Post-Traumatic Stress Disorder'),
+        ('Peff', 'Pleural Effusion'),
+        ('N/A', 'N/A'),
+    ))
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medical_history')
+    pmh = models.CharField(choices=PMH_CHOICES, default="N/A", max_length=100)
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    
+    def __str__(self) -> str:
+        return f"{self.patient.user.email} --- past medical history"
 
 
 class Moderator(models.Model):
