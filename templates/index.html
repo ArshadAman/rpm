@@ -297,11 +297,11 @@
       </div>
       <div>
         <strong>Age</strong>
-        <span>21</span>
+        <span>{{patient.age}}</span>
       </div>
       <div>
         <strong>Sex</strong>
-        <span>Male</span>
+        <span>{{patient.sex}}</span>
       </div>
 
       <div>
@@ -310,7 +310,7 @@
       </div>
       <div>
         <strong>Allergies</strong>
-        <span>Hypertension</span>
+        <span>{{patient.monitoring_parameters}}</span>
       </div>
       <div>
         <strong>Height</strong>
@@ -329,7 +329,7 @@
 
       <div>
         <strong>Monitoring Start Date</strong>
-        <span>01/01/24</span>
+        <span>{{patient.created_at}}</span>
       </div>
       {% comment %}
       <div>

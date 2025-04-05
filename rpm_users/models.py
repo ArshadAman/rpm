@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import User
+from datetime import date
 
 # Create your models here.
 class Patient(models.Model):
@@ -25,6 +26,17 @@ class Patient(models.Model):
     def __str__(self):
         return self.user.email
     
+    @property
+    def age(self):
+        if self.date_of_birth:
+            today = date.today()
+            age = today.year - self.date_of_birth.year
+            # Check if birthday has occurred this year
+            if today.month < self.date_of_birth.month or (today.month == self.date_of_birth.month and today.day < self.date_of_birth.day):
+                age -= 1
+            return age
+        return None
+
 def save(self, *args, **kwargs):
     # Ensure height is in meters
     if self.height <= 0 or self.weight <= 0:
