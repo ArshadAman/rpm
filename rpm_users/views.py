@@ -21,6 +21,10 @@ from .form import DocumentationForm
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
+def home(request):
+    """Homepage with options for moderator login and patient registration"""
+    return render(request, 'home.html')
+
 @api_view(["POST"])
 @permission_classes([])
 @authentication_classes([])
@@ -322,7 +326,8 @@ def register_patient(request):
             'device_serial_number': request.POST.get('device_serial_number'),
             'pharmacy_info': request.POST.get('pharmacy_info'),
             'allergies': request.POST.get('allergies'),
-            'drink_smoke': request.POST.get('drink_smoke', 'NO'),
+            'drink': request.POST.get('drink', 'NO'),
+            'smoke': request.POST.get('smoke', 'NO'),
             'family_history': request.POST.get('family_history'),
             'medications': request.POST.get('medications'),
             'past_medical_history': request.POST.getlist('past_medical_history', [])
@@ -393,6 +398,89 @@ def register_patient(request):
         'pmh_choices': PastMedicalHistory.PMH_CHOICES
     }
     return render(request, 'register_patient.html', context)
+
+def registration_success(request):
+    return render(request, 'registration_success.html')
+
+def patient_self_registration(request):
+    if request.method == 'POST':
+        data = {
+            'email': request.POST.get('email'),
+            'password': request.POST.get('password'),
+            'first_name': request.POST.get('first_name'), 
+            'last_name': request.POST.get('last_name'),
+            'phone_number': request.POST.get('phone_number'),
+            'date_of_birth': request.POST.get('date_of_birth'),
+            'height': request.POST.get('height'),
+            'weight': request.POST.get('weight'),
+            'insurance': request.POST.get('insurance'),
+            'sex': request.POST.get('sex'),
+            'monitoring_parameters': request.POST.get('monitoring_parameters'),
+            'device_serial_number': request.POST.get('device_serial_number'),
+            'pharmacy_info': request.POST.get('pharmacy_info'),
+            'allergies': request.POST.get('allergies'),
+            'drink': request.POST.get('drink', 'NO'),
+            'smoke': request.POST.get('smoke', 'NO'),
+            'family_history': request.POST.get('family_history'),
+            'medications': request.POST.get('medications'),
+            'past_medical_history': request.POST.getlist('past_medical_history', [])
+        }
+
+        # Check if patient already exists
+        if User.objects.filter(username=data['email']).exists():
+            messages.error(request, 'Patient with this email already exists')
+            return render(request, 'patient_self_register.html')
+
+        # Create local user and patient
+        try:
+            user = User.objects.create(
+                username=data['email'],
+                email=data['email'],
+                first_name=data['first_name'],
+                last_name=data['last_name'],
+            )
+            
+            patient = Patient.objects.create(
+                user=user,
+                date_of_birth=data['date_of_birth'],
+                height=data['height'],
+                weight=data['weight'],
+                insurance=data['insurance'],
+                sex=data['sex'],
+                monitoring_parameters=data['monitoring_parameters'],
+                device_serial_number=data['device_serial_number'] if data['device_serial_number'] else None,
+                pharmacy_info=data['pharmacy_info'] if data['pharmacy_info'] else None,
+                allergies=data['allergies'] if data['allergies'] else None,
+                drink=data['drink'],
+                smoke=data['smoke'],
+                family_history=data['family_history'] if data['family_history'] else None,
+                medications=data['medications'] if data['medications'] else None
+            )
+
+            # Create past medical history records
+            for pmh in data['past_medical_history']:
+                PastMedicalHistory.objects.create(
+                    patient=patient,
+                    pmh=pmh
+                )
+
+            messages.success(request, 'Patient registered successfully')
+            return redirect('registration_success')
+
+        except ValueError as e:
+            messages.error(request, str(e))  # This will catch the BMI calculation error
+            return render(request, 'patient_self_register.html')
+        except Exception as e:
+            messages.error(request, f'Error creating patient: {str(e)}')
+            return render(request, 'patient_self_register.html')
+
+    context = {
+        'sex_choices': Patient.SEX_CHOICES,
+        'monitoring_choices': Patient.MONITORING_CHOICES,
+        'pmh_choices': PastMedicalHistory.PMH_CHOICES
+    }
+    return render(request, 'patient_self_register.html', context)
+
 
 @login_required
 def view_patient(request, patient_id):
