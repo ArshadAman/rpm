@@ -6,7 +6,7 @@ class DocumentationForm(forms.ModelForm):
         model = Documentation
         fields = [
             "title",
-            "description",
+            "history_of_present_illness",
             "chief_complaint",
             "subjective",
             "objective",
@@ -15,7 +15,7 @@ class DocumentationForm(forms.ModelForm):
             "file"
         ]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 3}),
+            "history_of_present_illness": forms.Textarea(attrs={"rows": 3}),
             "chief_complaint": forms.Textarea(attrs={"rows": 2}),
             "subjective": forms.Textarea(attrs={"rows": 2}),
             "objective": forms.Textarea(attrs={"rows": 2}),

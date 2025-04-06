@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation</title>
+    <style>
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: white;
+        }
+
+        .add-button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(121, 40, 202, 0.4);
+        }
+
+        .add-button svg {
+            margin-right: 8px;
+        }
+
+        .filter-section {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-form input {
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .filter-form button {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .documentation-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .documentation-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .documentation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .documentation-card h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .documentation-card p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .documentation-card .meta {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            margin-top: 15px;
+        }
+
+        .documentation-card .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .documentation-card .actions a {
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .documentation-card .actions .view-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .documentation-card .actions .edit-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .no-documentation {
+            text-align: center;
+            padding: 50px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .no-documentation p {
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .back-button {
+            display: inline-block;
+            background: #2A2A2A;
+            color: #E0C3FC;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #3A3A3A;
+        }
+
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .documentation-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'view_all_assigned_patient' %}" class="back-button">← Back to Patients</a>
+        
+        <div class="header">
+            <h1>Documentation</h1>
+            <a href="#" class="add-button" id="addDocumentationBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+                Add Documentation
+            </a>
+        </div>
+
+        <div class="filter-section">
+            <form class="filter-form" method="GET" action="{% url 'view_documentation' %}">
+                <input type="date" name="date" value="{{ request.GET.date }}" placeholder="Filter by date">
+                <button type="submit">Filter</button>
+            </form>
+        </div>
+
+        <div id="documentationList" class="documentation-list">
+            {% if documentations %}
+                {% for doc in documentations %}
+                <div class="documentation-card">
+                    <h3>{{ doc.title }}</h3>
+                    <p><strong>Patient:</strong> {{ doc.report.patient.user.first_name }} {{ doc.report.patient.user.last_name }}</p>
+                    <p><strong>Chief Complaint:</strong> {{ doc.chief_complaint }}</p>
+                    <div class="meta">
+                        <span>Created: {{ doc.created_at|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="actions">
+                        <a href="{% url 'report' doc.id %}" class="view-btn">View</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-documentation">
+                    <p>No documentation found.</p>
+                    <p>Click the "Add Documentation" button to create a new documentation.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal for selecting a report to add documentation -->
+    <div id="reportSelectionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #131218; padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <h2 style="margin-bottom: 20px; color: white;">Select a Report</h2>
+            <div id="reportsList" style="margin-bottom: 20px;">
+                <!-- Reports will be loaded here -->
+            </div>
+            <button id="closeModalBtn" style="background: #2A2A2A; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addDocumentationBtn = document.getElementById('addDocumentationBtn');
+            const reportSelectionModal = document.getElementById('reportSelectionModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const reportsList = document.getElementById('reportsList');
+
+            // Open modal when Add Documentation button is clicked
+            addDocumentationBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                reportSelectionModal.style.display = 'block';
+                
+                // Fetch reports for the current user
+                fetch('/api/reports/')
+                    .then(response => response.json())
+                    .then(data => {
+                        reportsList.innerHTML = '';
+                        
+                        if (data.length === 0) {
+                            reportsList.innerHTML = '<p style="color: white;">No reports available.</p>';
+                            return;
+                        }
+                        
+                        data.forEach(report => {
+                            const reportCard = document.createElement('div');
+                            reportCard.style.background = 'rgba(255, 255, 255, 0.05)';
+                            reportCard.style.padding = '15px';
+                            reportCard.style.marginBottom = '10px';
+                            reportCard.style.borderRadius = '8px';
+                            reportCard.style.cursor = 'pointer';
+                            reportCard.style.transition = 'all 0.3s ease';
+                            
+                            reportCard.innerHTML = `
+                                <h3 style="color: white; margin-bottom: 5px;">${report.patient_name}</h3>
+                                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 5px;">Date: ${report.created_at}</p>
+                                <p style="color: rgba(255, 255, 255, 0.7);">Vitals: ${report.vitals}</p>
+                            `;
+                            
+                            reportCard.addEventListener('click', function() {
+                                window.location.href = `/add_documentation/${report.id}/`;
+                            });
+                            
+                            reportCard.addEventListener('mouseover', function() {
+                                this.style.transform = 'translateY(-2px)';
+                                this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+                            });
+                            
+                            reportCard.addEventListener('mouseout', function() {
+                                this.style.transform = 'translateY(0)';
+                                this.style.boxShadow = 'none';
+                            });
+                            
+                            reportsList.appendChild(reportCard);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching reports:', error);
+                        reportsList.innerHTML = '<p style="color: #FF4E4E;">Error loading reports. Please try again.</p>';
+                    });
+            });
+
+            // Close modal when Close button is clicked
+            closeModalBtn.addEventListener('click', function() {
+                reportSelectionModal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            reportSelectionModal.addEventListener('click', function(e) {
+                if (e.target === reportSelectionModal) {
+                    reportSelectionModal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

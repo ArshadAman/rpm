@@ -105,7 +105,7 @@
                 <div class="documentation-card">
                     <h3>{{ doc.title }}</h3>
                     <p><strong>Created At:</strong> {{ doc.created_at }}</p>
-                    <p><strong>Description:</strong> {{ doc.description }}</p>
+                    <p><strong>History of Present Illness:</strong> {{ doc.history_of_present_illness }}</p>
                     {% if doc.file %}
                         <a href="{{ doc.file.url }}" class="download-btn" target="_blank">Download File</a>
                     {% else %}

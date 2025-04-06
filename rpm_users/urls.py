@@ -20,5 +20,4 @@ urlpatterns = [
     path('write_document/<int:report_id>/', views.write_document, name='write_document'),
     path('view_all_assigned_patient/', views.view_assigned_patient, name='view_all_assigned_patient'),
     path('view_documentation/', views.view_documentation, name='view_documentation'),
-    
 ]

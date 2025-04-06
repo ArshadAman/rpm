@@ -290,23 +290,12 @@ def view_documentation(request):
 
     print(f"Found {documentations.count()} documentations")  # Debugging Step
 
-    data = [
-        {
-            "title": doc.title,
-            "description": doc.description,
-            "chief_complaint": doc.chief_complaint,
-            "subjective": doc.subjective,
-            "objective": doc.objective,
-            "assessment": doc.assessment,
-            "plan": doc.plan,
-            "file_url": doc.file.url if doc.file else None,
-            "created_at": localtime(doc.created_at).strftime("%d-%m-%Y %I:%M %p"),
-            "updated_at": localtime(doc.updated_at).strftime("%d-%m-%Y %I:%M %p"),
-        }
-        for doc in documentations
-    ]
+    context = {
+        'documentations': documentations,
+    }
+    
+    return render(request, 'reports/view_documentation.html', context)
 
-    return JsonResponse(data, safe=False)
 
 @login_required
 def register_patient(request):

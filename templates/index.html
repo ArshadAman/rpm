@@ -868,18 +868,26 @@
           <!-- Documentation Tab -->
           <div id="documentation" class="table-container" style="display: none">
             <h3>Documentation</h3>
-            <form id="doc-form">
-              <label for="date">Select Date:</label>
-              <input type="date" id="date" name="date" />
-              <button type="button" onclick="fetchDocumentation()">View</button>
-            </form>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <form id="doc-form">
+                <label for="date">Select Date:</label>
+                <input type="date" id="date" name="date" />
+                <button type="button" onclick="fetchDocumentation()">View</button>
+              </form>
+              <button onclick="addDocumentation()" class="add-button" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+                Add Documentation
+              </button>
+            </div>
             <div id="documentation-details">
               {% if documentations %}
               <ul>
                 {% for doc in documentations %}
                 <div class="documentation-card">
                   <h4>{{ doc.title }}</h4>
-                  <p>{{ doc.description }}</p>
+                  <p>{{ doc.history_of_present_illness }}</p>
                   {% if doc.cheif_complaint %}
                   <p>
                     <strong>Chief Complaint:</strong> {{ doc.cheif_complaint }}
@@ -1145,7 +1153,7 @@
                 content += `
                   <div class="documentation-card">
                     <h4>${doc.title}</h4>
-                    <p>${doc.description}</p>
+                    <p>${doc.history_of_present_illness}</p>
                     ${
                       doc.cheif_complaint
                         ? `<p><strong>Chief Complaint:</strong> ${doc.cheif_complaint}</p>`
@@ -1250,6 +1258,27 @@
             });
           })
           .catch(error => console.error("Error fetching reports:", error));
+      }
+
+      // Function to add documentation
+      function addDocumentation() {
+        const patientId = "{{ patient.id }}";
+        fetch(`/reports/get-all-reports/${patientId}/`)
+          .then(response => response.json())
+          .then(data => {
+            if (!data.reports || data.reports.length === 0) {
+              alert("No reports found for this patient. Please create a report first.");
+              return;
+            }
+            
+            // Get the most recent report
+            const latestReport = data.reports[0]; // Assuming reports are sorted by date
+            window.location.href = `/reports/${latestReport.id}/add-documentation/`;
+          })
+          .catch(error => {
+            console.error("Error fetching reports:", error);
+            alert("Error fetching reports. Please try again.");
+          });
       }
 
       // Call this function when the page loads
