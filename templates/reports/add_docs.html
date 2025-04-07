@@ -4,96 +4,290 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            background: #101113;
-            color: #E0C3FC;
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            color: var(--text);
+            min-height: 100vh;
             padding: 20px;
         }
+
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
-            background: #131218;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(157, 80, 187, 0.8);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
         }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
         h2 {
             text-align: center;
-            margin-bottom: 30px;
-            color: #9D50BB;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            margin-top: 15px;
-            font-weight: bold;
-            color: #E0C3FC;
-        }
-        input, textarea, select {
-            padding: 12px;
-            border: 1px solid #9D50BB;
-            border-radius: 5px;
-            background: #0D0D0D;
-            color: #E0C3FC;
-            margin-bottom: 10px;
-        }
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        button {
-            background: linear-gradient(135deg, #9D50BB, #6E48AA);
             color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            margin-bottom: 40px;
+            font-size: 32px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
         }
-        button:hover {
-            background: linear-gradient(135deg, #7A40A2, #5A3A8A);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(157, 80, 187, 0.4);
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
         }
-        .error-message {
-            color: #FF4E4E;
-            margin-top: 5px;
-            font-size: 14px;
+
+        .patient-info {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
         }
-        .form-group {
+
+        .patient-info::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        }
+
+        .patient-info h3 {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
             margin-bottom: 15px;
         }
-        .patient-info {
-            background: rgba(157, 80, 187, 0.1);
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid #9D50BB;
+
+        .patient-info p {
+            margin-bottom: 10px;
+            font-size: 15px;
+            line-height: 1.6;
         }
-        .patient-info h3 {
-            margin-top: 0;
-            color: #9D50BB;
+
+        .patient-info strong {
+            color: var(--secondary);
+            font-weight: 500;
         }
-        .back-button {
-            display: inline-block;
-            background: #2A2A2A;
-            color: #E0C3FC;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            margin-bottom: 20px;
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .form-group {
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .form-group:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .form-group:hover label {
+            color: white;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            color: white;
+            font-size: 15px;
             transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
         }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(121, 40, 202, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .error-message {
+            color: var(--error);
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         .back-button:hover {
-            background: #3A3A3A;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        button[type="submit"] {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            margin-top: 20px;
+        }
+
+        button[type="submit"]::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        button[type="submit"]:hover::before {
+            left: 100%;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+        }
+
+        /* Make textarea fields full width */
+        .form-group:has(textarea) {
+            grid-column: 1 / -1;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            form {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            h2 {
+                font-size: 24px;
+                margin-bottom: 30px;
+            }
+
+            .patient-info {
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -120,7 +314,7 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label for="id_title">Title:</label>
+                <label for="id_title">Title</label>
                 {{ form.title }}
                 {% if form.title.errors %}
                 <div class="error-message">{{ form.title.errors }}</div>
@@ -128,7 +322,7 @@
             </div>
 
             <div class="form-group">
-                <label for="id_history_of_present_illness">History of Present Illness:</label>
+                <label for="id_history_of_present_illness">History of Present Illness</label>
                 {{ form.history_of_present_illness }}
                 {% if form.history_of_present_illness.errors %}
                 <div class="error-message">{{ form.history_of_present_illness.errors }}</div>
@@ -136,7 +330,7 @@
             </div>
 
             <div class="form-group">
-                <label for="id_chief_complaint">Chief Complaint:</label>
+                <label for="id_chief_complaint">Chief Complaint</label>
                 {{ form.chief_complaint }}
                 {% if form.chief_complaint.errors %}
                 <div class="error-message">{{ form.chief_complaint.errors }}</div>
@@ -144,7 +338,7 @@
             </div>
 
             <div class="form-group">
-                <label for="id_subjective">Subjective:</label>
+                <label for="id_subjective">Subjective</label>
                 {{ form.subjective }}
                 {% if form.subjective.errors %}
                 <div class="error-message">{{ form.subjective.errors }}</div>
@@ -152,7 +346,7 @@
             </div>
 
             <div class="form-group">
-                <label for="id_objective">Objective:</label>
+                <label for="id_objective">Objective</label>
                 {{ form.objective }}
                 {% if form.objective.errors %}
                 <div class="error-message">{{ form.objective.errors }}</div>
@@ -160,7 +354,7 @@
             </div>
 
             <div class="form-group">
-                <label for="id_assessment">Assessment:</label>
+                <label for="id_assessment">Assessment</label>
                 {{ form.assessment }}
                 {% if form.assessment.errors %}
                 <div class="error-message">{{ form.assessment.errors }}</div>
@@ -168,7 +362,7 @@
             </div>
 
             <div class="form-group">
-                <label for="id_plan">Plan:</label>
+                <label for="id_plan">Plan</label>
                 {{ form.plan }}
                 {% if form.plan.errors %}
                 <div class="error-message">{{ form.plan.errors }}</div>
@@ -176,7 +370,7 @@
             </div>
 
             <div class="form-group">
-                <label for="id_file">Upload File (optional):</label>
+                <label for="id_file">Upload File (optional)</label>
                 {{ form.file }}
                 {% if form.file.errors %}
                 <div class="error-message">{{ form.file.errors }}</div>
