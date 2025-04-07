@@ -20,7 +20,7 @@ class Documentation(models.Model):
         ('RPM Progress Note', 'RPM Progress Note'),
         ('Progress Note', 'Progress Note'),
     )
-    report = models.ForeignKey(Reports, on_delete=models.CASCADE, related_name='documentations')
+    patient = models.ForeignKey('rpm_users.Patient', on_delete=models.CASCADE, related_name='documentations')
     title = models.CharField(max_length=255, choices=TITLE_CHOICES, default="Progress Note")
     history_of_present_illness = models.TextField()
     chief_complaint = models.TextField(max_length=255, blank=True, null=True)
