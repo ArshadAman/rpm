@@ -150,27 +150,27 @@ def create_report(request):
     return Response({"error": "Patient not exists"}, status=status.HTTP_404_NOT_FOUND)
 
 @login_required
-def add_documentation(request, report_id):
+def add_documentation(request, patient_id):
     user = request.user
 
     # Check if the user is a moderator
     if not Moderator.objects.filter(user=user).exists():
         return render(request, "errors/403.html", {"error": "Only moderators can add documentation"}, status=403)
 
-    report = get_object_or_404(Reports, id=report_id)
+    patient = get_object_or_404(Patient, id=patient_id)
 
     if request.method == "POST":
         form = DocumentationForm(request.POST, request.FILES)
         if form.is_valid():
             documentation = form.save(commit=False)
-            documentation.report = report
+            documentation.patient = patient
             documentation.save()
-            return redirect("get_single_report", report_id=report.id)  # Redirect to the report view after adding
+            return redirect("index.html")  # Redirect to the report view after adding
 
     else:
         form = DocumentationForm()
 
-    return render(request, "reports/add_docs.html", {"form": form, "report": report})
+    return render(request, "reports/add_docs.html", {"form": form, "patient": patient})
 
 
 @csrf_exempt

@@ -874,12 +874,14 @@
                 <input type="date" id="date" name="date" />
                 <button type="button" onclick="fetchDocumentation()">View</button>
               </form>
-              <button onclick="addDocumentation()" class="add-button" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                </svg>
-                Add Documentation
-              </button>
+              <a href="{% url 'add_documentation' patient.id %}" class="add-button">
+                <button class="add-button" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                  </svg>
+                  Add Documentation
+                </button>
+              </a>
             </div>
             <div id="documentation-details">
               {% if documentations %}
@@ -1261,7 +1263,7 @@
       }
 
       // Function to add documentation
-      function addDocumentation() {
+      {% comment %} function addDocumentation() {
         const patientId = "{{ patient.id }}";
         fetch(`/reports/get-all-reports/${patientId}/`)
           .then(response => response.json())
@@ -1273,13 +1275,13 @@
             
             // Get the most recent report
             const latestReport = data.reports[0]; // Assuming reports are sorted by date
-            window.location.href = `/reports/${latestReport.id}/add-documentation/`;
+            window.location.href = `/reports/${patient.id}/add-documentation/`;
           })
           .catch(error => {
             console.error("Error fetching reports:", error);
             alert("Error fetching reports. Please try again.");
           });
-      }
+      } {% endcomment %}
 
       // Call this function when the page loads
       document.addEventListener('DOMContentLoaded', function() {
