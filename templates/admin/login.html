@@ -1,0 +1,231 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    body {
+        background: radial-gradient(circle at top right, #1a1a2e, #0F1116);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        font-family: 'Poppins', sans-serif;
+        color: #E0C3FC;
+    }
+
+    .login-card-container {
+        background: rgba(30, 30, 50, 0.7);
+        border-radius: 16px;
+        padding: 30px;
+        width: 100%;
+        max-width: 360px;
+        box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        aspect-ratio: 1 / 1;
+    }
+
+    .login-card-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #7928CA, #FF0080);
+    }
+
+    #header {
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    #branding h1 {
+        color: #E0C3FC;
+        font-size: 22px;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    #branding h1 a {
+        color: inherit;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    #branding h1 img {
+        height: 35px;
+        margin: 0;
+    }
+
+    #content-main {
+        width: 100%;
+        padding-top: 0;
+    }
+
+    .form-row {
+        margin-bottom: 15px;
+    }
+
+    .form-row label {
+        display: block;
+        color: #E0C3FC;
+        margin-bottom: 6px;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .form-row input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #E0C3FC;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-row input:focus {
+        border-color: #7928CA;
+        box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.3);
+        outline: none;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .submit-row {
+        margin-top: 20px;
+    }
+
+    .submit-row input {
+        width: 100%;
+        background: linear-gradient(135deg, #7928CA, #FF0080);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 14px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .submit-row input:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(121, 40, 202, 0.4);
+    }
+
+    .errornote {
+        background: rgba(255, 78, 78, 0.1);
+        border: 1px solid rgba(255, 78, 78, 0.2);
+        color: #FF4E4E;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 0 auto 20px auto;
+        font-size: 14px;
+        max-width: 90%;
+        text-align: center;
+    }
+
+    .back-to-home-link {
+        margin-top: 25px;
+        font-size: 13px;
+    }
+
+    .back-to-home-link a {
+        color: rgba(224, 195, 252, 0.7);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .back-to-home-link a:hover {
+        color: #E0C3FC;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+        .login-card-container {
+            padding: 30px 20px;
+            margin: 10px;
+        }
+        #branding h1 {
+            font-size: 20px;
+        }
+        #branding h1 img {
+            height: 30px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block bodyclass %}login{% endblock %}
+
+{% block container %}
+<div class="login-card-container">
+    {% block branding %}
+    <div id="header">
+        <h1 id="site-name">
+            <a href="{% url 'admin:index' %}">
+                <span>Admin Portal Login</span>
+            </a>
+        </h1>
+    </div>
+    {% endblock %}
+
+    {% block content %}
+    <div id="content-main">
+        {% if form.errors and not form.non_field_errors %}
+        <p class="errornote">
+            {% if form.errors.items|length == 1 %}{% translate "Please correct the error below." %}{% else %}{% translate "Please correct the errors below." %}{% endif %}
+        </p>
+        {% endif %}
+
+        {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+        <p class="errornote">
+            {{ error }}
+        </p>
+        {% endfor %}
+        {% endif %}
+
+        <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+            <div class="form-row field-username">
+                {{ form.username.errors }}
+                {{ form.username.label_tag }} 
+                {{ form.username }}
+            </div>
+            <div class="form-row field-password">
+                {{ form.password.errors }}
+                {{ form.password.label_tag }} 
+                {{ form.password }}
+                <input type="hidden" name="next" value="{{ next }}">
+            </div>
+            <div class="submit-row">
+                <input type="submit" value="{% translate 'Log in' %}">
+            </div>
+        </form>
+
+        <div class="back-to-home-link">
+            <a href="/">← {% translate 'Back to site homepage' %}</a>
+        </div>
+
+    </div>
+    {% endblock %}
+</div>
+{% endblock %} 

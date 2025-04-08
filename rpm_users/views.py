@@ -20,6 +20,8 @@ from .form import DocumentationForm
 
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.sites import site
+from django.views.decorators.cache import never_cache
 
 def home(request):
     """Homepage with options for moderator login and patient registration"""
@@ -532,3 +534,10 @@ def view_patient(request, patient_id):
         'pharmacy_info_list': pharmacy_info_list,
     }
     return render(request, 'index.html', context)
+
+@never_cache
+@login_required
+def admin_logout(request):
+    """Custom admin logout view that handles both GET and POST requests"""
+    logout(request)
+    return redirect('admin:login')

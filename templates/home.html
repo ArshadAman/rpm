@@ -57,18 +57,18 @@
         }
 
         .options-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
-            max-width: 900px;
+            max-width: 1100px;
             width: 100%;
-            margin: 0 auto;
+            margin: 40px auto;
         }
 
         .option-card {
-            flex: 1;
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            padding: 40px;
+            padding: 30px;
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -98,40 +98,42 @@
         }
 
         .option-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
+            font-size: 40px;
+            margin-bottom: 15px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .option-title {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             color: white;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .option-description {
-            font-size: 16px;
+            font-size: 15px;
             color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 30px;
-            line-height: 1.6;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            flex-grow: 1;
         }
 
         .option-button {
             display: inline-block;
-            padding: 16px 32px;
+            padding: 14px 28px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             text-decoration: none;
             border-radius: 12px;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 15px;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
             letter-spacing: 0.5px;
+            margin-top: auto;
         }
 
         .option-button::before {
@@ -209,6 +211,15 @@
                 <p class="option-description">New patients can register to access their health records, view monitoring data, and communicate with healthcare providers.</p>
             </div>
             <a href="{% url 'patient_register' %}" class="option-button">Register as Patient</a>
+        </div>
+
+        <div class="option-card">
+            <div>
+                <div class="option-icon">🔑</div>
+                <h2 class="option-title">Admin Login</h2>
+                <p class="option-description">Administrators can log in to manage the system settings and user accounts.</p>
+            </div>
+            <a href="/admin/" class="option-button" target="_blank">Login as Admin</a>
         </div>
     </div>
 
