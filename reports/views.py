@@ -151,18 +151,17 @@ def add_documentation(request, patient_id):
 
     patient = get_object_or_404(Patient, id=patient_id)
     
-    # Get the latest three reports for this patient
+    # Get the latest three reports for this patient if they exist
     latest_reports = Reports.objects.filter(patient=patient).order_by('-created_at')[:3]
     
-    if not latest_reports:
-        return render(request, "errors/404.html", {"error": "No reports found for this patient"}, status=404)
-
     if request.method == "POST":
         form = DocumentationForm(request.POST, request.FILES)
         if form.is_valid():
             documentation = form.save(commit=False)
             documentation.patient = patient
-            documentation.report = latest_reports[0]  # Associate with the latest report
+            # Only associate with report if it exists
+            if latest_reports:
+                documentation.report = latest_reports[0]
             documentation.save()
             return redirect(f"/view-patient/{patient_id}/?action=access")  # Redirect to patient's view page
     else:
