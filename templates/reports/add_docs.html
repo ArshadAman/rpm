@@ -289,24 +289,122 @@
                 padding: 20px;
             }
         }
+
+        .medical-history {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .medical-history h3 {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: var(--secondary);
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .vitals-history {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .vitals-history h3 {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .vitals-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .vital-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .vital-date {
+            color: var(--secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .vital-values {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .vital-values span {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="{% url 'view_documentation' %}" class="back-button">← Back to Documentation</a>
+        <a href="{% url 'view_documentation' patient.id %}" class="back-button">← Back to Documentation</a>
         <h2>Add Documentation</h2>
         
         <div class="patient-info">
             <h3>Patient Information</h3>
             <p><strong>Patient:</strong> {{ patient.user.first_name }} {{ patient.user.last_name }}</p>
-            <p><strong>Report Date:</strong> {{ report.created_at|date:"F d, Y" }}</p>
-            {% if report.blood_pressure or report.heart_rate or report.spo2 or report.temperature %}
-            <p><strong>Vitals:</strong> 
-                {% if report.blood_pressure %}BP: {{ report.blood_pressure }}{% endif %}
-                {% if report.heart_rate %}{% if report.blood_pressure %} | {% endif %}HR: {{ report.heart_rate }}{% endif %}
-                {% if report.spo2 %}{% if report.heart_rate or report.blood_pressure %} | {% endif %}SpO2: {{ report.spo2 }}{% endif %}
-                {% if report.temperature %}{% if report.spo2 or report.heart_rate or report.blood_pressure %} | {% endif %}Temp: {{ report.temperature }}{% endif %}
-            </p>
+            <p><strong>Latest Report Date:</strong> {{ reports.0.created_at|date:"F d, Y" }}</p>
+            
+            <div class="vitals-history">
+                <h3>Recent Vitals</h3>
+                <div class="vitals-grid">
+                    {% for report in reports %}
+                    <div class="vital-item">
+                        <div class="vital-date">{{ report.created_at|date:"M d, Y" }}</div>
+                        <div class="vital-values">
+                            {% if report.blood_pressure %}<span>BP: {{ report.blood_pressure }}</span>{% endif %}
+                            {% if report.heart_rate %}<span>HR: {{ report.heart_rate }}</span>{% endif %}
+                            {% if report.spo2 %}<span>SpO2: {{ report.spo2 }}</span>{% endif %}
+                            {% if report.temperature %}<span>Temp: {{ report.temperature }}</span>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if patient.medical_history.all %}
+            <div class="medical-history">
+                <h3>Past Medical History</h3>
+                <div class="history-items">
+                    {% for history in patient.medical_history.all %}
+                    <span class="history-item">{{ history.pmh }}</span>
+                    {% endfor %}
+                </div>
+            </div>
             {% endif %}
         </div>
         
@@ -331,7 +429,7 @@
 
             <div class="form-group">
                 <label for="id_chief_complaint">Chief Complaint</label>
-                {{ form.chief_complaint }}
+                <input type="text" name="chief_complaint" id="id_chief_complaint" value="{{patient.monitoring_parameters}}" required>
                 {% if form.chief_complaint.errors %}
                 <div class="error-message">{{ form.chief_complaint.errors }}</div>
                 {% endif %}

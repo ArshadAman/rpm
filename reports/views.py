@@ -111,14 +111,6 @@ def get_all_reports(request, patient_id):
                 "heart_rate": report.heart_rate,
                 "blood_pressure": report.blood_pressure,
                 "temperature": report.temperature,
-                "documentations": [
-                    {
-                        "id": doc.id,
-                        "title": doc.title,
-                        "file_url": doc.file.url if doc.file else None,
-                    }
-                    for doc in report.documentations.all()
-                ],
             }
             for report in reports
         ]
@@ -159,10 +151,10 @@ def add_documentation(request, patient_id):
 
     patient = get_object_or_404(Patient, id=patient_id)
     
-    # Get the latest report for this patient
-    latest_report = Reports.objects.filter(patient=patient).order_by('-created_at').first()
+    # Get the latest three reports for this patient
+    latest_reports = Reports.objects.filter(patient=patient).order_by('-created_at')[:3]
     
-    if not latest_report:
+    if not latest_reports:
         return render(request, "errors/404.html", {"error": "No reports found for this patient"}, status=404)
 
     if request.method == "POST":
@@ -170,16 +162,16 @@ def add_documentation(request, patient_id):
         if form.is_valid():
             documentation = form.save(commit=False)
             documentation.patient = patient
-            documentation.report = latest_report  # Associate with the latest report
+            documentation.report = latest_reports[0]  # Associate with the latest report
             documentation.save()
-            return redirect("view_documentation")  # Redirect to the documentation view after adding
+            return redirect(f"/view-patient/{patient_id}/?action=access")  # Redirect to patient's view page
     else:
         form = DocumentationForm()
 
     context = {
         "form": form, 
         "patient": patient,
-        "report": latest_report
+        "reports": latest_reports
     }
     
     return render(request, "reports/add_docs.html", context)
@@ -218,13 +210,13 @@ def view_documentation(request):
     # Apply date filter if provided
     if date:
         documentations = Documentation.objects.filter(
-            report__patient__in=patient_ids,
+            patient__in=patient_ids,
             created_at__date=date
-        ).order_by('-created_at')
+        ).select_related('patient').order_by('-created_at')
     else:
         documentations = Documentation.objects.filter(
-            report__patient__in=patient_ids
-        ).order_by('-created_at')
+            patient__in=patient_ids
+        ).select_related('patient').order_by('-created_at')
     
     # Check if this is an AJAX request
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'

@@ -67,4 +67,4 @@ class Documentation(models.Model):
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return self.title
+        return f"{self.title} - {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"

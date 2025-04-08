@@ -921,39 +921,7 @@
               </a>
             </div>
             <div id="documentation-details">
-              {% if documentations %}
-              <ul>
-                {% for doc in documentations %}
-                <div class="documentation-card">
-                  <h4>{{ doc.title }}</h4>
-                  <p>{{ doc.history_of_present_illness }}</p>
-                  {% if doc.cheif_complaint %}
-                  <p>
-                    <strong>Chief Complaint:</strong> {{ doc.cheif_complaint }}
-                  </p>
-                  {% endif %} {% if doc.subjective %}
-                  <p><strong>Subjective:</strong> {{ doc.subjective }}</p>
-                  {% endif %} {% if doc.objective %}
-                  <p><strong>Objective:</strong> {{ doc.objective }}</p>
-                  {% endif %} {% if doc.assessment %}
-                  <p><strong>Assessment:</strong> {{ doc.assessment }}</p>
-                  {% endif %} {% if doc.plan %}
-                  <p><strong>Plan:</strong> {{ doc.plan }}</p>
-                  {% endif %} {% if doc.file.url %}
-                  <a href="{{ doc.file.url }}" class="download-btn"
-                    >Download File</a
-                  >
-                  {% endif %}
-                  <p class="date-info">
-                    Created: {{ doc.created_at }} | Updated: {{ doc.updated_at
-                    }}
-                  </p>
-                </div>
-                {% endfor %}
-              </ul>
-              {% else %}
-              <p>No documentation found for the selected date.</p>
-              {% endif %}
+              <!-- Documentation will be loaded here -->
             </div>
           </div>
 
@@ -1181,12 +1149,14 @@
         const docContainer = document.getElementById("documentation-details");
         docContainer.innerHTML = "<p>Loading documentation...</p>";
 
-        // Use fetch with credentials to ensure cookies are sent
-        fetch(`/view_documentation/?date=${date}`, {
+        // Get the patient ID from the template
+        const patientId = "{{ patient.id }}";
+
+        fetch(`/view_documentation/${patientId}/?date=${date}`, {
           method: 'GET',
           credentials: 'same-origin',
           headers: {
-            'Accept': 'text/html',
+            'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
           }
         })
@@ -1194,31 +1164,32 @@
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            return response.text();
+            return response.json();
           })
-          .then((html) => {
-            // Create a temporary container to parse the HTML
-            const tempContainer = document.createElement('div');
-            tempContainer.innerHTML = html;
-            
-            // Extract the documentation cards from the response
-            const documentationCards = tempContainer.querySelectorAll('.documentation-card');
-            
-            if (documentationCards.length === 0) {
+          .then((data) => {
+            if (!data.documentations || data.documentations.length === 0) {
               docContainer.innerHTML = "<p>No documentation found for the selected date.</p>";
             } else {
-              // Create a container for the documentation cards
-              const cardsContainer = document.createElement('div');
-              cardsContainer.className = 'documentation-grid';
-              
-              // Add each documentation card to the container
-              documentationCards.forEach(card => {
-                cardsContainer.appendChild(card.cloneNode(true));
+              let content = '<div class="documentation-grid">';
+              data.documentations.forEach((doc) => {
+                content += `
+                  <div class="documentation-card">
+                    <h4>${doc.title}</h4>
+                    <p>${doc.history_of_present_illness}</p>
+                    ${doc.chief_complaint ? `<p><strong>Chief Complaint:</strong> ${doc.chief_complaint}</p>` : ''}
+                    ${doc.subjective ? `<p><strong>Subjective:</strong> ${doc.subjective}</p>` : ''}
+                    ${doc.objective ? `<p><strong>Objective:</strong> ${doc.objective}</p>` : ''}
+                    ${doc.assessment ? `<p><strong>Assessment:</strong> ${doc.assessment}</p>` : ''}
+                    ${doc.plan ? `<p><strong>Plan:</strong> ${doc.plan}</p>` : ''}
+                    ${doc.file_url ? `<a href="${doc.file_url}" class="download-btn">Download File</a>` : ''}
+                    <p class="date-info">
+                      Created: ${doc.created_at} | Updated: ${doc.updated_at}
+                    </p>
+                  </div>
+                `;
               });
-              
-              // Replace the content of the documentation-details div
-              docContainer.innerHTML = '';
-              docContainer.appendChild(cardsContainer);
+              content += '</div>';
+              docContainer.innerHTML = content;
             }
           })
           .catch((error) => {

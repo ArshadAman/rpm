@@ -276,25 +276,54 @@ def write_document(request, report_id):
     return render(request, 'write_document.html', {'form': form, 'report': report})
 
 @login_required
-def view_documentation(request):
-    date = request.GET.get('date')
-    moderator = Moderator.objects.get(user=request.user)
-    patient_ids = Patient.objects.filter(moderator_assigned=moderator).values_list("id", flat=True)
-
-    print(f"Filtering for date: {date}")  # Debugging Step
-
-    if date:
-        documentations = Documentation.objects.filter(report__patient__in=patient_ids, created_at__date=date)
-    else:
-        documentations = Documentation.objects.filter(report__patient__in=patient_ids)
-
-    print(f"Found {documentations.count()} documentations")  # Debugging Step
-
-    context = {
-        'documentations': documentations,
-    }
+def view_documentation(request, patient_id):
+    # Check if the user is a moderator
+    if not Moderator.objects.filter(user=request.user).exists():
+        return JsonResponse({"error": "Only moderators can view documentation"}, status=403)
     
-    return render(request, 'reports/view_documentation.html', context)
+    # Get the date filter from the request
+    date = request.GET.get('date')
+    
+    # Get all documentation for the moderator's patients
+    moderator = Moderator.objects.get(user=request.user)
+    patient = get_object_or_404(Patient, id=patient_id)
+    
+    # Apply date filter if provided
+    if date:
+        documentations = Documentation.objects.filter(
+            patient=patient,
+            created_at__date=date
+        ).order_by('-created_at')
+    else:
+        documentations = Documentation.objects.filter(
+            patient=patient,
+        ).order_by('-created_at')
+    
+    documentation_list = []
+    for doc in documentations:
+        doc_data = {
+            'id': doc.id,
+            'title': doc.title,
+            'history_of_present_illness': doc.history_of_present_illness,
+            'chief_complaint': doc.chief_complaint,
+            'subjective': doc.subjective,
+            'objective': doc.objective,
+            'assessment': doc.assessment,
+            'plan': doc.plan,
+            'created_at': doc.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'updated_at': doc.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        # Only add file_url if the file exists
+        if doc.file and hasattr(doc.file, 'url'):
+            doc_data['file_url'] = doc.file.url
+        else:
+            doc_data['file_url'] = None
+            
+        documentation_list.append(doc_data)
+        print(documentation_list)
+    
+    return JsonResponse({'documentations': documentation_list})
 
 
 @login_required
