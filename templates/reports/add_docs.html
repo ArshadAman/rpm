@@ -298,7 +298,7 @@
         
         <div class="patient-info">
             <h3>Patient Information</h3>
-            <p><strong>Patient:</strong> {{ report.patient.user.first_name }} {{ report.patient.user.last_name }}</p>
+            <p><strong>Patient:</strong> {{ patient.user.first_name }} {{ patient.user.last_name }}</p>
             <p><strong>Report Date:</strong> {{ report.created_at|date:"F d, Y" }}</p>
             {% if report.blood_pressure or report.heart_rate or report.spo2 or report.temperature %}
             <p><strong>Vitals:</strong> 

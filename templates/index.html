@@ -526,34 +526,71 @@
       }
 
       /* Documentation improvements */
+      .documentation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+      }
+
       .documentation-card {
-        margin-bottom: 20px;
-        padding: 25px;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+      }
+
+      .documentation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
       }
 
       .documentation-card h4 {
         color: white;
+        margin-bottom: 10px;
         font-size: 18px;
-        margin-bottom: 15px;
-        font-weight: 500;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 8px;
       }
 
       .documentation-card p {
+        color: rgba(255, 255, 255, 0.7);
         margin-bottom: 15px;
-        line-height: 1.6;
+        font-size: 14px;
+        line-height: 1.5;
       }
 
       .documentation-card strong {
-        color: var(--secondary);
-        font-weight: 500;
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .download-btn {
+        display: inline-block;
+        background: var(--primary);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+      }
+
+      .download-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
       }
 
       .date-info {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
         color: rgba(255, 255, 255, 0.5);
         font-size: 12px;
+        margin-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 8px;
       }
 
       /* Form improvements */
@@ -1140,64 +1177,54 @@
           return;
         }
 
-        fetch(`/view_documentation/?date=${date}`)
-          .then((response) => response.json())
-          .then((data) => {
-            const docContainer = document.getElementById(
-              "documentation-details"
-            );
-            if (data.length === 0) {
-              docContainer.innerHTML =
-                "<p>No documentation found for the selected date.</p>";
+        // Show loading indicator
+        const docContainer = document.getElementById("documentation-details");
+        docContainer.innerHTML = "<p>Loading documentation...</p>";
+
+        // Use fetch with credentials to ensure cookies are sent
+        fetch(`/view_documentation/?date=${date}`, {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: {
+            'Accept': 'text/html',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+          })
+          .then((html) => {
+            // Create a temporary container to parse the HTML
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = html;
+            
+            // Extract the documentation cards from the response
+            const documentationCards = tempContainer.querySelectorAll('.documentation-card');
+            
+            if (documentationCards.length === 0) {
+              docContainer.innerHTML = "<p>No documentation found for the selected date.</p>";
             } else {
-              let content = "";
-              data.forEach((doc) => {
-                content += `
-                  <div class="documentation-card">
-                    <h4>${doc.title}</h4>
-                    <p>${doc.history_of_present_illness}</p>
-                    ${
-                      doc.cheif_complaint
-                        ? `<p><strong>Chief Complaint:</strong> ${doc.cheif_complaint}</p>`
-                        : ""
-                    }
-                    ${
-                      doc.subjective
-                        ? `<p><strong>Subjective:</strong> ${doc.subjective}</p>`
-                        : ""
-                    }
-                    ${
-                      doc.objective
-                        ? `<p><strong>Objective:</strong> ${doc.objective}</p>`
-                        : ""
-                    }
-                    ${
-                      doc.assessment
-                        ? `<p><strong>Assessment:</strong> ${doc.assessment}</p>`
-                        : ""
-                    }
-                    ${
-                      doc.plan
-                        ? `<p><strong>Plan:</strong> ${doc.plan}</p>`
-                        : ""
-                    }
-                    ${
-                      doc.file_url
-                        ? `<a href="${doc.file_url}" target="_blank" class="download-btn">Download File</a>`
-                        : ""
-                    }
-                    <p class="date-info">Created: ${
-                      doc.created_at
-                    } | Updated: ${doc.updated_at}</p>
-                  </div>
-                `;
+              // Create a container for the documentation cards
+              const cardsContainer = document.createElement('div');
+              cardsContainer.className = 'documentation-grid';
+              
+              // Add each documentation card to the container
+              documentationCards.forEach(card => {
+                cardsContainer.appendChild(card.cloneNode(true));
               });
-              docContainer.innerHTML = content;
+              
+              // Replace the content of the documentation-details div
+              docContainer.innerHTML = '';
+              docContainer.appendChild(cardsContainer);
             }
           })
-          .catch((error) =>
-            console.error("Error fetching documentation:", error)
-          );
+          .catch((error) => {
+            console.error("Error fetching documentation:", error);
+            docContainer.innerHTML = `<p>Error loading documentation: ${error.message}</p>`;
+          });
       }
 
       function fetchAndDisplayReports(patientId) {

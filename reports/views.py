@@ -158,19 +158,31 @@ def add_documentation(request, patient_id):
         return render(request, "errors/403.html", {"error": "Only moderators can add documentation"}, status=403)
 
     patient = get_object_or_404(Patient, id=patient_id)
+    
+    # Get the latest report for this patient
+    latest_report = Reports.objects.filter(patient=patient).order_by('-created_at').first()
+    
+    if not latest_report:
+        return render(request, "errors/404.html", {"error": "No reports found for this patient"}, status=404)
 
     if request.method == "POST":
         form = DocumentationForm(request.POST, request.FILES)
         if form.is_valid():
             documentation = form.save(commit=False)
             documentation.patient = patient
+            documentation.report = latest_report  # Associate with the latest report
             documentation.save()
-            return redirect("index.html")  # Redirect to the report view after adding
-
+            return redirect("view_documentation")  # Redirect to the documentation view after adding
     else:
         form = DocumentationForm()
 
-    return render(request, "reports/add_docs.html", {"form": form, "patient": patient})
+    context = {
+        "form": form, 
+        "patient": patient,
+        "report": latest_report
+    }
+    
+    return render(request, "reports/add_docs.html", context)
 
 
 @csrf_exempt
@@ -189,3 +201,41 @@ def data_from_mio_connect(request):
     except Exception as err:
         print(err)
         return JsonResponse({"error": str(err)}, status=400)
+
+@login_required
+def view_documentation(request):
+    # Check if the user is a moderator
+    if not Moderator.objects.filter(user=request.user).exists():
+        return render(request, "errors/403.html", {"error": "Only moderators can view documentation"}, status=403)
+    
+    # Get the date filter from the request
+    date = request.GET.get('date')
+    
+    # Get all documentation for the moderator's patients
+    moderator = Moderator.objects.get(user=request.user)
+    patient_ids = Patient.objects.filter(moderator_assigned=moderator).values_list("id", flat=True)
+    
+    # Apply date filter if provided
+    if date:
+        documentations = Documentation.objects.filter(
+            report__patient__in=patient_ids,
+            created_at__date=date
+        ).order_by('-created_at')
+    else:
+        documentations = Documentation.objects.filter(
+            report__patient__in=patient_ids
+        ).order_by('-created_at')
+    
+    # Check if this is an AJAX request
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    if is_ajax:
+        # For AJAX requests, return only the documentation cards
+        return render(request, "reports/documentation_cards.html", {
+            'documentations': documentations
+        })
+    else:
+        # For regular requests, return the full page
+        return render(request, "reports/view_documentation.html", {
+            'documentations': documentations
+        })

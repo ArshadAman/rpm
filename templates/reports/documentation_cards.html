@@ -1,0 +1,33 @@
+{% if documentations %}
+    {% for doc in documentations %}
+    <div class="documentation-card">
+        <h4>{{ doc.title }}</h4>
+        <p>{{ doc.history_of_present_illness }}</p>
+        {% if doc.cheif_complaint %}
+        <p>
+            <strong>Chief Complaint:</strong> {{ doc.cheif_complaint }}
+        </p>
+        {% endif %} 
+        {% if doc.subjective %}
+        <p><strong>Subjective:</strong> {{ doc.subjective }}</p>
+        {% endif %} 
+        {% if doc.objective %}
+        <p><strong>Objective:</strong> {{ doc.objective }}</p>
+        {% endif %} 
+        {% if doc.assessment %}
+        <p><strong>Assessment:</strong> {{ doc.assessment }}</p>
+        {% endif %} 
+        {% if doc.plan %}
+        <p><strong>Plan:</strong> {{ doc.plan }}</p>
+        {% endif %} 
+        {% if doc.file.url %}
+        <a href="{{ doc.file.url }}" class="download-btn" target="_blank">Download File</a>
+        {% endif %}
+        <p class="date-info">
+            Created: {{ doc.created_at|date:"F d, Y" }} | Updated: {{ doc.updated_at|date:"F d, Y" }}
+        </p>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No documentation found for the selected date.</p>
+{% endif %} 

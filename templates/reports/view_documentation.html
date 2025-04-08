@@ -241,7 +241,7 @@
                         <span>Created: {{ doc.created_at|date:"F d, Y" }}</span>
                     </div>
                     <div class="actions">
-                        <a href="{% url 'report' doc.id %}" class="view-btn">View</a>
+                        <a href="{% url 'view_documentation' %}" class="view-btn">View</a>
                     </div>
                 </div>
                 {% endfor %}

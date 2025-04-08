@@ -12,7 +12,7 @@ class DocumentationForm(forms.ModelForm):
             "objective",
             "assessment",
             "plan",
-            "file"
+            "file",
         ]
         widgets = {
             "history_of_present_illness": forms.Textarea(attrs={"rows": 3}),
