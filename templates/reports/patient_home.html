@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Home - RPM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .info-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+        .info-value {
+            color: white;
+            font-weight: 500;
+        }
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <header class="header py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Welcome, {{ patient.first_name }}</h1>
+            <a href="{% url 'patient_logout' %}" class="logout-btn px-4 py-2 rounded-lg">
+                Logout
+            </a>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8 px-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Patient Information Card -->
+            <div class="card p-6">
+                <h2 class="text-xl font-semibold mb-4">Personal Information</h2>
+                <div class="space-y-3">
+                    <div>
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value">{{ patient.first_name }} {{ patient.last_name }}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Date of Birth</div>
+                        <div class="info-value">{{ patient.date_of_birth }}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Age</div>
+                        <div class="info-value">{{ patient.age }} years</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Gender</div>
+                        <div class="info-value">{{ patient.gender }}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Contact</div>
+                        <div class="info-value">{{ patient.phone_number }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Information Card -->
+            <div class="card p-6">
+                <h2 class="text-xl font-semibold mb-4">Medical Information</h2>
+                <div class="space-y-3">
+                    <div>
+                        <div class="info-label">Blood Type</div>
+                        <div class="info-value">{{ patient.blood_type }}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Height</div>
+                        <div class="info-value">{{ patient.height }} cm</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Weight</div>
+                        <div class="info-value">{{ patient.weight }} kg</div>
+                    </div>
+                    <div>
+                        <div class="info-label">BMI</div>
+                        <div class="info-value">{{ patient.bmi }}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Allergies</div>
+                        <div class="info-value">{{ patient.allergies|default:"None" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Summary Card -->
+            <div class="card p-6">
+                <h2 class="text-xl font-semibold mb-4">Reports Summary</h2>
+                <div class="space-y-3">
+                    <div>
+                        <div class="info-label">Total Reports</div>
+                        <div class="info-value">{{ reports.count }}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Latest Report</div>
+                        <div class="info-value">
+                            {% if reports.first %}
+                                {{ reports.first.created_at|date:"F d, Y" }}
+                            {% else %}
+                                No reports yet
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports List -->
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold mb-6">Your Reports</h2>
+            {% if reports %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for report in reports %}
+                        <div class="card p-6">
+                            <h3 class="text-lg font-semibold mb-2">Report #{{ report.id }}</h3>
+                            <div class="space-y-2">
+                                <div>
+                                    <div class="info-label">Date</div>
+                                    <div class="info-value">{{ report.created_at|date:"F d, Y" }}</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Status</div>
+                                    <div class="info-value">{{ report.status }}</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Type</div>
+                                    <div class="info-value">{{ report.report_type }}</div>
+                                </div>
+                            </div>
+                            <a href="{% url 'view_report' report.id %}" 
+                               class="mt-4 inline-block w-full text-center py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                View Details
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card p-6 text-center">
+                    <p class="text-gray-300">No reports available yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

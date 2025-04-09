@@ -541,3 +541,45 @@ def admin_logout(request):
     """Custom admin logout view that handles both GET and POST requests"""
     logout(request)
     return redirect('admin:login')
+
+def patient_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        print(f"Login attempt - Username: {username}")
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            try:
+                patient = Patient.objects.get(user=user)
+                login(request, user)
+                print(f"Patient logged in successfully: {patient}")
+                return JsonResponse({'success': True, 'redirect_url': '/patient_home/'})
+            except Patient.DoesNotExist:
+                print(f"User {username} is not registered as a patient")
+                return JsonResponse({'success': False, 'error': 'User is not registered as a patient.'})
+        else:
+            print(f"Invalid credentials for username: {username}")
+            return JsonResponse({'success': False, 'error': 'Invalid username or password.'})
+    
+    return render(request, 'reports/patient_login.html')
+
+@login_required
+def patient_home(request):
+    try:
+        patient = Patient.objects.get(user=request.user)
+        reports = Reports.objects.filter(patient=patient).order_by('-created_at')
+        context = {
+            'patient': patient,
+            'reports': reports
+        }
+        return render(request, 'reports/patient_home.html', context)
+    except Patient.DoesNotExist:
+        logout(request)
+        return redirect('patient_login')
+
+def patient_logout(request):
+    logout(request)
+    return redirect('home')

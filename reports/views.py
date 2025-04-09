@@ -13,8 +13,12 @@ from .forms import DocumentationForm  # Ensure you have a Django form for valida
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+from datetime import date
 
 from rpm.customPermission import CustomSSOAuthentication
+
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.models import User
 
 @api_view(["GET"])
 @permission_classes([CustomSSOAuthentication])
@@ -230,3 +234,60 @@ def view_documentation(request):
         return render(request, "reports/view_documentation.html", {
             'documentations': documentations
         })
+
+@login_required
+def edit_patient(request, patient_id):
+    # Check if the user is a moderator
+    if not Moderator.objects.filter(user=request.user).exists():
+        return render(request, "errors/403.html", {"error": "Only moderators can edit patient information"}, status=403)
+    
+    patient = get_object_or_404(Patient, id=patient_id)
+    
+    if request.method == "POST":
+        try:
+            # Update user information
+            patient.user.first_name = request.POST.get('first_name')
+            patient.user.last_name = request.POST.get('last_name')
+            patient.user.save()
+            
+            # Update patient information
+            date_of_birth_str = request.POST.get('date_of_birth')
+            if date_of_birth_str:
+                # Convert string to date object
+                from datetime import datetime
+                patient.date_of_birth = datetime.strptime(date_of_birth_str, '%Y-%m-%d').date()
+            
+            patient.sex = request.POST.get('sex')
+            patient.weight = request.POST.get('weight')
+            patient.height = request.POST.get('height')
+            patient.insurance = request.POST.get('insurance')
+            patient.monitoring_parameters = request.POST.get('monitoring_parameters')
+            patient.device_serial_number = request.POST.get('device_serial_number')
+            patient.drink = request.POST.get('drink')
+            patient.smoke = request.POST.get('smoke')
+            patient.allergies = request.POST.get('allergies')
+            
+            # Recalculate BMI
+            if patient.weight and patient.height:
+                height_in_meters = float(patient.height) / 100
+                patient.bmi = round(float(patient.weight) / (height_in_meters ** 2), 2)
+            
+            # No need to manually calculate age - it's handled by the property in the model
+            
+            patient.save()
+            
+            return JsonResponse({
+                'success': True,
+                'patient_id': patient.id
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    
+    # GET request - display the edit form
+    return render(request, "reports/edit_patient.html", {
+        'patient': patient
+    })

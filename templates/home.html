@@ -207,10 +207,13 @@
         <div class="option-card">
             <div>
                 <div class="option-icon">👤</div>
-                <h2 class="option-title">Patient Registration</h2>
-                <p class="option-description">New patients can register to access their health records, view monitoring data, and communicate with healthcare providers.</p>
+                <h2 class="option-title">Patient Portal</h2>
+                <p class="option-description">Access your health records, view monitoring data, and communicate with healthcare providers. New patients can register for an account.</p>
             </div>
-            <a href="{% url 'patient_register' %}" class="option-button">Register as Patient</a>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <a href="{% url 'patient_login' %}" class="option-button" style="flex: 1;">Login</a>
+                <a href="{% url 'patient_register' %}" class="option-button" style="flex: 1;">Register</a>
+            </div>
         </div>
 
         <div class="option-card">
