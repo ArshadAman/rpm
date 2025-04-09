@@ -15,13 +15,13 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import date
 
-from rpm.customPermission import CustomSSOAuthentication
+# from rpm.customPermission import CustomSSOAuthentication
 
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 
 @api_view(["GET"])
-@permission_classes([CustomSSOAuthentication])
+@permission_classes([IsAuthenticated])
 def get_your_reports(request, patient_id):
     email = request.email
     if patient := Patient.objects.filter(email=email).first():
@@ -123,7 +123,7 @@ def get_all_reports(request, patient_id):
     return JsonResponse(data, safe=False)
 
 @api_view(["POST"])
-@permission_classes([CustomSSOAuthentication])
+@permission_classes([IsAuthenticated])
 def create_report(request):
     email = request.email
     if patient := Patient.objects.filter(email=email).first():

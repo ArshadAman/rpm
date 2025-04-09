@@ -14,6 +14,7 @@ class Patient(models.Model):
     insurance = models.CharField(blank=True, null=True, max_length=255)
     sex = models.CharField(blank=True, max_length=10, null=True, choices=SEX_CHOICES)
     bmi = models.DecimalField(blank=True, max_digits=10, decimal_places=2, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
     monitoring_parameters = models.CharField(blank=True, max_length=20, null=True, choices=MONITORING_CHOICES)
     device_serial_number = models.IntegerField(null=True, blank=True)
     pharmacy_info = models.TextField(blank=True, null=True)

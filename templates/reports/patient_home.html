@@ -35,6 +35,10 @@
             color: white;
             font-weight: 500;
         }
+        .info-value.null {
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+        }
         .logout-btn {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
@@ -49,7 +53,7 @@
 <body>
     <header class="header py-4 px-6">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold">Welcome, {{ patient.first_name }}</h1>
+            <h1 class="text-2xl font-bold">Welcome, {{ patient.user.first_name|default:"Patient" }}</h1>
             <a href="{% url 'patient_logout' %}" class="logout-btn px-4 py-2 rounded-lg">
                 Logout
             </a>
@@ -64,23 +68,39 @@
                 <div class="space-y-3">
                     <div>
                         <div class="info-label">Full Name</div>
-                        <div class="info-value">{{ patient.first_name }} {{ patient.last_name }}</div>
+                        <div class="info-value {% if not patient.user.first_name and not patient.user.last_name %}null{% endif %}">
+                            {{ patient.user.first_name|default:"Not provided" }} {{ patient.user.last_name|default:"" }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-label">Email</div>
+                        <div class="info-value {% if not patient.user.email %}null{% endif %}">
+                            {{ patient.user.email|default:"Not provided" }}
+                        </div>
                     </div>
                     <div>
                         <div class="info-label">Date of Birth</div>
-                        <div class="info-value">{{ patient.date_of_birth }}</div>
+                        <div class="info-value {% if not patient.date_of_birth %}null{% endif %}">
+                            {{ patient.date_of_birth|default:"Not provided" }}
+                        </div>
                     </div>
                     <div>
                         <div class="info-label">Age</div>
-                        <div class="info-value">{{ patient.age }} years</div>
+                        <div class="info-value {% if not patient.age %}null{% endif %}">
+                            {{ patient.age|default:"Not provided" }} years
+                        </div>
                     </div>
                     <div>
                         <div class="info-label">Gender</div>
-                        <div class="info-value">{{ patient.gender }}</div>
+                        <div class="info-value {% if not patient.sex %}null{% endif %}">
+                            {{ patient.sex|default:"Not provided" }}
+                        </div>
                     </div>
                     <div>
                         <div class="info-label">Contact</div>
-                        <div class="info-value">{{ patient.phone_number }}</div>
+                        <div class="info-value {% if not patient.phone_number %}null{% endif %}">
+                            {{ patient.phone_number|default:"Not provided" }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -90,24 +110,40 @@
                 <h2 class="text-xl font-semibold mb-4">Medical Information</h2>
                 <div class="space-y-3">
                     <div>
-                        <div class="info-label">Blood Type</div>
-                        <div class="info-value">{{ patient.blood_type }}</div>
-                    </div>
-                    <div>
                         <div class="info-label">Height</div>
-                        <div class="info-value">{{ patient.height }} cm</div>
+                        <div class="info-value {% if not patient.height %}null{% endif %}">
+                            {{ patient.height|default:"Not provided" }} cm
+                        </div>
                     </div>
                     <div>
                         <div class="info-label">Weight</div>
-                        <div class="info-value">{{ patient.weight }} kg</div>
+                        <div class="info-value {% if not patient.weight %}null{% endif %}">
+                            {{ patient.weight|default:"Not provided" }} kg
+                        </div>
                     </div>
                     <div>
                         <div class="info-label">BMI</div>
-                        <div class="info-value">{{ patient.bmi }}</div>
+                        <div class="info-value {% if not patient.bmi %}null{% endif %}">
+                            {{ patient.bmi|default:"Not provided" }}
+                        </div>
                     </div>
                     <div>
                         <div class="info-label">Allergies</div>
-                        <div class="info-value">{{ patient.allergies|default:"None" }}</div>
+                        <div class="info-value {% if not patient.allergies %}null{% endif %}">
+                            {{ patient.allergies|default:"None" }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-label">Smoking Status</div>
+                        <div class="info-value">
+                            {{ patient.smoke|default:"Not specified" }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-label">Alcohol Consumption</div>
+                        <div class="info-value">
+                            {{ patient.drink|default:"Not specified" }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -118,11 +154,13 @@
                 <div class="space-y-3">
                     <div>
                         <div class="info-label">Total Reports</div>
-                        <div class="info-value">{{ reports.count }}</div>
+                        <div class="info-value">
+                            {{ reports.count|default:"0" }}
+                        </div>
                     </div>
                     <div>
                         <div class="info-label">Latest Report</div>
-                        <div class="info-value">
+                        <div class="info-value {% if not reports.first %}null{% endif %}">
                             {% if reports.first %}
                                 {{ reports.first.created_at|date:"F d, Y" }}
                             {% else %}
@@ -149,11 +187,11 @@
                                 </div>
                                 <div>
                                     <div class="info-label">Status</div>
-                                    <div class="info-value">{{ report.status }}</div>
+                                    <div class="info-value">{{ report.status|default:"Not specified" }}</div>
                                 </div>
                                 <div>
                                     <div class="info-label">Type</div>
-                                    <div class="info-value">{{ report.report_type }}</div>
+                                    <div class="info-value">{{ report.report_type|default:"Not specified" }}</div>
                                 </div>
                             </div>
                             <a href="{% url 'view_report' report.id %}" 

@@ -74,6 +74,8 @@ def create_patient(request):
                 last_name=last_name,
                 email=email,  # Use the same email as in the SSO for the local user
             )
+            user.set_password(password)  # Properly hash the password
+            user.save()
             patient = Patient.objects.create(
                 user = user,
                 date_of_birth=date_of_birth, 
@@ -358,12 +360,6 @@ def register_patient(request):
             messages.error(request, 'Patient with this email already exists')
             return render(request, 'register_patient.html')
 
-        # Create user in SSO
-        # response = requests.post("https://auth.pinksurfing.com/api/signup/", data=data)
-        # if response.status_code != 201:
-        #     messages.error(request, 'Error creating user in SSO system')
-        #     return render(request, 'register_patient.html')
-
         # Create local user and patient
         try:
             user = User.objects.create(
@@ -372,6 +368,8 @@ def register_patient(request):
                 first_name=data['first_name'],
                 last_name=data['last_name'],
             )
+            user.set_password(data['password'])  # Properly hash the password
+            user.save()
             
             patient = Patient.objects.create(
                 user=user,
@@ -380,6 +378,7 @@ def register_patient(request):
                 weight=data['weight'],
                 insurance=data['insurance'],
                 sex=data['sex'],
+                phone_number=data['phone_number'],
                 monitoring_parameters=data['monitoring_parameters'],
                 device_serial_number=data['device_serial_number'] if data['device_serial_number'] else None,
                 pharmacy_info=data['pharmacy_info'] if data['pharmacy_info'] else None,
@@ -400,7 +399,7 @@ def register_patient(request):
             # Assign the current moderator
             moderator = Moderator.objects.get(user=request.user)
             patient.moderator_assigned = moderator
-            patient.save()  # This will also calculate and save BMI
+            patient.save()
 
             messages.success(request, 'Patient registered successfully')
             return redirect('view_all_assigned_patient')
@@ -459,6 +458,8 @@ def patient_self_registration(request):
                 first_name=data['first_name'],
                 last_name=data['last_name'],
             )
+            user.set_password(data['password'])  # Properly hash the password
+            user.save()
             
             patient = Patient.objects.create(
                 user=user,
@@ -467,6 +468,7 @@ def patient_self_registration(request):
                 weight=data['weight'],
                 insurance=data['insurance'],
                 sex=data['sex'],
+                phone_number=data['phone_number'],
                 monitoring_parameters=data['monitoring_parameters'],
                 device_serial_number=data['device_serial_number'] if data['device_serial_number'] else None,
                 pharmacy_info=data['pharmacy_info'] if data['pharmacy_info'] else None,
@@ -546,23 +548,42 @@ def patient_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        
         print(f"Login attempt - Username: {username}")
+        print(f"Login attempt - Password: {password}")
         
         user = authenticate(request, username=username, password=password)
+        print(f"User: {user}")  # Debug print
         
         if user is not None:
+            # Check if user is a moderator
+            if Moderator.objects.filter(user=user).exists():
+                print("User is a moderator, redirecting to moderator login")
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Please use the moderator login page'
+                })
+            
+            # Check if user is a patient
             try:
                 patient = Patient.objects.get(user=user)
+                print(f"Found patient: {patient}")  # Debug print
                 login(request, user)
-                print(f"Patient logged in successfully: {patient}")
-                return JsonResponse({'success': True, 'redirect_url': '/patient_home/'})
+                return JsonResponse({
+                    'success': True,
+                    'redirect_url': '/patient_home/'
+                })
             except Patient.DoesNotExist:
-                print(f"User {username} is not registered as a patient")
-                return JsonResponse({'success': False, 'error': 'User is not registered as a patient.'})
+                print("User exists but no associated patient found")  # Debug print
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid credentials'
+                })
         else:
-            print(f"Invalid credentials for username: {username}")
-            return JsonResponse({'success': False, 'error': 'Invalid username or password.'})
+            print("Authentication failed - user is None")  # Debug print
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid credentials'
+            })
     
     return render(request, 'reports/patient_login.html')
 
@@ -583,3 +604,17 @@ def patient_home(request):
 def patient_logout(request):
     logout(request)
     return redirect('home')
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        print(f"User: {user}")  # Debug print
+        if user is not None:
+            login(request, user)
+            return redirect('admin:index')
+        else:
+            # Handle invalid login
+            return render(request, 'admin/login.html', {'error': 'Invalid username or password'})
+    return render(request, 'admin/login.html')
