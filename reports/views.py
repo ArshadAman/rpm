@@ -186,41 +186,65 @@ def data_from_mio_connect(request):
         return JsonResponse({"error": "Invalid request method"}, status=405)
     
     try:
-        body = json.loads(request.body)
-        print(f"Received data from MioConnect: {json.dumps(body)}")
+        # Parse JSON data
+        try:
+            body = json.loads(request.body)
+            print(f"Received data from MioConnect: {json.dumps(body)}")
+        except json.JSONDecodeError as e:
+            return JsonResponse({"error": f"Invalid JSON data: {str(e)}"}, status=400)
         
         # Extract health metrics
-        systolic_bp = body.get('sys')
-        diastolic_bp = body.get('dia')
-        pulse_rate = body.get('pul')
-        device_serial = body.get('sn')
+        try:
+            systolic_bp = body.get('sys')
+            diastolic_bp = body.get('dia')
+            pulse_rate = body.get('pul')
+            device_serial = body.get('sn')
+            
+            if not all([systolic_bp, diastolic_bp, pulse_rate, device_serial]):
+                return JsonResponse({
+                    "error": "Missing required health metrics or device serial number"
+                }, status=400)
+        except Exception as e:
+            return JsonResponse({"error": f"Error extracting health metrics: {str(e)}"}, status=400)
         
         # Find patient with matching device serial number
         try:
             patient = Patient.objects.get(device_serial_number=device_serial)
-            
-            # Create a new report with the health metrics
+        except Patient.DoesNotExist:
+            return JsonResponse({
+                "error": f"No patient found with device serial number: {device_serial}"
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                "error": f"Error finding patient: {str(e)}"
+            }, status=500)
+        
+        # Create a new report with the health metrics
+        try:
             report = Reports.objects.create(
                 blood_pressure=f"{systolic_bp}/{diastolic_bp}",
                 heart_rate=pulse_rate,
                 patient=patient
             )
-            
-            result = {
-                "success": True,
-                "received_data": body,
-                "saved_report_id": report.id,
-                "patient_id": patient.id
-            }
-            return JsonResponse(result)
-        except Patient.DoesNotExist:
+        except Exception as e:
             return JsonResponse({
-                "error": f"No patient found with device serial number: {device_serial}"
-            }, status=404)
+                "error": f"Error creating report: {str(e)}"
+            }, status=500)
+        
+        # Return success response
+        result = {
+            "success": True,
+            "received_data": body,
+            "saved_report_id": report.id,
+            "patient_id": patient.id
+        }
+        return JsonResponse(result)
             
     except Exception as err:
-        print(err)
-        return JsonResponse({"error": str(err)}, status=400)
+        print(f"Unexpected error: {str(err)}")
+        return JsonResponse({
+            "error": "An unexpected error occurred while processing the request"
+        }, status=500)
 
 @login_required
 def view_documentation(request):
