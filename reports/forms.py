@@ -1,5 +1,5 @@
 from django import forms
-from .models import Documentation
+from .models import Documentation, Reports
 
 class DocumentationForm(forms.ModelForm):
     class Meta:
@@ -22,3 +22,14 @@ class DocumentationForm(forms.ModelForm):
             "assessment": forms.Textarea(attrs={"rows": 2}),
             "plan": forms.Textarea(attrs={"rows": 2}),
         }
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Reports
+        fields = [
+            'blood_pressure',
+            'heart_rate',
+            'spo2',
+            'temperature',
+            'symptoms'
+        ]

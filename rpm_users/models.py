@@ -16,7 +16,7 @@ class Patient(models.Model):
     bmi = models.DecimalField(blank=True, max_digits=10, decimal_places=2, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     monitoring_parameters = models.CharField(blank=True, max_length=20, null=True, choices=MONITORING_CHOICES)
-    device_serial_number = models.IntegerField(null=True, blank=True)
+    device_serial_number = models.IntegerField(null=True, blank=True, unique=True)
     pharmacy_info = models.TextField(blank=True, null=True)
     allergies = models.TextField(blank=True, null=True)
     smoke = models.CharField(choices=(('YES', 'YES'), ('NO', 'NO'),), default='NO', max_length=3)

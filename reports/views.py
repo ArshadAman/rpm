@@ -188,11 +188,36 @@ def data_from_mio_connect(request):
     try:
         body = json.loads(request.body)
         print(f"Received data from MioConnect: {json.dumps(body)}")
-        result = {
-            "success": True,
-            "received_data": body  # Include the received body in the response
-        }
-        return JsonResponse(result)
+        
+        # Extract health metrics
+        systolic_bp = body.get('sys')
+        diastolic_bp = body.get('dia')
+        pulse_rate = body.get('pul')
+        device_serial = body.get('sn')
+        
+        # Find patient with matching device serial number
+        try:
+            patient = Patient.objects.get(device_serial_number=device_serial)
+            
+            # Create a new report with the health metrics
+            report = Reports.objects.create(
+                blood_pressure=f"{systolic_bp}/{diastolic_bp}",
+                heart_rate=pulse_rate,
+                patient=patient
+            )
+            
+            result = {
+                "success": True,
+                "received_data": body,
+                "saved_report_id": report.id,
+                "patient_id": patient.id
+            }
+            return JsonResponse(result)
+        except Patient.DoesNotExist:
+            return JsonResponse({
+                "error": f"No patient found with device serial number: {device_serial}"
+            }, status=404)
+            
     except Exception as err:
         print(err)
         return JsonResponse({"error": str(err)}, status=400)

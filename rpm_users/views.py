@@ -7,6 +7,7 @@ from django.utils.timezone import localtime
 
 from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
+from reports.forms import ReportForm
 from .models import Patient, Moderator, PastMedicalHistory
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
@@ -17,6 +18,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .form import DocumentationForm
+from .forms import PatientForm
 
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
