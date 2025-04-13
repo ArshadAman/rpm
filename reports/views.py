@@ -93,18 +93,27 @@ def get_all_reports(request, patient_id):
     is_moderator = Moderator.objects.filter(user=user).exists()
 
     # Fetch reports - If user is a moderator, fetch all reports, else fetch only the patient's reports
-    if is_moderator:
-        patient = Patient.objects.filter(id=patient_id).first()
-        if not patient:
-            print("DEBUG: Patient not found")
-            return JsonResponse({"error": "Patient not found"}, status=404)
+    patient = Patient.objects.filter(id=patient_id).first()
+    print(f"DEBUG: Patient = {patient}")
+    
+    if not patient:
+        print("DEBUG: Patient not found")
+        return JsonResponse({"error": "Patient not found"}, status=404)
+    
+    # Check if the logged-in user is the patient or a moderator
+    is_patient = Patient.objects.filter(user=user, id=patient_id).exists()
+    
+    if is_moderator or is_patient:
         reports = Reports.objects.filter(patient=patient).order_by("-created_at")
+        print("reports", reports)
     else:
-        return JsonResponse({"error": "Not a moderator"}, status=404)
+        print(f"DEBUG: User {user} is not authorized to view reports for patient {patient_id}")
+        return JsonResponse({"error": "Not authorized to view these reports"}, status=403)
 
+    # Return empty reports array if no reports exist
     if not reports.exists():
-        print("DEBUG: No reports found")
-        return JsonResponse({"error": "No reports found"}, status=404)
+        print("DEBUG: No reports found, returning empty array")
+        return JsonResponse({"reports": []}, safe=False)
 
     # Prepare JSON response
     data = {
@@ -286,9 +295,14 @@ def view_documentation(request):
 
 @login_required
 def edit_patient(request, patient_id):
-    # Check if the user is a moderator
-    if not Moderator.objects.filter(user=request.user).exists():
-        return render(request, "errors/403.html", {"error": "Only moderators can edit patient information"}, status=403)
+    user = request.user
+    
+    # Check if the user is a moderator or the patient themselves
+    is_moderator = Moderator.objects.filter(user=user).exists()
+    is_patient = Patient.objects.filter(user=user, id=patient_id).exists()
+    
+    if not is_moderator and not is_patient:
+        return render(request, "errors/403.html", {"error": "You are not authorized to edit this patient information"}, status=403)
     
     patient = get_object_or_404(Patient, id=patient_id)
     

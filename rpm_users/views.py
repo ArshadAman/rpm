@@ -284,14 +284,21 @@ def write_document(request, report_id):
 @login_required
 def view_documentation(request, patient_id):
     # Check if the user is a moderator
-    if not Moderator.objects.filter(user=request.user).exists():
-        return JsonResponse({"error": "Only moderators can view documentation"}, status=403)
+    user = request.user
+    is_moderator = Moderator.objects.filter(user=user).exists()
+    patient = Patient.objects.filter(id=patient_id).first()
+    is_patient = Patient.objects.filter(user=user, id=patient_id).exists()
+    print(f"DEBUG: Patient = {patient}")
+    
+    # Allow access if user is a moderator or if the user is the patient
+    if not is_moderator and not is_patient:
+        print("DEBUG: User is not authorized to view documentation")
+        return JsonResponse({"error": "You are not authorized to view this documentation"}, status=403)
     
     # Get the date filter from the request
     date = request.GET.get('date')
     
-    # Get all documentation for the moderator's patients
-    moderator = Moderator.objects.get(user=request.user)
+    # Get documentation for the patient
     patient = get_object_or_404(Patient, id=patient_id)
     
     # Apply date filter if provided
