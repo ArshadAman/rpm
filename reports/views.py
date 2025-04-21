@@ -218,7 +218,7 @@ def data_from_mio_connect(request):
         
         # Find patient with matching device serial number
         try:
-            patient = Patient.objects.get(device_serial_number=device_serial)
+            patient = Patient.objects.filter(device_serial_number=device_serial).first()
         except Patient.DoesNotExist:
             return JsonResponse({
                 "error": f"No patient found with device serial number: {device_serial}"
