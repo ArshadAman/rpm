@@ -15,9 +15,13 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4$7tarn#dic1f!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["strattonhealth.com", "www.strattonhealth.com"]
 
-CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com/"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+    "https://strattonhealth.com",
+    "https://www.strattonhealth.com",
+]
 
 
 # Application definition
