@@ -40,15 +40,16 @@
       }
 
       .left-panel, .right-panel {
-        width: 180px;
+        width: 150px;
         background: var(--card-bg);
         backdrop-filter: blur(20px);
-        padding: 20px;
-        border-radius: 24px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        padding: 12px;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.1);
         position: relative;
         overflow: hidden;
+        font-size: 12px;
       }
 
       .main-content {
@@ -66,15 +67,15 @@
 
       .patient-details {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        padding: 25px;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 8px;
+        padding: 12px;
         background: var(--card-bg);
         backdrop-filter: blur(20px);
-        border-radius: 24px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        margin-bottom: 30px;
+        margin-bottom: 12px;
         position: relative;
         overflow: hidden;
       }
@@ -92,10 +93,11 @@
 
       .patient-details > div {
         background: rgba(255, 255, 255, 0.03);
-        padding: 15px;
-        border-radius: 12px;
+        padding: 8px 10px;
+        border-radius: 8px;
         transition: all 0.3s ease;
         border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 12px;
       }
 
       .patient-details > div:hover {
@@ -106,15 +108,15 @@
 
       .patient-details strong {
         color: var(--secondary);
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 500;
-        display: block;
-        margin-bottom: 5px;
+        display: inline;
+        margin-right: 4px;
         letter-spacing: 0.5px;
       }
 
       .patient-details span {
-        font-size: 14px;
+        font-size: 12px;
         color: white;
         font-weight: 400;
       }
@@ -126,13 +128,16 @@
       }
 
       .tabs div, .right-tabs div {
-        padding: 12px 18px;
-        border-radius: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
         cursor: pointer;
         font-weight: 500;
         transition: all 0.3s ease;
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 8px;
+        white-space: nowrap;
+        text-align: center;
       }
 
       .tabs div.active, .right-tabs div.active {
@@ -250,8 +255,8 @@
       @media (max-width: 768px) {
         .container {
           flex-direction: column;
-          padding: 15px;
-          gap: 15px;
+          padding: 8px;
+          gap: 10px;
         }
         .left-panel, .right-panel {
           width: 100%;
@@ -259,11 +264,25 @@
         .tabs, .right-tabs {
           flex-direction: row;
           flex-wrap: wrap;
+          gap: 5px;
+        }
+        .tabs div, .right-tabs div {
+          padding: 8px 10px;
+          font-size: 10px;
         }
         .patient-details {
           grid-template-columns: repeat(2, 1fr);
-          padding: 15px;
-          gap: 10px;
+          padding: 10px;
+          gap: 8px;
+        }
+        #documentation-container {
+          flex-direction: column;
+        }
+        #documentation-list {
+          width: 100% !important;
+          max-height: 150px;
+          border-right: none !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
       }
 
@@ -475,26 +494,11 @@
       /* Update the tabs styling */
       .tabs div {
         padding: 14px 20px;
-        font-size: 14px;
+        font-size: 11px;
         letter-spacing: 0.5px;
         display: flex;
         align-items: center;
         gap: 10px;
-      }
-
-      .tabs div::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        background: currentColor;
-        border-radius: 50%;
-        opacity: 0.5;
-        transition: all 0.3s ease;
-      }
-
-      .tabs div.active::before {
-        opacity: 1;
-        transform: scale(1.2);
       }
 
       /* Custom styling for specific tabs */
@@ -734,88 +738,89 @@
   </head>
   <body>
     <!-- Patient Information Section -->
-    <div class="patient-details">
-      <div>
-        <strong>Patient Name</strong>
-        <span>{{patient.user.first_name}} {{patient.user.last_name}}</span>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px 15px; background: rgba(255, 255, 255, 0.05); border-radius: 12px;">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <h2 style="color: white; font-size: 18px; margin: 0;">{{patient.user.first_name}} {{patient.user.last_name}} ({{patient.age}} yrs)</h2>
       </div>
-      <div>
-        <strong>DOB</strong>
-        <span>{{patient.date_of_birth}}</span>
-      </div>
-      <div>
-        <strong>Age</strong>
-        <span>{{patient.age}}</span>
-      </div>
-      <div>
-        <strong>Sex</strong>
-        <span>{{patient.sex}}</span>
-      </div>
-      <div>
-        <strong>Weight</strong>
-        <span>{{patient.weight}} kg</span>
-      </div>
-      <div>
-        <strong>Height</strong>
-        <span>{{patient.height}} cm</span>
-      </div>
-      <div>
-        <strong>BMI</strong>
-        <span>{{patient.bmi}}</span>
-      </div>
-      <div>
-        <strong>Insurance</strong>
-        <span>{{patient.insurance}}</span>
-      </div>
-      <div>
-        <strong>Monitoring Parameters</strong>
-        <span>{{patient.monitoring_parameters}}</span>
-      </div>
-      <div>
-        <strong>Device ID</strong>
-        <span>{{patient.device_serial_number}}</span>
-      </div>
-      <div>
-        <strong>Drink</strong>
-        <span>{{patient.drink}}</span>
-      </div>
-      <div>
-        <strong>Smoke</strong>
-        <span>{{patient.smoke}}</span>
-      </div>
-      <div>
-        <strong>Allergies</strong>
-        <span>{{patient.allergies|default:"None"}}</span>
-      </div>
-      <div>
-        <strong>Start Date</strong>
-        <span>{{patient.created_at|date:"d/m/Y"}}</span>
-      </div>
-      <div>
-        <strong>Last Updated</strong>
-        <span>{{patient.updated_at|date:"d/m/Y"}}</span>
-      </div>
-      <div>
-        <strong>Assigned Moderator</strong>
-        <span>{{patient.moderator_assigned.user.username}}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+      <div style="display: flex; gap: 10px;">
+        <a href="/view-patient/" class="back-btn" style="padding: 6px 12px; font-size: 12px;">← Back</a>
         <a href="{% url 'edit_patient' patient.id %}" class="edit-btn">
-          <button style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <button style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
               <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
             </svg>
-            Edit Patient
+            Edit
           </button>
         </a>
       </div>
     </div>
 
-    <!-- Back Button - Moved here -->
-    <div style="margin: 20px 0;">
-        <a href="/view-patient/" class="back-btn">← Back to Patient List</a>
+    <div class="patient-details">
+      <div>
+        <strong>Name:</strong>
+        <span>{{patient.user.first_name}} {{patient.user.last_name}}</span>
+      </div>
+      <div>
+        <strong>DOB:</strong>
+        <span>{{patient.date_of_birth}}</span>
+      </div>
+      <div>
+        <strong>Age:</strong>
+        <span>{{patient.age}} yrs</span>
+      </div>
+      <div>
+        <strong>Sex:</strong>
+        <span>{{patient.sex}}</span>
+      </div>
+      <div>
+        <strong>Weight:</strong>
+        <span>{{patient.weight}} kg</span>
+      </div>
+      <div>
+        <strong>Height:</strong>
+        <span>{{patient.height}} cm</span>
+      </div>
+      <div>
+        <strong>BMI:</strong>
+        <span>{{patient.bmi}}</span>
+      </div>
+      <div>
+        <strong>Insurance:</strong>
+        <span>{{patient.insurance}}</span>
+      </div>
+      <div>
+        <strong>Monitoring:</strong>
+        <span>{{patient.monitoring_parameters}}</span>
+      </div>
+      <div>
+        <strong>Device ID:</strong>
+        <span>{{patient.device_serial_number}}</span>
+      </div>
+      <div>
+        <strong>Drink:</strong>
+        <span>{{patient.drink}}</span>
+      </div>
+      <div>
+        <strong>Smoke:</strong>
+        <span>{{patient.smoke}}</span>
+      </div>
+      <div>
+        <strong>Allergies:</strong>
+        <span>{{patient.allergies|default:"None"}}</span>
+      </div>
+      <div>
+        <strong>Start:</strong>
+        <span>{{patient.created_at|date:"d/m/Y"}}</span>
+      </div>
+      <div>
+        <strong>Updated:</strong>
+        <span>{{patient.updated_at|date:"d/m/Y"}}</span>
+      </div>
+      <div>
+        <strong>Moderator:</strong>
+        <span>{{patient.moderator_assigned.user.username}}</span>
+      </div>
     </div>
-    
 
     <div class="container">
       <!-- Left Panel -->
@@ -916,31 +921,40 @@
           <!-- Documentation Tab -->
           <div id="documentation" class="table-container" style="display: none">
             <h3>Documentation</h3>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-              <form id="doc-form">
-                <label for="date">Select Date:</label>
-                <input type="date" id="date" name="date" />
-                <button type="button" onclick="fetchDocumentation()">View</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <form id="doc-form" style="display: flex; align-items: center; gap: 10px;">
+                <label for="date" style="font-size: 12px;">Filter:</label>
+                <input type="date" id="date" name="date" style="padding: 5px 8px; border-radius: 4px; height: 30px; font-size: 12px;" />
+                <button type="button" onclick="fetchDocumentation(true)" style="background: var(--primary); color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; height: 30px; font-size: 12px;">Filter</button>
               </form>
               <a href="{% url 'add_documentation' patient.id %}" class="add-button">
-                <button class="add-button" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer;">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <button class="add-button" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; font-size: 12px; height: 30px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
                   </svg>
-                  Add Documentation
-                </button>
-              </a>
-              <a href="{% url 'view_documentation' patient.id %}" class="add-button">
-                <button class="add-button" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer;">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                  </svg>
-                  View Documentation
+                  Add
                 </button>
               </a>
             </div>
-            <div id="documentation-details">
-              <!-- Documentation will be loaded here -->
+            <div id="documentation-container" style="display: flex; height: 55vh; min-height: 300px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; overflow: hidden;">
+              <!-- Left panel - Documentation list -->
+              <div id="documentation-list" style="width: 25%; overflow-y: auto; border-right: 1px solid rgba(255, 255, 255, 0.1); background: rgba(0, 0, 0, 0.1);">
+                <!-- Documentation list will be loaded here -->
+                <div style="padding: 10px; text-align: center; color: rgba(255, 255, 255, 0.7); font-size: 12px;">
+                  Loading documentation...
+                </div>
+              </div>
+              
+              <!-- Right panel - Documentation details -->
+              <div id="documentation-details" style="flex: 1; padding: 15px; overflow-y: auto; background: rgba(0, 0, 0, 0.05);">
+                <!-- Documentation details will be loaded here -->
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.5);">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-bottom: 10px; opacity: 0.5;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p style="font-size: 12px;">Select a document to view details</p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1107,6 +1121,15 @@
 
         document.getElementById(tabId).style.display = "block";
         event.target.classList.add("active");
+        
+        // Load documentation automatically when documentation tab is opened
+        if (tabId === "documentation") {
+          // Only load if not already loaded
+          if (!window.documentationsLoaded) {
+            fetchDocumentation(false);
+            window.documentationsLoaded = true;
+          }
+        }
       }
 
       function showRightTab(tabId) {
@@ -1158,21 +1181,38 @@
           .catch((error) => console.error("Error fetching report:", error));
       }
 
-      function fetchDocumentation() {
+      function fetchDocumentation(useFilter = false) {
         const date = document.getElementById("date").value;
-        if (!date) {
-          alert("Please select a date");
+        // Only validate date if using filter
+        if (useFilter && !date) {
+          alert("Please select a date for filtering");
           return;
         }
 
         // Show loading indicator
-        const docContainer = document.getElementById("documentation-details");
-        docContainer.innerHTML = "<p>Loading documentation...</p>";
+        const docListContainer = document.getElementById("documentation-list");
+        docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>Loading documentation...</div>";
+        
+        const docDetailsContainer = document.getElementById("documentation-details");
+        docDetailsContainer.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.5);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-bottom: 15px; opacity: 0.5;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p>Select a document to view details</p>
+          </div>
+        `;
 
         // Get the patient ID from the template
         const patientId = "{{ patient.id }}";
 
-        fetch(`/view_documentation/${patientId}/?date=${date}`, {
+        // Build URL - include date parameter only if filtering
+        let url = `/view_documentation/${patientId}/`;
+        if (useFilter && date) {
+          url += `?date=${date}`;
+        }
+
+        fetch(url, {
           method: 'GET',
           credentials: 'same-origin',
           headers: {
@@ -1188,34 +1228,138 @@
           })
           .then((data) => {
             if (!data.documentations || data.documentations.length === 0) {
-              docContainer.innerHTML = "<p>No documentation found for the selected date.</p>";
+              docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
             } else {
-              let content = '<div class="documentation-grid">';
-              data.documentations.forEach((doc) => {
-                content += `
-                  <div class="documentation-card">
-                    <h4>${doc.title}</h4>
-                    <p>${doc.history_of_present_illness}</p>
-                    ${doc.chief_complaint ? `<p><strong>Chief Complaint:</strong> ${doc.chief_complaint}</p>` : ''}
-                    ${doc.subjective ? `<p><strong>Subjective:</strong> ${doc.subjective}</p>` : ''}
-                    ${doc.objective ? `<p><strong>Objective:</strong> ${doc.objective}</p>` : ''}
-                    ${doc.assessment ? `<p><strong>Assessment:</strong> ${doc.assessment}</p>` : ''}
-                    ${doc.plan ? `<p><strong>Plan:</strong> ${doc.plan}</p>` : ''}
-                    ${doc.file_url ? `<a href="${doc.file_url}" class="download-btn">Download File</a>` : ''}
-                    <p class="date-info">
-                      Created: ${doc.created_at} | Updated: ${doc.updated_at}
+              // Create an array to store the documentation data for easy access
+              window.documentations = data.documentations;
+              
+              // Create the document list HTML
+              let listContent = '';
+              data.documentations.forEach((doc, index) => {
+                listContent += `
+                  <div class="doc-item" data-index="${index}" style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: background 0.2s ease;">
+                    <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${doc.title}</h4>
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 3px 0;">
+                      ${doc.chief_complaint ? `<strong>Chief Complaint:</strong> ${doc.chief_complaint.substring(0, 30)}${doc.chief_complaint.length > 30 ? '...' : ''}` : ''}
+                    </p>
+                    <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
+                      Created: ${new Date(doc.created_at).toLocaleDateString()}
                     </p>
                   </div>
                 `;
               });
-              content += '</div>';
-              docContainer.innerHTML = content;
+              docListContainer.innerHTML = listContent;
+              
+              // Add click event listeners to each document item
+              document.querySelectorAll('.doc-item').forEach(item => {
+                item.addEventListener('click', function() {
+                  // Remove selected class from all items
+                  document.querySelectorAll('.doc-item').forEach(i => {
+                    i.style.background = '';
+                    i.style.borderLeft = '';
+                  });
+                  
+                  // Add selected styling to the clicked item
+                  this.style.background = 'rgba(121, 40, 202, 0.2)';
+                  this.style.borderLeft = '4px solid #7928CA';
+                  
+                  // Get the documentation index
+                  const index = this.getAttribute('data-index');
+                  const doc = window.documentations[index];
+                  
+                  // Update the documentation details panel
+                  displayDocumentationDetails(doc);
+                });
+              });
+              
+              // Select the first document by default
+              if (document.querySelector('.doc-item')) {
+                document.querySelector('.doc-item').click();
+              }
             }
           })
           .catch((error) => {
             console.error("Error fetching documentation:", error);
-            docContainer.innerHTML = `<p>Error loading documentation: ${error.message}</p>`;
+            docListContainer.innerHTML = `<div style='padding: 15px; text-align: center; color: #FF4E4E;'>Error: ${error.message}</div>`;
           });
+      }
+      
+      function displayDocumentationDetails(doc) {
+        const docDetailsContainer = document.getElementById("documentation-details");
+        
+        let detailContent = `
+          <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 15px;">
+              <h2 style="color: white; font-size: 22px; margin-bottom: 10px;">${doc.title}</h2>
+              <div style="display: flex; flex-wrap: wrap; gap: 15px; color: rgba(255, 255, 255, 0.7); font-size: 14px;">
+                <span><strong>Created:</strong> ${new Date(doc.created_at).toLocaleString()}</span>
+                <span><strong>Updated:</strong> ${new Date(doc.updated_at).toLocaleString()}</span>
+              </div>
+            </div>
+        `;
+        
+        if (doc.chief_complaint) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Chief Complaint</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.chief_complaint}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.history_of_present_illness) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">History of Present Illness</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.history_of_present_illness}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.subjective) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Subjective</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.subjective}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.objective) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Objective</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.objective}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.assessment) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Assessment</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.assessment}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.plan) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Plan</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.plan}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.file_url) {
+          detailContent += `
+            <a href="${doc.file_url}" style="display: inline-block; background: #7928CA; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; margin-top: 15px; font-size: 14px;" target="_blank">Download File</a>
+          `;
+        }
+        
+        detailContent += '</div>';
+        docDetailsContainer.innerHTML = detailContent;
       }
 
       function fetchAndDisplayReports(patientId) {
@@ -1310,3 +1454,4 @@
     </script>
   </body>
 </html>
+
