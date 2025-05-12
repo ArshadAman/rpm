@@ -209,6 +209,8 @@ def data_from_mio_connect(request):
             pulse_rate = body.get('pul')
             device_serial = body.get('sn')
             
+            print(f"Extracted health metrics: Systolic BP: {systolic_bp}, Diastolic BP: {diastolic_bp}, Pulse Rate: {pulse_rate}, Device Serial: {device_serial}")
+            
             if not all([systolic_bp, diastolic_bp, pulse_rate, device_serial]):
                 return JsonResponse({
                     "error": "Missing required health metrics or device serial number"
