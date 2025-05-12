@@ -204,10 +204,11 @@ def data_from_mio_connect(request):
         
         # Extract health metrics
         try:
-            systolic_bp = body.get('sys')
-            diastolic_bp = body.get('dia')
-            pulse_rate = body.get('pul')
-            device_serial = body.get('sn')
+            data = body.get('data', {})
+            systolic_bp = data.get('sys')
+            diastolic_bp = data.get('dia')
+            pulse_rate = data.get('pul')
+            device_serial = data.get('sn')
             
             print(f"Extracted health metrics: Systolic BP: {systolic_bp}, Diastolic BP: {diastolic_bp}, Pulse Rate: {pulse_rate}, Device Serial: {device_serial}")
             
