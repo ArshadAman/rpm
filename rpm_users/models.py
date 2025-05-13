@@ -130,3 +130,64 @@ class Moderator(models.Model):
     
     def __str__(self):
         return self.user.username
+
+
+class Interest(models.Model):
+    """Model to store interest leads for RPM services"""
+    SERVICE_CHOICES = (
+        ('blood_pressure', 'Blood Pressure Monitoring'),
+        ('heart_rate', 'Heart Rate Monitoring'),
+        ('oxygen', 'Oxygen Saturation (O₂)'),
+        ('diabetes', 'Diabetes Management'),
+    )
+    
+    # Personal information
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=15)
+    date_of_birth = models.DateField()
+    age = models.IntegerField(blank=True, null=True)
+    
+    # Medical information
+    allergies = models.TextField(blank=True, null=True)
+    insurance = models.CharField(max_length=255)
+    
+    # Service interest
+    service_interest = models.CharField(max_length=20, choices=SERVICE_CHOICES)
+    
+    # Device usage questions
+    good_eyesight = models.BooleanField(default=False)
+    can_follow_instructions = models.BooleanField(default=False)
+    can_take_readings = models.BooleanField(default=False)
+    
+    # Additional info
+    additional_comments = models.TextField(blank=True, null=True)
+    
+    # Metadata
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - {self.email}"
+    
+    def save(self, *args, **kwargs):
+        # Calculate age if date of birth is provided
+        if self.date_of_birth and not self.age:
+            today = date.today()
+            age = today.year - self.date_of_birth.year
+            if today.month < self.date_of_birth.month or (today.month == self.date_of_birth.month and today.day < self.date_of_birth.day):
+                age -= 1
+            self.age = age
+        
+        super().save(*args, **kwargs)
+
+
+class InterestPastMedicalHistory(models.Model):
+    """Store past medical history for interest leads"""
+    interest = models.ForeignKey(Interest, on_delete=models.CASCADE, related_name='medical_history')
+    pmh = models.CharField(choices=PastMedicalHistory.PMH_CHOICES, max_length=100)
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    
+    def __str__(self):
+        return f"{self.interest.email} - {self.pmh}"

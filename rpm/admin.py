@@ -1,6 +1,7 @@
 from django.contrib.admin import AdminSite
 from django.contrib.auth.models import User, Group
-from rpm_users.models import Patient, Moderator, PastMedicalHistory
+from rpm_users.models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory
+from rpm_users.admin import InterestAdmin
 from reports.models import Reports, Documentation
 
 class CustomAdminSite(AdminSite):
@@ -10,6 +11,7 @@ class CustomAdminSite(AdminSite):
         extra_context['total_patients'] = Patient.objects.count()
         extra_context['active_moderators'] = Moderator.objects.filter(user__is_active=True).count()
         extra_context['total_reports'] = Reports.objects.count()
+        extra_context['total_interests'] = Interest.objects.count()
         return super().index(request, extra_context)
 
 admin_site = CustomAdminSite()
@@ -21,4 +23,8 @@ admin_site.register(Patient)
 admin_site.register(Moderator)
 admin_site.register(PastMedicalHistory)
 admin_site.register(Reports)
-admin_site.register(Documentation) 
+admin_site.register(Documentation)
+
+# Register the Interest model with our custom admin
+admin_site.register(Interest, InterestAdmin)
+admin_site.register(InterestPastMedicalHistory) 

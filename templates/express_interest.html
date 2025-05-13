@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express Interest in RPM</title>
+    {% load static %}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
+        .info-section {
+            margin-bottom: 40px;
+            padding: 30px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 32px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+        }
+
+        h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .service-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .service-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .service-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .form-group:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .form-group:hover label {
+            color: white;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(121, 40, 202, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .checkbox-group {
+            margin-bottom: 30px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .checkbox-item input {
+            margin-right: 15px;
+            margin-top: 3px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .required::after {
+            content: "*";
+            color: var(--secondary);
+            margin-left: 4px;
+        }
+
+        .service-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .service-option {
+            position: relative;
+        }
+
+        .service-option input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .service-option label {
+            display: block;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .service-option input:checked + label {
+            background: linear-gradient(135deg, rgba(121, 40, 202, 0.3), rgba(255, 0, 128, 0.3));
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(121, 40, 202, 0.3);
+        }
+
+        .service-option label:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .service-option input:checked + label:hover {
+            background: linear-gradient(135deg, rgba(121, 40, 202, 0.4), rgba(255, 0, 128, 0.4));
+        }
+
+        .messages {
+            margin-bottom: 30px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .messages .error {
+            color: var(--error);
+        }
+
+        .messages .success {
+            color: var(--success);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .submit-btn, .back-btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 0.5px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            flex: 2;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            flex: 1;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px;
+                margin: 10px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            h2 {
+                font-size: 28px;
+            }
+
+            .service-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column-reverse;
+                gap: 16px;
+            }
+
+            .submit-btn, .back-btn {
+                width: 100%;
+                padding: 14px 24px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23E0C3FC' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding-right: 48px;
+        }
+
+        .form-group select[multiple] {
+            height: 160px;
+            padding: 12px;
+            background-image: none;
+        }
+
+        .form-group select[multiple] option {
+            padding: 10px;
+            margin: 4px 0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .form-group select[multiple] option:checked {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .form-group:has(textarea) {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Express Interest in Remote Patient Monitoring</h2>
+        
+        <div class="info-section">
+            <h3>About Our RPM Services</h3>
+            <p>Remote Patient Monitoring (RPM) is a healthcare service that uses technology to track patient health data outside of traditional healthcare settings. Our RPM solution connects you with healthcare providers to monitor your vital signs and health conditions from the comfort of your home.</p>
+            
+            <h3>Our Services</h3>
+            <div class="service-list">
+                <div class="service-item">
+                    <div class="service-icon">❤️</div>
+                    <h4>Blood Pressure Monitoring</h4>
+                    <p>Track your blood pressure regularly with our easy-to-use devices.</p>
+                </div>
+                <div class="service-item">
+                    <div class="service-icon">💓</div>
+                    <h4>Heart Rate Monitoring</h4>
+                    <p>Monitor your heart rate patterns and receive professional analysis.</p>
+                </div>
+                <div class="service-item">
+                    <div class="service-icon">💨</div>
+                    <h4>Oxygen Saturation (O₂)</h4>
+                    <p>Track oxygen levels in your blood for respiratory health management.</p>
+                </div>
+                <div class="service-item">
+                    <div class="service-icon">🩸</div>
+                    <h4>Diabetes Management</h4>
+                    <p>Monitor blood glucose levels with our connected glucose meters.</p>
+                </div>
+            </div>
+            
+            <h3>Benefits of RPM</h3>
+            <ul style="margin-left: 20px; margin-bottom: 20px; line-height: 1.6;">
+                <li>Early detection of health issues</li>
+                <li>Reduced hospital visits</li>
+                <li>Improved quality of life</li>
+                <li>Better management of chronic conditions</li>
+                <li>Increased engagement in your healthcare</li>
+                <li>Peace of mind for you and your loved ones</li>
+            </ul>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            <h3>Personal Information</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="first_name" class="required">First Name</label>
+                    <input type="text" id="first_name" name="first_name" required 
+                           value="{{ form_data.first_name|default:'' }}"
+                           placeholder="Enter your first name">
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name" class="required">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" required 
+                           value="{{ form_data.last_name|default:'' }}"
+                           placeholder="Enter your last name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="required">Email</label>
+                    <input type="email" id="email" name="email" required 
+                           value="{{ form_data.email|default:'' }}"
+                           placeholder="Enter your email address">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone_number" class="required">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number" required
+                           value="{{ form_data.phone_number|default:'' }}"
+                           placeholder="Enter your phone number">
+                </div>
+                
+                <div class="form-group">
+                    <label for="date_of_birth" class="required">Date of Birth</label>
+                    <input type="date" id="date_of_birth" name="date_of_birth" required 
+                           value="{{ form_data.date_of_birth|default:'' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" name="age" 
+                           value="{{ form_data.age|default:'' }}"
+                           placeholder="Enter your age">
+                </div>
+            </div>
+            
+            <h3>Medical Information</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="allergies">Allergies</label>
+                    <textarea id="allergies" name="allergies" 
+                              placeholder="List any allergies you have"
+                              rows="3">{{ form_data.allergies|default:'' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="past_medical_history">Past Medical History</label>
+                    <select id="past_medical_history" name="past_medical_history" multiple>
+                        {% for value, label in pmh_choices %}
+                            <option value="{{ value }}" {% if value in form_data.past_medical_history %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <h3>Service Selection</h3>
+            <p>Please select one service you are interested in:</p>
+            <div class="service-selection">
+                <div class="service-option">
+                    <input type="radio" id="service_bp" name="service_interest" value="blood_pressure" required>
+                    <label for="service_bp">Blood Pressure Monitoring</label>
+                </div>
+                <div class="service-option">
+                    <input type="radio" id="service_hr" name="service_interest" value="heart_rate">
+                    <label for="service_hr">Heart Rate Monitoring</label>
+                </div>
+                <div class="service-option">
+                    <input type="radio" id="service_o2" name="service_interest" value="oxygen">
+                    <label for="service_o2">Oxygen Saturation (O₂)</label>
+                </div>
+                <div class="service-option">
+                    <input type="radio" id="service_diabetes" name="service_interest" value="diabetes">
+                    <label for="service_diabetes">Diabetes Management</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="insurance" class="required">Insurance Provider</label>
+                <input type="text" id="insurance" name="insurance" required
+                       value="{{ form_data.insurance|default:'' }}"
+                       placeholder="Enter your insurance provider">
+            </div>
+            
+            <h3>Device Usage Questions</h3>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="eyesight" name="good_eyesight" value="yes">
+                    <label for="eyesight">Do you have good eyesight to use the app and the device?</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="follow_instructions" name="can_follow_instructions" value="yes">
+                    <label for="follow_instructions">Are you able to follow instructions and use an app?</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="take_readings" name="can_take_readings" value="yes">
+                    <label for="take_readings">Will you be able to take readings once every other day?</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="additional_comments">Additional Comments</label>
+                <textarea id="additional_comments" name="additional_comments" 
+                          placeholder="Any additional information you'd like to share"
+                          rows="3">{{ form_data.additional_comments|default:'' }}</textarea>
+            </div>
+
+            <div class="button-group">
+                <a href="{% url 'home' %}" class="back-btn">Back to Home</a>
+                <button type="submit" class="submit-btn">Submit Interest</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html> 

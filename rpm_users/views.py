@@ -8,7 +8,7 @@ from django.utils.timezone import localtime
 from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
-from .models import Patient, Moderator, PastMedicalHistory
+from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
@@ -28,6 +28,58 @@ from django.views.decorators.cache import never_cache
 def home(request):
     """Homepage with options for moderator login and patient registration"""
     return render(request, 'home.html')
+
+def express_interest(request):
+    """Handle the express interest form for potential RPM leads"""
+    # Get PMH choices for the form's select field
+    pmh_choices = PastMedicalHistory.PMH_CHOICES
+    
+    if request.method == 'POST':
+        # Process form submission
+        form_data = {
+            'first_name': request.POST.get('first_name'),
+            'last_name': request.POST.get('last_name'),
+            'email': request.POST.get('email'),
+            'phone_number': request.POST.get('phone_number'),
+            'date_of_birth': request.POST.get('date_of_birth'),
+            'age': request.POST.get('age'),
+            'allergies': request.POST.get('allergies'),
+            'insurance': request.POST.get('insurance'),
+            'service_interest': request.POST.get('service_interest'),
+            'additional_comments': request.POST.get('additional_comments'),
+            'good_eyesight': 'good_eyesight' in request.POST,
+            'can_follow_instructions': 'can_follow_instructions' in request.POST,
+            'can_take_readings': 'can_take_readings' in request.POST,
+        }
+        
+        # Get past medical history selections
+        past_medical_history = request.POST.getlist('past_medical_history')
+        
+        try:
+            # Create the Interest record
+            interest = Interest.objects.create(**form_data)
+            
+            # Add past medical history entries
+            for pmh in past_medical_history:
+                InterestPastMedicalHistory.objects.create(
+                    interest=interest,
+                    pmh=pmh
+                )
+            
+            messages.success(request, "Thank you for your interest! We'll be in touch soon.")
+            return redirect('home')
+            
+        except Exception as e:
+            messages.error(request, f"There was an error processing your form: {str(e)}")
+            return render(request, 'express_interest.html', {
+                'pmh_choices': pmh_choices,
+                'form_data': form_data
+            })
+    
+    # GET request - display the form
+    return render(request, 'express_interest.html', {
+        'pmh_choices': pmh_choices
+    })
 
 @api_view(["POST"])
 @permission_classes([])
