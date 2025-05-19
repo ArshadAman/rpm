@@ -8,7 +8,7 @@ from django.utils.timezone import localtime
 from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
-from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory
+from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
@@ -24,6 +24,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.sites import site
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 def home(request):
     """Homepage with options for moderator login and patient registration"""
@@ -679,3 +681,37 @@ def login_view(request):
             # Handle invalid login
             return render(request, 'admin/login.html', {'error': 'Invalid username or password'})
     return render(request, 'admin/login.html')
+
+@csrf_exempt
+def track_interest(request):
+    if request.method == "POST":
+        try:
+            # Ensure the user has a session
+            if not request.session.session_key:
+                request.session.save()
+            session_key = request.session.session_key
+
+            data = json.loads(request.body)
+            lead = InterestLead.objects.filter(session_key=session_key).first()
+            if not lead:
+                lead = InterestLead.objects.create(session_key=session_key)
+
+            for field in [
+                "first_name", "last_name", "email", "phone_number", "date_of_birth", "age",
+                "allergies", "past_medical_history", "service_interest", "insurance",
+                "good_eyesight", "can_follow_instructions", "can_take_readings", "additional_comments"
+            ]:
+                if field in data:
+                    value = data[field]
+                    if field == "date_of_birth" and value == "":
+                        value = None
+                    if field == "age" and (value == "" or value is None):
+                        value = None
+                    setattr(lead, field, value)
+            lead.save()
+            return JsonResponse({"success": True, "lead_id": lead.id})
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid method"}, status=405)

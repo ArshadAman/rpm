@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Moderator, Patient, PastMedicalHistory, Interest, InterestPastMedicalHistory
+from .models import Moderator, Patient, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead
 from reports.models import Reports
 
 # class ReportInline(admin.TabularInline):
@@ -47,6 +47,12 @@ admin.site.register(Interest, InterestAdmin)
 
 # Register the InterestPastMedicalHistory model separately
 admin.site.register(InterestPastMedicalHistory)
+
+# Register the InterestLead model
+@admin.register(InterestLead)
+class InterestLeadAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in InterestLead._meta.fields]
+    search_fields = ['email', 'first_name', 'last_name', 'phone_number']
 
 # Debug section to print registered models
 print("==== DEBUG: REGISTERED MODELS IN ADMIN ====")

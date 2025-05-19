@@ -611,5 +611,27 @@
             </div>
         </form>
     </div>
+
+    <script>
+    function sendPartialInterest() {
+        const form = document.querySelector('form');
+        const data = {};
+        new FormData(form).forEach((value, key) => {
+            data[key] = value;
+        });
+        fetch('/api/track-interest/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form input, form select, form textarea').forEach(el => {
+            el.addEventListener('change', sendPartialInterest);
+            el.addEventListener('input', sendPartialInterest);
+        });
+    });
+    </script>
 </body>
 </html> 

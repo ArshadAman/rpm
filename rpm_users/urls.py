@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
 urlpatterns = [
     path('add-patient/', views.create_patient),
     path('patient-token-refresh/', TokenRefreshView.as_view(), name='token_refresh'),
@@ -23,4 +24,5 @@ urlpatterns = [
     path('view_all_assigned_patient/', views.view_assigned_patient, name='view_all_assigned_patient'),
     path('view_documentation/<uuid:patient_id>/', views.view_documentation, name='view_documentation'),
     path('express-interest/', views.express_interest, name='express_interest'),
+    path('api/track-interest/', views.track_interest, name='track_interest'),
 ]

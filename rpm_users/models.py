@@ -191,3 +191,23 @@ class InterestPastMedicalHistory(models.Model):
     
     def __str__(self):
         return f"{self.interest.email} - {self.pmh}"
+
+
+class InterestLead(models.Model):
+    first_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    age = models.IntegerField(blank=True, null=True)
+    allergies = models.TextField(blank=True, null=True)
+    past_medical_history = models.TextField(blank=True, null=True)
+    service_interest = models.CharField(max_length=50, blank=True, null=True)
+    insurance = models.CharField(max_length=255, blank=True, null=True)
+    good_eyesight = models.BooleanField(default=False)
+    can_follow_instructions = models.BooleanField(default=False)
+    can_take_readings = models.BooleanField(default=False)
+    additional_comments = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    session_key = models.CharField(max_length=64, blank=True, null=True, db_index=True)
