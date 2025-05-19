@@ -698,7 +698,7 @@ def track_interest(request):
 
             for field in [
                 "first_name", "last_name", "email", "phone_number", "date_of_birth", "age",
-                "allergies", "past_medical_history", "service_interest", "insurance",
+                "allergies", "service_interest", "insurance",
                 "good_eyesight", "can_follow_instructions", "can_take_readings", "additional_comments"
             ]:
                 if field in data:

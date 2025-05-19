@@ -201,7 +201,7 @@ class InterestLead(models.Model):
     date_of_birth = models.DateField(blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)
     allergies = models.TextField(blank=True, null=True)
-    past_medical_history = models.TextField(blank=True, null=True)
+    # past_medical_history = models.TextField(blank=True, null=True)
     service_interest = models.CharField(max_length=50, blank=True, null=True)
     insurance = models.CharField(max_length=255, blank=True, null=True)
     good_eyesight = models.BooleanField(default=False)
