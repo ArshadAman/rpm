@@ -14,6 +14,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import date
+from django.forms.models import model_to_dict
 
 # from rpm.customPermission import CustomSSOAuthentication
 
@@ -115,17 +116,10 @@ def get_all_reports(request, patient_id):
         print("DEBUG: No reports found, returning empty array")
         return JsonResponse({"reports": []}, safe=False)
 
-    # Prepare JSON response
+    # Prepare JSON response with all fields
     data = {
         "reports": [
-            {
-                "patient_name": report.patient.user.first_name,
-                "created_at": report.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                "heart_rate": report.heart_rate,
-                "blood_pressure": report.blood_pressure,
-                "temperature": report.temperature,
-            }
-            for report in reports
+            {**model_to_dict(report), "created_at": report.created_at.strftime("%Y-%m-%d %H:%M:%S")} for report in reports
         ]
     }
 
@@ -137,19 +131,45 @@ def create_report(request):
     email = request.email
     if patient := Patient.objects.filter(email=email).first():
         data = request.data
-        blood_pressure = data.get("blood_pressure")
-        heart_rate = data.get("heart_rate")
-        spo2 = data.get("spo2")
-        temperature = data.get("temperature")
-        symptoms = data.get("symptoms")
-        report = Reports.objects.create(
-            patient=patient,
-            blood_pressure=blood_pressure,
-            heartbeat_rate=heart_rate,
-            spo2=spo2,
-            temperature=temperature,
-            symptoms=symptoms,
-        )
+
+        # List all model fields you want to accept
+        report_fields = {
+            "blood_pressure": data.get("blood_pressure", ""),
+            "heart_rate": data.get("heart_rate", ""),
+            "spo2": data.get("spo2", ""),
+            "temperature": data.get("temperature", ""),
+            "symptoms": data.get("symptoms", ""),
+            "device_id": data.get("device_id", ""),
+            "created_at_device": data.get("created_at_device", ""),
+            "data_type": data.get("data_type", ""),
+            "imei": data.get("imei", ""),
+            "iccid": data.get("iccid", ""),
+            "serial_number": data.get("serial_number", ""),
+            "model_number": data.get("model_number", ""),
+            "is_test": data.get("is_test", ""),
+            "user_id": data.get("user_id", ""),
+            "systolic_blood_pressure": data.get("systolic_blood_pressure", ""),
+            "diastolic_blood_pressure": data.get("diastolic_blood_pressure", ""),
+            "pulse": data.get("pulse", ""),
+            "irregular_heartbeat": data.get("irregular_heartbeat", ""),
+            "hand_shaking": data.get("hand_shaking", ""),
+            "triple_mode": data.get("triple_mode", ""),
+            "battery_level": data.get("battery_level", ""),
+            "signal_strength": data.get("signal_strength", ""),
+            "measurement_timestamp": data.get("measurement_timestamp", ""),
+            "timezone": data.get("timezone", ""),
+            "blood_glucose": data.get("blood_glucose", ""),
+            "glucose_unit": data.get("glucose_unit", ""),
+            "test_paper_type": data.get("test_paper_type", ""),
+            "sample_type": data.get("sample_type", ""),
+            "meal_mark": data.get("meal_mark", ""),
+            "signal_level": data.get("signal_level", ""),
+            "measurement_timezone": data.get("measurement_timezone", ""),
+            "upload_timestamp": data.get("upload_timestamp", ""),
+            "upload_timezone": data.get("upload_timezone", ""),
+        }
+
+        report = Reports.objects.create(patient=patient, **report_fields)
         serializer = ReportSerializer(report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response({"error": "Patient not exists"}, status=status.HTTP_404_NOT_FOUND)
@@ -202,53 +222,70 @@ def data_from_mio_connect(request):
         except json.JSONDecodeError as e:
             return JsonResponse({"error": f"Invalid JSON data: {str(e)}"}, status=400)
 
-        # Extract health metrics
-        try:
-            data = body.get('data', {})
-            systolic_bp = data.get('sys')
-            diastolic_bp = data.get('dia')
-            pulse_rate = data.get('pul')
-            device_serial = data.get('sn')
+        data = body.get('data', {})
+        device_serial = data.get('sn', '')
+        if not device_serial:
+            return JsonResponse({"error": "Missing device serial number"}, status=400)
 
-            print(f"Extracted health metrics: Systolic BP: {systolic_bp}, Diastolic BP: {diastolic_bp}, Pulse Rate: {pulse_rate}, Device Serial: {device_serial}")
-
-            if not all([systolic_bp, diastolic_bp, pulse_rate, device_serial]):
-                return JsonResponse({
-                    "error": "Missing required health metrics or device serial number"
-                }, status=400)
-        except Exception as e:
-            return JsonResponse({"error": f"Error extracting health metrics: {str(e)}"}, status=400)
-
-        # Find patient
         patient = Patient.objects.filter(device_serial_number=device_serial).first()
         if not patient:
-            return JsonResponse({
-                "error": f"No patient found with device serial number: {device_serial}"
-            }, status=404)
+            return JsonResponse({"error": f"No patient found with device serial number: {device_serial}"}, status=404)
 
-        # Create the report
-        try:
-            report = Reports.objects.create(
-                blood_pressure=f"{systolic_bp}/{diastolic_bp}",
-                heart_rate=pulse_rate,
-                patient=patient
-            )
-            return JsonResponse({
-                "success": True,
-                "received_data": body,
-                "saved_report_id": report.id,
-                "patient_id": patient.id
-            })
-        except Exception as e:
-            return JsonResponse({
-                "error": f"Error creating report: {str(e)}"
-            }, status=500)
+        # List all possible fields from both device types
+        report_fields = {
+            # Common
+            'device_id': body.get('deviceId', ''),
+            'created_at_device': str(body.get('createdAt', '')),
+            'data_type': data.get('data_type', ''),
+            'imei': data.get('imei', ''),
+            'iccid': data.get('iccid', ''),
+            'serial_number': data.get('sn', ''),
+            'model_number': body.get('modelNumber', ''),
+            'is_test': str(body.get('isTest', '')),
+            # Sphygmomanometer
+            'user_id': str(data.get('user', '')),
+            'systolic_blood_pressure': str(data.get('sys', '')),
+            'diastolic_blood_pressure': str(data.get('dia', '')),
+            'pulse': str(data.get('pul', '')),
+            'irregular_heartbeat': str(data.get('ihb', '')),
+            'hand_shaking': str(data.get('hand', '')),
+            'triple_mode': str(data.get('tri', '')),
+            'battery_level': str(data.get('bat', '')),
+            'signal_strength': str(data.get('sig', '')),
+            'measurement_timestamp': str(data.get('ts', '')),
+            'timezone': str(data.get('tz', '')),
+            # Blood Glucose Meter
+            'blood_glucose': str(data.get('data', '')),
+            'glucose_unit': str(data.get('unit', '')),
+            'test_paper_type': str(data.get('sample', '')),
+            'sample_type': str(data.get('target', '')),
+            'meal_mark': str(data.get('meal', '')),
+            'signal_level': str(data.get('sig_lvl', '')),
+            'measurement_timezone': str(data.get('ts_tz', '')),
+            'upload_timestamp': str(data.get('uptime', '')),
+            'upload_timezone': str(data.get('uptime_tz', '')),
+        }
 
+        # For compatibility, also fill old fields if possible
+        if report_fields['systolic_blood_pressure'] and report_fields['diastolic_blood_pressure']:
+            report_fields['blood_pressure'] = f"{report_fields['systolic_blood_pressure']}/{report_fields['diastolic_blood_pressure']}"
+        else:
+            report_fields['blood_pressure'] = ''
+        report_fields['heart_rate'] = report_fields['pulse']
+        report_fields['spo2'] = ''
+        report_fields['temperature'] = ''
+        report_fields['symptoms'] = ''
+
+        report = Reports.objects.create(patient=patient, **report_fields)
+        return JsonResponse({
+            "success": True,
+            "received_data": body,
+            "saved_report_id": report.id,
+            "patient_id": patient.id
+        })
     except Exception as err:
         print(f"Unexpected error: {str(err)}")
-        return JsonResponse({
-            "error": "An unexpected error occurred while processing the request"
-        }, status=500)
+        return JsonResponse({"error": "An unexpected error occurred while processing the request"}, status=500)
 
 
 @login_required

@@ -1371,31 +1371,52 @@
               return;
             }
 
-            // Get the table body
             const tableBody = document.querySelector('#results table tbody');
-            
-            // Clear existing rows
             tableBody.innerHTML = '';
 
-            // Get unique vital signs from the first report
-            const vitalSigns = [
-              { name: 'Temperature (°C)', key: 'temperature' },
-              { name: 'Heart Rate', key: 'heart_rate' },
-              { name: 'Blood Pressure', key: 'blood_pressure' }
-            ];
+            // List of all possible fields with human-friendly labels
+            const fieldLabels = {
+              temperature: "Temperature (°C)",
+              heart_rate: "Heart Rate",
+              blood_pressure: "Blood Pressure",
+              systolic_blood_pressure: "Systolic BP",
+              diastolic_blood_pressure: "Diastolic BP",
+              pulse: "Pulse",
+              irregular_heartbeat: "Irregular Heartbeat",
+              hand_shaking: "Hand Shaking",
+              triple_mode: "Triple Mode",
+              battery_level: "Battery Level",
+              signal_strength: "Signal Strength",
+              measurement_timestamp: "Measurement Time",
+              timezone: "Timezone",
+              blood_glucose: "Blood Glucose",
+              glucose_unit: "Glucose Unit",
+              test_paper_type: "Test Paper Type",
+              sample_type: "Sample Type",
+              meal_mark: "Meal Mark",
+              signal_level: "Signal Level",
+              measurement_timezone: "Measurement TZ",
+              upload_timestamp: "Upload Time",
+              upload_timezone: "Upload TZ",
+              // Add more if needed
+            };
 
-            // Create rows for each vital sign
-            vitalSigns.forEach(vital => {
+            // Find which fields are non-empty in at least one report
+            const nonEmptyFields = Object.keys(fieldLabels).filter(key =>
+              data.reports.some(report => report[key] && report[key] !== "")
+            );
+
+            // Build table rows for each non-empty field
+            nonEmptyFields.forEach(key => {
               const row = document.createElement('tr');
               const firstCell = document.createElement('td');
               firstCell.className = 'fixed-left';
-              firstCell.textContent = vital.name;
+              firstCell.textContent = fieldLabels[key] || key;
               row.appendChild(firstCell);
 
-              // Add cells for each report
               data.reports.forEach(report => {
                 const cell = document.createElement('td');
-                cell.textContent = report[vital.key];
+                cell.textContent = (report[key] && report[key] !== "") ? report[key] : "N/A";
                 row.appendChild(cell);
               });
 
@@ -1405,17 +1426,13 @@
             // Update the table header with dates
             const tableHeader = document.querySelector('#results table thead tr');
             const headerCells = tableHeader.querySelectorAll('th');
-            
-            // Keep the first header cell (Vital Signs)
             const firstHeader = headerCells[0];
             tableHeader.innerHTML = '';
             tableHeader.appendChild(firstHeader);
 
-            // Add new header cells with dates
             data.reports.forEach(report => {
               const date = new Date(report.created_at);
               const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-              
               const th = document.createElement('th');
               th.textContent = formattedDate;
               tableHeader.appendChild(th);
