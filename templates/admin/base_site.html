@@ -1,0 +1,309 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    body {
+        background: radial-gradient(circle at top right, #1a1a2e, #0F1116);
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+    }
+
+    #header {
+        background: #0F1116;
+        color: #E0C3FC;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0;
+        height: 70px;
+        position: fixed;
+        top: 0;
+        left: 280px;
+        right: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 30px;
+    }
+
+    #branding {
+        float: none;
+    }
+
+    #branding h1 {
+        color: #E0C3FC;
+        font-size: 20px;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    #branding h1 a {
+        color: #E0C3FC;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #branding h1 img {
+        height: 30px;
+    }
+
+    #user-tools {
+        float: none;
+        padding: 0;
+        font-size: 14px;
+    }
+
+    #user-tools a {
+        color: #E0C3FC;
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    #user-tools a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    #content {
+        margin-left: 280px;
+        padding: 30px;
+        margin-top: 70px;
+        background: transparent;
+    }
+
+    #content-main {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+    }
+
+    /* Sidebar Styles */
+    #nav-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        background: #0F1116;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 20px 0;
+        overflow-y: auto;
+    }
+
+    #nav-sidebar .module {
+        background: transparent;
+        border: none;
+        margin: 0;
+        padding: 0 20px;
+    }
+
+    #nav-sidebar .module h2 {
+        background: transparent;
+        color: #E0C3FC;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 15px 0;
+        margin: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #nav-sidebar .module ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    #nav-sidebar .module li {
+        margin: 0;
+    }
+
+    #nav-sidebar .module a {
+        display: block;
+        color: #E0C3FC;
+        text-decoration: none;
+        padding: 12px 15px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    #nav-sidebar .module a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    #nav-sidebar .module a.active {
+        background: linear-gradient(135deg, #7928CA, #FF0080);
+        color: white;
+    }
+
+    /* Form Styles */
+    .form-row {
+        background: transparent;
+        border: none;
+        padding: 15px 0;
+        margin: 0;
+    }
+
+    .form-row label {
+        color: #E0C3FC;
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    input[type=text], input[type=password], input[type=email], textarea, select {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #E0C3FC;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    input[type=text]:focus, input[type=password]:focus, input[type=email]:focus, textarea:focus, select:focus {
+        border-color: #7928CA;
+        box-shadow: 0 0 0 2px rgba(121, 40, 202, 0.2);
+        outline: none;
+    }
+
+    /* Button Styles */
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: linear-gradient(135deg, #7928CA, #FF0080);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
+        background: linear-gradient(135deg, #6A0DAD, #FF0080);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(121, 40, 202, 0.3);
+    }
+
+    /* Table Styles */
+    .module table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .module table th {
+        background: rgba(255, 255, 255, 0.05);
+        color: #E0C3FC;
+        font-weight: 500;
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .module table td {
+        color: #E0C3FC;
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .module table tr:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    /* Action Buttons */
+    .action-checkbox {
+        margin-right: 10px;
+    }
+
+    .actions {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .pagination a {
+        background: rgba(255, 255, 255, 0.05);
+        color: #E0C3FC;
+        padding: 8px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .pagination a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .pagination .this-page {
+        background: linear-gradient(135deg, #7928CA, #FF0080);
+        color: white;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        #header {
+            left: 240px;
+        }
+
+        #content {
+            margin-left: 240px;
+        }
+
+        #nav-sidebar {
+            width: 240px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        #header {
+            left: 0;
+        }
+
+        #content {
+            margin-left: 0;
+        }
+
+        #nav-sidebar {
+            width: 0;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        #nav-sidebar.show {
+            width: 280px;
+            transform: translateX(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="{% static 'admin/img/logo.png' %}" alt="Logo" style="height: 30px;">
+        <span>Admin Portal</span>
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %} 

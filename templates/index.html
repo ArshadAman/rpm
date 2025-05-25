@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Vitals Summary</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #7928CA;
+        --primary-dark: #6A0DAD;
+        --secondary: #FF0080;
+        --text: #E0C3FC;
+        --background: #0F1116;
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --error: #FF4E4E;
+        --success: #00CC88;
+      }
+
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+        color: var(--text);
+        padding: 30px;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 100%;
+        margin: auto;
+        margin-top: 50px;
+        display: flex;
+        gap: 20px;
+      }
+
+      .left-panel, .right-panel {
+        width: 150px;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 12px;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        font-size: 12px;
+      }
+
+      .main-content {
+        flex: 1;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 25px;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow-x: auto;
+        min-width: 0;
+        position: relative;
+      }
+
+      .patient-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 8px;
+        padding: 12px;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 12px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .patient-details::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        z-index: 1;
+      }
+
+      .patient-details > div {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 8px 10px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 12px;
+      }
+
+      .patient-details > div:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--primary);
+      }
+
+      .patient-details strong {
+        color: var(--secondary);
+        font-size: 11px;
+        font-weight: 500;
+        display: inline;
+        margin-right: 4px;
+        letter-spacing: 0.5px;
+      }
+
+      .patient-details span {
+        font-size: 12px;
+        color: white;
+        font-weight: 400;
+      }
+
+      .tabs, .right-tabs {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .tabs div, .right-tabs div {
+        padding: 10px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 8px;
+        white-space: nowrap;
+        text-align: center;
+      }
+
+      .tabs div.active, .right-tabs div.active {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-color: transparent;
+        box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+      }
+
+      .tabs div:hover, .right-tabs div:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .table-container {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 15px;
+      }
+
+      th, td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      th {
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      td {
+        background: rgba(255, 255, 255, 0.03);
+        transition: background 0.3s ease;
+      }
+
+      tr:hover td {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .documentation-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 15px;
+        transition: transform 0.3s ease;
+      }
+
+      .documentation-card:hover {
+        transform: translateY(-2px);
+      }
+
+      button, .back-btn, .download-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        font-family: 'Poppins', sans-serif;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      button:hover, .back-btn:hover, .download-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+      }
+
+      input[type="date"] {
+        padding: 12px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        color: white;
+        font-family: 'Poppins', sans-serif;
+        margin-right: 10px;
+      }
+
+      /* Scrollbar styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-dark);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+          padding: 8px;
+          gap: 10px;
+        }
+        .left-panel, .right-panel {
+          width: 100%;
+        }
+        .tabs, .right-tabs {
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 5px;
+        }
+        .tabs div, .right-tabs div {
+          padding: 8px 10px;
+          font-size: 10px;
+        }
+        .patient-details {
+          grid-template-columns: repeat(2, 1fr);
+          padding: 10px;
+          gap: 8px;
+        }
+        #documentation-container {
+          flex-direction: column;
+        }
+        #documentation-list {
+          width: 100% !important;
+          max-height: 150px;
+          border-right: none !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      .section-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+
+      .pmh-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .pmh-item {
+        padding: 10px 15px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      .pmh-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .medical-history-section {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .section-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 15px;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 15px;
+        letter-spacing: 0.5px;
+      }
+
+      .header-icon {
+        opacity: 0.9;
+      }
+
+      .pmh-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 5px;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+      }
+
+      .pmh-item {
+        padding: 12px 15px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .pmh-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--primary);
+        transform: translateX(5px);
+      }
+
+      .condition-marker {
+        width: 8px;
+        height: 8px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .pmh-empty {
+        padding: 20px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .pmh-empty svg {
+        opacity: 0.5;
+        width: 32px;
+        height: 32px;
+      }
+
+      /* Custom scrollbar for pmh-list */
+      .pmh-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .pmh-list::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 3px;
+      }
+
+      .pmh-list::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 3px;
+      }
+
+      .pmh-list::-webkit-scrollbar-thumb:hover {
+        background: var(--secondary);
+      }
+
+      @media (max-width: 768px) {
+        .pmh-list {
+          max-height: none;
+        }
+        
+        .pmh-item {
+          padding: 10px 12px;
+        }
+      }
+
+      .info-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 20px;
+      }
+
+      .info-content {
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .info-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        padding: 40px 20px;
+        color: rgba(255, 255, 255, 0.5);
+        text-align: center;
+      }
+
+      .info-empty svg {
+        opacity: 0.5;
+        width: 40px;
+        height: 40px;
+      }
+
+      .table-container h3 {
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .table-container h3::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        border-radius: 2px;
+      }
+
+      /* Tab content animations */
+      .table-container {
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Update the tabs styling */
+      .tabs div {
+        padding: 14px 20px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Custom styling for specific tabs */
+      .info-section {
+        display: grid;
+        gap: 20px;
+      }
+
+      .info-item {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .info-item strong {
+        display: block;
+        color: var(--secondary);
+        margin-bottom: 8px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .info-item span {
+        color: white;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* Documentation improvements */
+      .documentation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+      }
+
+      .documentation-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+      }
+
+      .documentation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .documentation-card h4 {
+        color: white;
+        margin-bottom: 10px;
+        font-size: 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 8px;
+      }
+
+      .documentation-card p {
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 15px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .documentation-card strong {
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .download-btn {
+        display: inline-block;
+        background: var(--primary);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+      }
+
+      .download-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+      }
+
+      .date-info {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+        margin-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 8px;
+      }
+
+      /* Form improvements */
+      #doc-form {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      #doc-form label {
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      /* Mobile responsiveness improvements */
+      @media (max-width: 768px) {
+        .info-card {
+          padding: 15px;
+        }
+        
+        .info-content {
+          padding: 15px;
+        }
+        
+        .documentation-card {
+          padding: 20px;
+        }
+        
+        #doc-form {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        
+        .table-container h3 {
+          font-size: 18px;
+        }
+      }
+
+      .info-section {
+        display: grid;
+        gap: 15px;
+      }
+
+      .info-item {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .info-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--primary);
+        transform: translateX(5px);
+      }
+
+      .item-icon {
+        font-size: 20px;
+        opacity: 0.9;
+      }
+
+      .medication-details {
+        flex: 1;
+      }
+
+      .medication-details span {
+        display: block;
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .table-container h3 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .table-container h3 svg {
+        opacity: 0.9;
+      }
+
+      @media (max-width: 768px) {
+        .info-item {
+          padding: 15px;
+        }
+
+        .item-icon {
+          font-size: 18px;
+        }
+
+        .table-container h3 {
+          font-size: 18px;
+        }
+      }
+
+      .back-btn {
+        margin-left: 30px;  /* Align with the page padding */
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 12px;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .back-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(121, 40, 202, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .back-btn {
+          margin-left: 15px;
+          font-size: 13px;
+          padding: 8px 16px;
+        }
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Patient Information Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px 15px; background: rgba(255, 255, 255, 0.05); border-radius: 12px;">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <h2 style="color: white; font-size: 18px; margin: 0;">{{patient.user.first_name}} {{patient.user.last_name}} ({{patient.age}} yrs)</h2>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="/view-patient/" class="back-btn" style="padding: 6px 12px; font-size: 12px;">← Back</a>
+        <a href="{% url 'edit_patient' patient.id %}" class="edit-btn">
+          <button style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+            </svg>
+            Edit
+          </button>
+        </a>
+      </div>
+    </div>
+
+    <div class="patient-details">
+      <div>
+        <strong>Name:</strong>
+        <span>{{patient.user.first_name}} {{patient.user.last_name}}</span>
+      </div>
+      <div>
+        <strong>DOB:</strong>
+        <span>{{patient.date_of_birth}}</span>
+      </div>
+      <div>
+        <strong>Age:</strong>
+        <span>{{patient.age}} yrs</span>
+      </div>
+      <div>
+        <strong>Sex:</strong>
+        <span>{{patient.sex}}</span>
+      </div>
+      <div>
+        <strong>Weight:</strong>
+        <span>{{patient.weight}} kg</span>
+      </div>
+      <div>
+        <strong>Height:</strong>
+        <span>{{patient.height}} cm</span>
+      </div>
+      <div>
+        <strong>BMI:</strong>
+        <span>{{patient.bmi}}</span>
+      </div>
+      <div>
+        <strong>Insurance:</strong>
+        <span>{{patient.insurance}}</span>
+      </div>
+      <div>
+        <strong>Monitoring:</strong>
+        <span>{{patient.monitoring_parameters}}</span>
+      </div>
+      <div>
+        <strong>Device ID:</strong>
+        <span>{{patient.device_serial_number}}</span>
+      </div>
+      <div>
+        <strong>Drink:</strong>
+        <span>{{patient.drink}}</span>
+      </div>
+      <div>
+        <strong>Smoke:</strong>
+        <span>{{patient.smoke}}</span>
+      </div>
+      <div>
+        <strong>Allergies:</strong>
+        <span>{{patient.allergies|default:"None"}}</span>
+      </div>
+      <div>
+        <strong>Start:</strong>
+        <span>{{patient.created_at|date:"d/m/Y"}}</span>
+      </div>
+      <div>
+        <strong>Updated:</strong>
+        <span>{{patient.updated_at|date:"d/m/Y"}}</span>
+      </div>
+      <div>
+        <strong>Moderator:</strong>
+        <span>{{patient.moderator_assigned.user.username}}</span>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Left Panel -->
+      <div class="left-panel">
+        <div class="tabs">
+          <div class="active" onclick="showTab('results')">Results</div>
+          <div onclick="showTab('orders')">Orders</div>
+          <div onclick="showTab('documentation')">Documentation</div>
+          <div onclick="showTab('allergies')">Allergies</div>
+          <div onclick="showTab('family_history')">Family History</div>
+          <div onclick="showTab('medications')">Medications</div>
+          <div onclick="showTab('pharmacy')">Pharmacy</div>
+        </div>
+      </div>
+
+      <!-- Main Content Section -->
+      <div class="main-content">
+        <!-- Content Section for Tabs -->
+        <div class="content">
+          <!-- Results Tab -->
+          <div id="results" class="table-container">
+            <h3>Vitals Summary</h3>
+            <div class="scrollable">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="fixed-left">Vital Signs</th>
+                    <!-- Headers will be populated dynamically -->
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Rows will be populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div
+            id="report-details"
+            class="table-container"
+            style="display: none"
+          >
+            <div id="report-content"></div>
+          </div>
+
+          <!-- Orders Tab -->
+          <div id="orders" class="table-container" style="display: none">
+            <h3>Orders</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th class="left-col fixed-left">Order</th>
+                  <th>9/27/2024</th>
+                  <th>9/27/2024</th>
+                  <th>9/27/2024</th>
+                  <th>9/27/2024</th>
+                  <th>Additional Info</th>
+                  <!-- New column -->
+                </tr>
+                <tr>
+                  <th class="left-col fixed-left"></th>
+                  <th>10:37 AM</th>
+                  <th>11:24 AM</th>
+                  <th>12:10 PM</th>
+                  <th>1:32 PM</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="left-col">O2</td>
+                  <td>Ordered</td>
+                  <td>Administered</td>
+                  <td>Discontinued</td>
+                  <td>---</td>
+                  <td>Details</td>
+                </tr>
+                <tr>
+                  <td class="left-col">Mobility</td>
+                  <td>Initiated</td>
+                  <td>On Hold</td>
+                  <td>---</td>
+                  <td>Restarted</td>
+                  <td>Comments</td>
+                </tr>
+                <tr>
+                  <td class="left-col">Allergy</td>
+                  <td>Penicillin</td>
+                  <td>N/A</td>
+                  <td>N/A</td>
+                  <td>Confirmed</td>
+                  <td>Extra info</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Documentation Tab -->
+          <div id="documentation" class="table-container" style="display: none">
+            <h3>Documentation</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <form id="doc-form" style="display: flex; align-items: center; gap: 10px;">
+                <label for="date" style="font-size: 12px;">Filter:</label>
+                <input type="date" id="date" name="date" style="padding: 5px 8px; border-radius: 4px; height: 30px; font-size: 12px;" />
+                <button type="button" onclick="fetchDocumentation(true)" style="background: var(--primary); color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; height: 30px; font-size: 12px;">Filter</button>
+              </form>
+              <a href="{% url 'add_documentation' patient.id %}" class="add-button">
+                <button class="add-button" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; font-size: 12px; height: 30px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                  </svg>
+                  Add
+                </button>
+              </a>
+            </div>
+            <div id="documentation-container" style="display: flex; height: 55vh; min-height: 300px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; overflow: hidden;">
+              <!-- Left panel - Documentation list -->
+              <div id="documentation-list" style="width: 25%; overflow-y: auto; border-right: 1px solid rgba(255, 255, 255, 0.1); background: rgba(0, 0, 0, 0.1);">
+                <!-- Documentation list will be loaded here -->
+                <div style="padding: 10px; text-align: center; color: rgba(255, 255, 255, 0.7); font-size: 12px;">
+                  Loading documentation...
+                </div>
+              </div>
+              
+              <!-- Right panel - Documentation details -->
+              <div id="documentation-details" style="flex: 1; padding: 15px; overflow-y: auto; background: rgba(0, 0, 0, 0.05);">
+                <!-- Documentation details will be loaded here -->
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.5);">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-bottom: 10px; opacity: 0.5;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p style="font-size: 12px;">Select a document to view details</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Allergies Tab -->
+          <div id="allergies" class="table-container" style="display: none">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm1-9h-2v6h2zm0-4h-2v2h2z"/>
+                </svg>
+                Allergies
+            </h3>
+            <div class="info-card">
+                {% if patient.allergies %}
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="item-icon">⚠️</div>
+                            <span>{{ patient.allergies }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="info-empty">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span>No allergies recorded</span>
+                    </div>
+                {% endif %}
+            </div>
+          </div>
+
+          <!-- Family History Tab -->
+          <div id="family_history" class="table-container" style="display: none">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Family History
+            </h3>
+            <div class="info-card">
+                {% if patient.family_history %}
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="item-icon">👥</div>
+                            <span>{{ patient.family_history }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="info-empty">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span>No family history recorded</span>
+                    </div>
+                {% endif %}
+            </div>
+          </div>
+
+          <!-- Medications Tab -->
+          <div id="medications" class="table-container" style="display: none">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                </svg>
+                Current Medications
+            </h3>
+            <div class="info-card">
+                {% if patient.medications %}
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="item-icon">💊</div>
+                            <div class="medication-details">
+                                <span style="white-space: pre-line">{{ patient.medications }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="info-empty">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 3v18m0 0l3-3m-3 3l-3-3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+                        </svg>
+                        <span>No medications recorded</span>
+                    </div>
+                {% endif %}
+            </div>
+          </div>
+
+          <!-- Pharmacy Tab -->
+          <div id="pharmacy" class="table-container" style="display: none">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/>
+                    <path d="M19 16v3a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-3"/>
+                    <path d="M3 8h18"/>
+                    <path d="M9 12h6"/>
+                </svg>
+                Pharmacy Information
+            </h3>
+            <div class="info-card">
+                {% if patient.pharmacy_info %}
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="item-icon">🏥</div>
+                            <span>{{ patient.pharmacy_info }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="info-empty">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span>No pharmacy information recorded</span>
+                    </div>
+                {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="right-panel">
+        <div class="medical-history-section">
+          <div class="section-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="header-icon">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            Past Medical History
+          </div>
+          <div class="pmh-list">
+            {% if patient.medical_history.all %}
+                {% for condition in patient.medical_history.all %}
+                    <div class="pmh-item">
+                        <div class="condition-marker"></div>
+                        <span>{{ condition.pmh }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="pmh-empty">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <span>No past medical history recorded</span>
+                </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script>
+      function showTab(tabId) {
+        const tabs = document.querySelectorAll(".table-container");
+        const tabButtons = document.querySelectorAll(".tabs div");
+
+        tabs.forEach((tab) => (tab.style.display = "none"));
+        tabButtons.forEach((button) => button.classList.remove("active"));
+
+        document.getElementById(tabId).style.display = "block";
+        event.target.classList.add("active");
+        
+        // Load documentation automatically when documentation tab is opened
+        if (tabId === "documentation") {
+          // Only load if not already loaded
+          if (!window.documentationsLoaded) {
+            fetchDocumentation(false);
+            window.documentationsLoaded = true;
+          }
+        }
+      }
+
+      function showRightTab(tabId) {
+        const tabButtons = document.querySelectorAll(".right-tabs div");
+        tabButtons.forEach((button) => button.classList.remove("active"));
+        event.target.classList.add("active");
+        // Add your right tab content display logic here
+      }
+
+      function fetchReportDetails(reportId) {
+        fetch(`/reports/get-single-report/${reportId}/`)
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("DEBUG: Report Data from API:", data); // Debugging
+
+            if (!data.report) {
+              console.error("Error: Missing 'report' object in response", data);
+              return;
+            }
+
+            const report = data.report; // Extract report object
+            const reportContainer = document.getElementById("report-content");
+
+            reportContainer.innerHTML = `
+              <h3>Report Details</h3>
+              <div class="report-grid">
+                <div class="report-item"><strong>Created At:</strong> ${
+                  report.created_at
+                }</div>
+                <div class="report-item"><strong>Blood Pressure:</strong> ${
+                  report.blood_pressure
+                }</div>
+                <div class="report-item"><strong>Heart Rate:</strong> ${
+                  report.heart_rate
+                }</div>
+                <div class="report-item"><strong>SpO2:</strong> ${
+                  report.spo2
+                }</div>
+                <div class="report-item"><strong>Temperature:</strong> ${
+                  report.temperature
+                }</div>
+                <div class="report-item"><strong>Symptoms:</strong> ${
+                  report.symptoms || "N/A"
+                }</div>
+              </div>
+            `;
+            document.getElementById("report-details").style.display = "block";
+          })
+          .catch((error) => console.error("Error fetching report:", error));
+      }
+
+      function fetchDocumentation(useFilter = false) {
+        const date = document.getElementById("date").value;
+        // Only validate date if using filter
+        if (useFilter && !date) {
+          alert("Please select a date for filtering");
+          return;
+        }
+
+        // Show loading indicator
+        const docListContainer = document.getElementById("documentation-list");
+        docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>Loading documentation...</div>";
+        
+        const docDetailsContainer = document.getElementById("documentation-details");
+        docDetailsContainer.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.5);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-bottom: 15px; opacity: 0.5;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p>Select a document to view details</p>
+          </div>
+        `;
+
+        // Get the patient ID from the template
+        const patientId = "{{ patient.id }}";
+
+        // Build URL - include date parameter only if filtering
+        let url = `/view_documentation/${patientId}/`;
+        if (useFilter && date) {
+          url += `?date=${date}`;
+        }
+
+        fetch(url, {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (!data.documentations || data.documentations.length === 0) {
+              docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
+            } else {
+              // Create an array to store the documentation data for easy access
+              window.documentations = data.documentations;
+              
+              // Create the document list HTML
+              let listContent = '';
+              data.documentations.forEach((doc, index) => {
+                listContent += `
+                  <div class="doc-item" data-index="${index}" style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: background 0.2s ease;">
+                    <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${doc.title}</h4>
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 3px 0;">
+                      ${doc.chief_complaint ? `<strong>Chief Complaint:</strong> ${doc.chief_complaint.substring(0, 30)}${doc.chief_complaint.length > 30 ? '...' : ''}` : ''}
+                    </p>
+                    <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
+                      Created: ${new Date(doc.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                `;
+              });
+              docListContainer.innerHTML = listContent;
+              
+              // Add click event listeners to each document item
+              document.querySelectorAll('.doc-item').forEach(item => {
+                item.addEventListener('click', function() {
+                  // Remove selected class from all items
+                  document.querySelectorAll('.doc-item').forEach(i => {
+                    i.style.background = '';
+                    i.style.borderLeft = '';
+                  });
+                  
+                  // Add selected styling to the clicked item
+                  this.style.background = 'rgba(121, 40, 202, 0.2)';
+                  this.style.borderLeft = '4px solid #7928CA';
+                  
+                  // Get the documentation index
+                  const index = this.getAttribute('data-index');
+                  const doc = window.documentations[index];
+                  
+                  // Update the documentation details panel
+                  displayDocumentationDetails(doc);
+                });
+              });
+              
+              // Select the first document by default
+              if (document.querySelector('.doc-item')) {
+                document.querySelector('.doc-item').click();
+              }
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching documentation:", error);
+            docListContainer.innerHTML = `<div style='padding: 15px; text-align: center; color: #FF4E4E;'>Error: ${error.message}</div>`;
+          });
+      }
+      
+      function displayDocumentationDetails(doc) {
+        const docDetailsContainer = document.getElementById("documentation-details");
+        
+        let detailContent = `
+          <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 15px;">
+              <h2 style="color: white; font-size: 22px; margin-bottom: 10px;">${doc.title}</h2>
+              <div style="display: flex; flex-wrap: wrap; gap: 15px; color: rgba(255, 255, 255, 0.7); font-size: 14px;">
+                <span><strong>Created:</strong> ${new Date(doc.created_at).toLocaleString()}</span>
+                <span><strong>Updated:</strong> ${new Date(doc.updated_at).toLocaleString()}</span>
+              </div>
+            </div>
+        `;
+        
+        if (doc.chief_complaint) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Chief Complaint</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.chief_complaint}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.history_of_present_illness) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">History of Present Illness</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.history_of_present_illness}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.subjective) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Subjective</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.subjective}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.objective) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Objective</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.objective}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.assessment) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Assessment</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.assessment}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.plan) {
+          detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Plan</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.plan}</p>
+            </div>
+          `;
+        }
+        
+        if (doc.file_url) {
+          detailContent += `
+            <a href="${doc.file_url}" style="display: inline-block; background: #7928CA; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; margin-top: 15px; font-size: 14px;" target="_blank">Download File</a>
+          `;
+        }
+        
+        detailContent += '</div>';
+        docDetailsContainer.innerHTML = detailContent;
+      }
+
+      function fetchAndDisplayReports(patientId) {
+        fetch(`/reports/get-all-reports/${patientId}/`)
+          .then(response => response.json())
+          .then(data => {
+            if (!data.reports || data.reports.length === 0) {
+              console.error("No reports found");
+              return;
+            }
+
+            const tableBody = document.querySelector('#results table tbody');
+            tableBody.innerHTML = '';
+
+            // List of all possible fields with human-friendly labels
+            const fieldLabels = {
+              temperature: "Temperature (°C)",
+              heart_rate: "Heart Rate",
+              systolic_blood_pressure: "Systolic BP",
+              diastolic_blood_pressure: "Diastolic BP",
+              pulse: "Pulse",
+              irregular_heartbeat: "Irregular Heartbeat",
+              hand_shaking: "Hand Shaking",
+              triple_mode: "Triple Mode",
+              blood_glucose: "Blood Glucose",
+              glucose_unit: "Glucose Unit",
+              {% comment %} test_paper_type: "Test Paper Type",
+              sample_type: "Sample Type", {% endcomment %}
+              meal_mark: "Meal Mark",
+              {% comment %} signal_level: "Signal Level",
+              blood_pressure: "Blood Pressure",
+              battery_level: "Battery Level",
+              signal_strength: "Signal Strength",
+              measurement_timestamp: "Measurement Time",
+              timezone: "Timezone",
+              measurement_timezone: "Measurement TZ",
+              upload_timestamp: "Upload Time",
+              upload_timezone: "Upload TZ", {% endcomment %}
+              // Add more if needed
+            };
+
+            // Find which fields are non-empty in at least one report
+            const nonEmptyFields = Object.keys(fieldLabels).filter(key =>
+              data.reports.some(report => report[key] && report[key] !== "")
+            );
+
+            // Build table rows for each non-empty field
+            nonEmptyFields.forEach(key => {
+              const row = document.createElement('tr');
+              const firstCell = document.createElement('td');
+              firstCell.className = 'fixed-left';
+              firstCell.textContent = fieldLabels[key] || key;
+              row.appendChild(firstCell);
+
+              data.reports.forEach(report => {
+                const cell = document.createElement('td');
+                cell.textContent = (report[key] && report[key] !== "") ? report[key] : "N/A";
+                row.appendChild(cell);
+              });
+
+              tableBody.appendChild(row);
+            });
+
+            // Update the table header with dates
+            const tableHeader = document.querySelector('#results table thead tr');
+            const headerCells = tableHeader.querySelectorAll('th');
+            const firstHeader = headerCells[0];
+            tableHeader.innerHTML = '';
+            tableHeader.appendChild(firstHeader);
+
+            data.reports.forEach(report => {
+              const date = new Date(report.created_at);
+              const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+              const th = document.createElement('th');
+              th.textContent = formattedDate;
+              tableHeader.appendChild(th);
+            });
+          })
+          .catch(error => console.error("Error fetching reports:", error));
+      }
+
+      // Function to add documentation
+      {% comment %} function addDocumentation() {
+        const patientId = "{{ patient.id }}";
+        fetch(`/reports/get-all-reports/${patientId}/`)
+          .then(response => response.json())
+          .then(data => {
+            if (!data.reports || data.reports.length === 0) {
+              alert("No reports found for this patient. Please create a report first.");
+              return;
+            }
+            
+            // Get the most recent report
+            const latestReport = data.reports[0]; // Assuming reports are sorted by date
+            window.location.href = `/reports/${patient.id}/add-documentation/`;
+          })
+          .catch(error => {
+            console.error("Error fetching reports:", error);
+            alert("Error fetching reports. Please try again.");
+          });
+      } {% endcomment %}
+
+      // Call this function when the page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get the patient ID from the template
+        const patientId = "{{ patient.id }}";
+        fetchAndDisplayReports(patientId);
+      });
+    </script>
+  </body>
+</html>
+

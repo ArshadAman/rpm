@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Report</title>
+    <style>
+        body {
+            background: #101113;
+            color: #E0C3FC;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #131218;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(157, 80, 187, 0.8);
+        }
+        h2 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #0D0D0D;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #9D50BB;
+            text-align: left;
+        }
+        th {
+            background: linear-gradient(90deg, #6A0DAD, #9D50BB);
+        }
+        .btn {
+            display: inline-block;
+            background: #9D50BB;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: block;
+            text-align: center;
+        }
+        .btn:hover {
+            background: #7A40A2;
+        }
+        .documentation-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .documentation-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(157, 80, 187, 0.3);
+        }
+        .documentation-card h3 {
+            margin-bottom: 5px;
+            color: #9D50BB;
+        }
+        .download-btn {
+            display: inline-block;
+            background: #9D50BB;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+        .download-btn:hover {
+            background: #7A40A2;
+        }
+        .no-file {
+            color: #ccc;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Report Details</h2>
+        <table>
+            <tr><th>Report ID</th><td>{{ report.id }}</td></tr>
+            <tr><th>Created At</th><td>{{ report.created_at }}</td></tr>
+            <tr><th>Blood Pressure</th><td>{{ report.blood_pressure }}</td></tr>
+            <tr><th>Heart Rate</th><td>{{ report.heart_rate }}</td></tr>
+            <tr><th>SpO2</th><td>{{ report.spo2 }}</td></tr>
+            <tr><th>Temperature</th><td>{{ report.temperature }}</td></tr>
+            <tr><th>Symptoms</th><td>{{ report.symptoms }}</td></tr>
+        </table>
+        
+        <h2>Documentation</h2>
+        <a href="{% url 'add_documentation' report.id %}" class="btn">Add Documentation</a>
+        <div class="documentation-container">
+            {% for doc in documentations %}
+                <div class="documentation-card">
+                    <h3>{{ doc.title }}</h3>
+                    <p><strong>Created At:</strong> {{ doc.created_at }}</p>
+                    <p><strong>History of Present Illness:</strong> {{ doc.history_of_present_illness }}</p>
+                    {% if doc.file %}
+                        <a href="{{ doc.file.url }}" class="download-btn" target="_blank">Download File</a>
+                    {% else %}
+                        <p class="no-file">No file available</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

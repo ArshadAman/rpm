@@ -1,0 +1,406 @@
+{% load i18n static %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr,auto' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+    {% block extrastyle %}{% endblock %}
+    <style>
+        :root {
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text: #E0C3FC;
+            --primary: #7928CA;
+            --secondary: #FF0080;
+            --border: rgba(255, 255, 255, 0.1);
+            --success: #4CAF50;
+            --error: #F44336;
+            --warning: #FFC107;
+            --info: #2196F3;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 70px;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            gap: 2rem;
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand img {
+            height: 32px;
+            width: auto;
+        }
+
+        /* Navigation Links */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex: 1;
+            height: 100%;
+        }
+
+        .nav-section {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .nav-section > a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-section > a:hover,
+        .nav-section > a.active {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-section > a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        /* User Tools */
+        .user-tools {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-tools a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-tools a:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 70px;
+            padding: 2rem;
+            max-width: 1600px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            flex: 1;
+        }
+
+        /* Messages */
+        .messagelist {
+            list-style: none;
+            margin: 0 0 2rem 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .messagelist li {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .messagelist li::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+
+        .messagelist li.success {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            color: var(--success);
+        }
+
+        .messagelist li.error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.2);
+            color: var(--error);
+        }
+
+        .messagelist li.warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+        }
+
+        .messagelist li.info {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid rgba(33, 150, 243, 0.2);
+            color: var(--info);
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+            color: var(--text);
+            opacity: 0.7;
+            padding: 0.75rem 1rem;
+            background: var(--card-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .breadcrumbs a {
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .breadcrumbs a:hover {
+            color: var(--secondary);
+        }
+
+        .breadcrumbs .current {
+            color: var(--secondary);
+            opacity: 1;
+        }
+
+        /* Content Cards */
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            margin-bottom: 1.5rem;
+        }
+
+        .content-card h2 {
+            color: var(--secondary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0 0 1.5rem 0;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .nav-content {
+                padding: 0 1rem;
+            }
+
+            .main-content {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: fixed;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: var(--card-bg);
+                padding: 1rem;
+                flex-direction: column;
+                gap: 0.5rem;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
+
+            .nav-section {
+                height: auto;
+            }
+
+            .nav-section > a {
+                width: 100%;
+                padding: 0.75rem 1rem;
+            }
+
+            .nav-section > a.active::after {
+                display: none;
+            }
+
+            .user-tools {
+                margin-left: auto;
+            }
+
+            .user-tools a span {
+                display: none;
+            }
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
+    {% if not is_popup %}
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="{% url 'admin:index' %}" class="brand">
+                <img src="{% static 'admin/img/logo.png' %}" alt="Logo">
+                <span>Admin Portal</span>
+            </a>
+            
+            <div class="nav-links">
+                {% if user.is_active and user.is_staff %}
+                    {% for app in available_apps %}
+                    <div class="nav-section">
+                        <a href="{{ app.app_url }}"{% if app.active %} class="active"{% endif %}>
+                            {{ app.name }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="user-tools">
+                {% if user.is_active and user.is_staff %}
+                    {% if site_url %}
+                        <a href="{{ site_url }}">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                            <span>{% translate 'View site' %}</span>
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'admin:password_change' %}">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <span>{% translate 'Change password' %}</span>
+                    </a>
+                    <a href="{% url 'admin_logout' %}">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>{% translate 'Log out' %}</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="main-content">
+        {% block messages %}
+            {% if messages %}
+            <ul class="messagelist">
+                {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        {% endblock messages %}
+
+        {% if not is_popup %}
+        <div class="breadcrumbs">
+            {% block breadcrumbs %}
+            <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+            {% if title %} › <span class="current">{{ title }}</span>{% endif %}
+            {% endblock %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block footer %}{% endblock %}
+</body>
+</html> 
