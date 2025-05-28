@@ -50,12 +50,12 @@ class Patient(models.Model):
         return None
 
     def save(self, *args, **kwargs):
-        if self.height <= 0 or self.weight <= 0:
-            raise ValueError("Height and weight must be positive numbers.")
+        # if self.height <= 0 or self.weight <= 0:
+        #     raise ValueError("Height and weight must be positive numbers.")
         
-        # Convert height from centimeters to meters for BMI calculation
-        height_in_meters = self.height / 100  # Convert cm to m
-        self.bmi = self.weight / (height_in_meters ** 2)  # Calculate BMI
+        # # Convert height from centimeters to meters for BMI calculation
+        # height_in_meters = self.height / 100  # Convert cm to m
+        # self.bmi = self.weight / (height_in_meters ** 2)  # Calculate BMI
 
         is_new = self._state.adding
         super().save(*args, **kwargs)
@@ -63,7 +63,7 @@ class Patient(models.Model):
             self.send_signup_notification()
 
     def send_signup_notification(self):
-        sg = sendgrid.SendGridAPIClient(settings.SENDGRID_API_KEY)
+        sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
         message = Mail(
             from_email='marketing@pinksurfing.com',
             to_emails='saishankarpunna@gmail.com',
