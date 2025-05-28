@@ -2,6 +2,9 @@ from django.db import models
 import uuid
 from django.contrib.auth.models import User
 from datetime import date
+import sendgrid
+from sendgrid.helpers.mail import Mail
+from django.conf import settings
 
 # Create your models here.
 class Patient(models.Model):
@@ -12,6 +15,7 @@ class Patient(models.Model):
     height = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2)
     weight = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2)
     insurance = models.CharField(blank=True, null=True, max_length=255)
+    insurance_number = models.CharField(blank=True, null=True, max_length=255)
     sex = models.CharField(blank=True, max_length=10, null=True, choices=SEX_CHOICES)
     bmi = models.DecimalField(blank=True, max_digits=10, decimal_places=2, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
@@ -45,18 +49,43 @@ class Patient(models.Model):
             return age
         return None
 
-def save(self, *args, **kwargs):
-    # Ensure height is in meters
-    if self.height <= 0 or self.weight <= 0:
-        raise ValueError("Height and weight must be positive numbers.")
-    
-    # Convert height from centimeters to meters for BMI calculation
-    height_in_meters = self.height / 100  # Convert cm to m
-    self.bmi = self.weight / (height_in_meters ** 2)  # Calculate BMI
+    def save(self, *args, **kwargs):
+        if self.height <= 0 or self.weight <= 0:
+            raise ValueError("Height and weight must be positive numbers.")
+        
+        # Convert height from centimeters to meters for BMI calculation
+        height_in_meters = self.height / 100  # Convert cm to m
+        self.bmi = self.weight / (height_in_meters ** 2)  # Calculate BMI
 
-    super().save(*args, **kwargs)
-    
-    
+        is_new = self._state.adding
+        super().save(*args, **kwargs)
+        if is_new:
+            self.send_signup_notification()
+
+    def send_signup_notification(self):
+        sg = sendgrid.SendGridAPIClient(settings.SENDGRID_API_KEY)
+        message = Mail(
+            from_email='marketing@pinksurfing.com',
+            to_emails='shaiqueljilani@gmail.com',
+            subject='New RPM Patient Signup Notification',
+            html_content=f"""
+            <h3>New Patient Registered for RPM</h3>
+            <ul>
+                <li><strong>Name:</strong> {self.user.first_name} {self.user.last_name}</li>
+                <li><strong>Email:</strong> {self.user.email}</li>
+                <li><strong>Mobile Number:</strong> {self.phone_number}</li>
+                <li><strong>Date of Birth:</strong> {self.date_of_birth}</li>
+                <li><strong>Sex:</strong> {self.sex}</li>
+                <li><strong>Insurance:</strong> {self.insurance}</li>
+                <li><strong>Monitoring Parameters:</strong> {self.monitoring_parameters}</li>
+            </ul>
+            """,
+        )        
+        try:
+            sg.send(message)
+        except Exception as e:
+            print("SendGrid error:", e)
+
 class PastMedicalHistory(models.Model):
     PMH_CHOICES = ((
         ('GBS', 'Guillain-Barré Syndrome'),

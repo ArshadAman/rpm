@@ -173,11 +173,10 @@ def create_report(request):
         serializer = ReportSerializer(report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response({"error": "Patient not exists"}, status=status.HTTP_404_NOT_FOUND)
-
 @login_required
 def add_documentation(request, patient_id):
     user = request.user
-
+    print(user)
     # Check if the user is a moderator
     if not Moderator.objects.filter(user=user).exists():
         return render(request, "errors/403.html", {"error": "Only moderators can add documentation"}, status=403)
@@ -192,6 +191,8 @@ def add_documentation(request, patient_id):
         if form.is_valid():
             documentation = form.save(commit=False)
             documentation.patient = patient
+            # Add the moderator who wrote the documentation
+            documentation.written_by = user
             # Only associate with report if it exists
             if latest_reports:
                 documentation.report = latest_reports[0]

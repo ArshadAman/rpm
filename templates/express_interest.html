@@ -546,11 +546,19 @@
                 
                 <div class="form-group">
                     <label for="past_medical_history">Past Medical History</label>
-                    <select id="past_medical_history" name="past_medical_history" multiple>
+                    <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
                         {% for value, label in pmh_choices %}
-                            <option value="{{ value }}" {% if value in form_data.past_medical_history %}selected{% endif %}>{{ label }}</option>
+                            <div class="checkbox-item" style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" 
+                                       id="pmh_{{ value }}" 
+                                       name="past_medical_history" 
+                                       value="{{ value }}"
+                                       style="width: 18px; height: 18px; cursor: pointer;"
+                                       {% if value in form_data.past_medical_history %}checked{% endif %}>
+                                <label for="pmh_{{ value }}" style="cursor: pointer; font-size: 14px;">{{ label }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
             </div>
             
@@ -605,6 +613,9 @@
                           rows="3">{{ form_data.additional_comments|default:'' }}</textarea>
             </div>
 
+            <div style="margin-top: 20px; text-align: center; font-size: 14px;">
+                By clicking "Register Patient", you agree to the <a href="{% url 'terms_and_conditions' %}" target="_blank" style="color: var(--secondary); text-decoration: none; font-weight: 500;">Terms and Conditions</a>.
+            </div>
             <div class="button-group">
                 <a href="{% url 'home' %}" class="back-btn">Back to Home</a>
                 <button type="submit" class="submit-btn">Submit Interest</button>

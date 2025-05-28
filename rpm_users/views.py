@@ -326,14 +326,20 @@ def write_document(request, report_id):
     if request.method == 'POST':
         form = DocumentationForm(request.POST, request.FILES)
         if form.is_valid():
-            document = form.save(commit=False)
+            # Pass the current user to the form's save method to set the 'written_by' field
+            document = form.save(commit=False, user=request.user)
             document.report = report
             document.save()
-            return redirect('view_all_assigned_patient')
+            messages.success(request, 'Documentation saved successfully.')
+            # Redirect to the view documentation page for this patient
+            return redirect('view_documentation', patient_id=report.patient.id)
     else:
         form = DocumentationForm()
     
-    return render(request, 'write_document.html', {'form': form, 'report': report})
+    # Get the patient related to the report to pass to the template
+    patient = report.patient
+    
+    return render(request, 'reports/add_docs.html', {'form': form, 'report': report, 'patient': patient}) # Render add_docs.html
 
 @login_required
 def view_documentation(request, patient_id):
@@ -349,22 +355,12 @@ def view_documentation(request, patient_id):
         print("DEBUG: User is not authorized to view documentation")
         return JsonResponse({"error": "You are not authorized to view this documentation"}, status=403)
     
-    # Get the date filter from the request
-    date = request.GET.get('date')
-    
     # Get documentation for the patient
     patient = get_object_or_404(Patient, id=patient_id)
     
-    # Apply date filter if provided
-    if date:
-        documentations = Documentation.objects.filter(
-            patient=patient,
-            created_at__date=date
-        ).order_by('-created_at')
-    else:
-        documentations = Documentation.objects.filter(
-            patient=patient,
-        ).order_by('-created_at')
+    documentations = Documentation.objects.filter(
+        patient=patient,
+    ).order_by('-created_at')
     
     documentation_list = []
     for doc in documentations:
@@ -377,6 +373,7 @@ def view_documentation(request, patient_id):
             'objective': doc.objective,
             'assessment': doc.assessment,
             'plan': doc.plan,
+            'written_by': doc.written_by,
             'created_at': doc.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             'updated_at': doc.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         }
@@ -406,6 +403,7 @@ def register_patient(request):
             'height': request.POST.get('height'),
             'weight': request.POST.get('weight'),
             'insurance': request.POST.get('insurance'),
+            'insurance_number': request.POST.get('insurance_number'),
             'sex': request.POST.get('sex'),
             'monitoring_parameters': request.POST.get('monitoring_parameters'),
             'device_serial_number': request.POST.get('device_serial_number'),
@@ -440,6 +438,7 @@ def register_patient(request):
                 height=data['height'],
                 weight=data['weight'],
                 insurance=data['insurance'],
+                insurance_number=data['insurance_number'],
                 sex=data['sex'],
                 phone_number=data['phone_number'],
                 monitoring_parameters=data['monitoring_parameters'],
@@ -496,6 +495,7 @@ def patient_self_registration(request):
             'height': request.POST.get('height'),
             'weight': request.POST.get('weight'),
             'insurance': request.POST.get('insurance'),
+            'insurance_number': request.POST.get('insurance_number'),
             'sex': request.POST.get('sex'),
             'monitoring_parameters': request.POST.get('monitoring_parameters'),
             'device_serial_number': request.POST.get('device_serial_number'),
@@ -530,6 +530,7 @@ def patient_self_registration(request):
                 height=data['height'],
                 weight=data['weight'],
                 insurance=data['insurance'],
+                insurance_number=data['insurance_number'],
                 sex=data['sex'],
                 phone_number=data['phone_number'],
                 monitoring_parameters=data['monitoring_parameters'],
@@ -715,3 +716,27 @@ def track_interest(request):
             print(traceback.format_exc())
             return JsonResponse({"success": False, "error": str(e)}, status=400)
     return JsonResponse({"error": "Invalid method"}, status=405)
+
+def terms_and_conditions_view(request):
+    """Renders the terms and conditions page."""
+    return render(request, 'terms_and_conditions.html')
+
+@login_required
+def edit_documentation(request, doc_id):
+    documentation = Documentation.objects.get(id=doc_id)
+    report = documentation.report if hasattr(documentation, 'report') else None
+    if request.method == 'POST':
+        form = DocumentationForm(request.POST, request.FILES, instance=documentation)
+        if form.is_valid():
+            document = form.save(commit=False, user=request.user)
+            if report:
+                document.report = report
+            document.save()
+            messages.success(request, 'Documentation updated successfully.')
+            return redirect('view_documentation', patient_id=documentation.patient.id)
+    else:
+        form = DocumentationForm(instance=documentation, initial={
+            'full_documentation': documentation.history_of_present_illness
+        })
+    patient = documentation.patient
+    return render(request, 'reports/add_docs.html', {'form': form, 'reports': report, 'patient': patient, 'edit_mode': True, 'doc_id': doc_id})

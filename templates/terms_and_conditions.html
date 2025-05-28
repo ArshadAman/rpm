@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms and Conditions</title>
+    {% load static %}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 32px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+        }
+
+        h3 {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        strong {
+            color: white;
+            font-weight: 600;
+        }
+
+        ul {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            h2 {
+                font-size: 28px;
+                margin-bottom: 30px;
+            }
+
+            h3 {
+                font-size: 18px;
+            }
+
+            p, li {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Terms and Conditions</h2>
+
+        <p><strong>Effective Date:</strong> May 23, 2025</p>
+
+        <p>Welcome to <strong>Stratton Healthcare / Stratton Health</strong> ("we," "us," or "our"). By accessing or using our Remote Patient Monitoring (RPM) services ("Services"), you ("User," "you," or "your") agree to be bound by the following Terms and Conditions. Please read them carefully.</p>
+
+        <h3>1. Nature of RPM Services</h3>
+        <p>Our RPM service is designed to assist healthcare providers in monitoring certain chronic conditions by collecting health data remotely. The purpose of RPM is to help fine-tune medications and potentially reduce some in-person visits to your healthcare provider over time.</p>
+        <p>However, our RPM program is <strong>not an emergency monitoring or diagnostic service</strong>. Readings are reviewed:</p>
+        <ul>
+            <li>At most <strong>once per week</strong></li>
+            <li>As little as <strong>once per month</strong></li>
+        </ul>
+        <p>This delay means we do <strong>not provide real-time monitoring or urgent medical evaluation</strong>. Medicare guidelines for RPM is to check the data a minimum of once per month to fulfill their billing criteria.</p>
+
+        <h3>2. Scope of Monitoring</h3>
+        <p>The scope of RPM is limited to <strong>one or more chronic conditions</strong> that are predefined and agreed upon by your care provider. This service does <strong>not replace comprehensive care</strong> for all your health concerns. RPM is intended to give you better control over specific health parameters through expert oversight and adjustment from home.</p>
+        <p>Our specialties include:</p>
+        <ul>
+            <li>Hypertension</li>
+            <li>Atrial fibrillation</li>
+            <li>Atrial flutter</li>
+            <li>Supraventricular tachycardia</li>
+            <li>Oxygen management in COPD (Chronic Obstructive Pulmonary Disease) or other chronic lung disorders</li>
+            <li>Chronic congestive heart failure management</li>
+            <li>Oxygen use in asthma</li>
+        </ul>
+        <p><strong>Note:</strong> Diabetes management is something we specialize in but will not currently offer, and may be added in the future.</p>
+        <p>For <strong>atrial and ventricular tachycardia</strong>, COPD, and Congestive Heart Failure, please be advised that these conditions can rapidly decompensate. RPM should <strong>not be relied upon for emergency management</strong> in these cases.</p>
+        <p>Your readings will be securely stored in our system, and medications may be adjusted periodically based on those trends.</p>
+        <p>We may offer <strong>tiered plans</strong> in the future that allow for closer symptom-based monitoring, which could potentially reduce reliance on acute care. These expanded offerings will depend on available resources and reimbursement capabilities over time.</p>
+
+        <h3>3. Not for Emergency Use</h3>
+        <p>Due to the limited monitoring frequency, our RPM services must <strong>not be used as a substitute for emergency or urgent care</strong>.</p>
+        <p>If, for example, you experience any of the following:</p>
+        <ul>
+            <li>Blood pressure above <strong>190/110</strong></li>
+            <li>Oxygen saturation below <strong>88%</strong></li>
+            <li>Blood glucose above <strong>400 mg/dL</strong></li>
+            <li>Or any symptoms that concern you</li>
+        </ul>
+        <p><strong>Call 911 or go to the nearest emergency room.</strong> Waiting for our RPM review could result in serious harm or delayed care.</p>
+
+        <h3>4. No Doctor-Patient Relationship</h3>
+        <p>Use of this platform does <strong>not establish a doctor-patient relationship</strong>. RPM data supports the care plan created by your existing physician.</p>
+
+        <h3>5. User Responsibilities</h3>
+        <p>You agree to:</p>
+        <ul>
+            <li>Upload health data as instructed by your care team</li>
+            <li>Understand the monitoring limitations</li>
+            <li>Seek immediate medical attention for urgent symptoms regardless of RPM participation</li>
+        </ul>
+
+        <h3>6. Disclaimer of Warranties</h3>
+        <p>Our services are provided "<strong>as is</strong>", without warranties of any kind — express or implied. We do not guarantee accuracy, timeliness, or completeness of any health data interpretation.</p>
+
+        <h3>7. Limitation of Liability</h3>
+        <p>We are <strong>not liable</strong> for:</p>
+        <ul>
+            <li>Any missed diagnosis or treatment due to delayed review of submitted data</li>
+            <li>Any harm resulting from reliance on RPM data for urgent or emergency medical decisions</li>
+        </ul>
+
+        <h3>8. Hold Harmless Clause</h3>
+        <p>By using our RPM services, you agree to <strong>hold harmless Stratton Healthcare, also known as Stratton Health</strong>, and all associates and affiliates involved in the provision of RPM services.</p>
+
+        <p>You acknowledge:</p>
+        <ul>
+            <li>RPM is a valuable tool for long-term chronic care management</li>
+            <li>It has limitations, which are improving through advancements in <strong>technology and artificial intelligence</strong></li>
+        </ul>
+        <p>If you have questions about your care, contact your physician or a member of our staff to fully understand the benefits and limitations of RPM.</p>
+
+        <h3>9. Arbitration and Dispute Limitation</h3>
+        <p>You agree to pursue <strong>arbitration first</strong> before initiating any lawsuit.</p>
+        <ul>
+            <li>You must inform us of any dispute</li>
+            <li>You agree that in any legal dispute, mitigation, or lawsuit, the <strong>maximum compensation</strong> you may seek is limited to:</li>
+            <ul>
+                <li>The <strong>total of six (6) months of payments made</strong>, OR</li>
+                <li>The <strong>number of months you have been enrolled</strong> — <strong>whichever is less</strong></li>
+            </ul>
+        </ul>
+
+        <h3>10. Consent to Terms</h3>
+        <p>Use of Stratton Health RPM services <strong>automatically indicates acceptance</strong> of these Terms and Conditions.</p>
+        <p><strong>You may not use our products or services without agreeing to these terms.</strong></p>
+
+        <h3>11. Device Use and Maintenance</h3>
+        <p>We perform <strong>monthly phone calls</strong> and system checks to verify:</p>
+        <ul>
+            <li>Usage of your RPM device</li>
+            <li>Functionality and data transmission</li>
+        </ul>
+        <p>You are <strong>solely responsible</strong> for notifying us of any device malfunction or damage.</p>
+
+        <h3>12. Warranty and Replacement</h3>
+        <ul>
+            <li>Devices are covered by a <strong>2-year manufacturer warranty</strong></li>
+            <li><strong>Accidental damage is not covered</strong></li>
+            <li>You are responsible for <strong>replacement costs</strong> of any device within a 4-year period</li>
+            <li>After <strong>4 years</strong>, we will provide a <strong>replacement device at no cost</strong></li>
+        </ul>
+
+        <h3>13. Governing Law</h3>
+        <p>These Terms and Conditions are governed by the laws of the <strong>State of California</strong>, without regard to conflict of laws principles.</p>
+
+        <h3>14. Changes to Terms</h3>
+        <p>We reserve the right to modify these Terms at any time. Your continued use of our services constitutes acceptance of any changes.</p>
+
+        <h3>Acknowledgement</h3>
+        <p>By using our RPM services, you acknowledge that you understand and agree to these Terms and Conditions in full.</p>
+
+    </div>
+</body>
+</html> 

@@ -400,18 +400,22 @@
                 <div class="form-section">
                     <div class="form-grid">
                         <div class="form-group input-icon">
-                            <label for="weight">Weight (kg)</label>
+                            <label for="weight">Weight (pounds)</label>
                             <input type="number" id="weight" name="weight" value="{{ patient.weight }}" step="0.1" required>
                         </div>
                         
                         <div class="form-group input-icon">
-                            <label for="height">Height (cm)</label>
+                            <label for="height">Height (inches)</label>
                             <input type="number" id="height" name="height" value="{{ patient.height }}" step="0.1" required>
                         </div>
                         
                         <div class="form-group input-icon">
-                            <label for="insurance">Insurance</label>
+                            <label for="insurance">Insurance Provider</label>
                             <input type="text" id="insurance" name="insurance" value="{{ patient.insurance }}" required>
+                        </div>
+                        <div class="form-group input-icon">
+                            <label for="insurance">Insurance Number</label>
+                            <input type="text" id="insurance_number" name="insurance_number" value="{{ patient.insurance_number }}" required>
                         </div>
                         
                         <div class="form-group input-icon">

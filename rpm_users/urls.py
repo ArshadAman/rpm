@@ -25,4 +25,6 @@ urlpatterns = [
     path('view_documentation/<uuid:patient_id>/', views.view_documentation, name='view_documentation'),
     path('express-interest/', views.express_interest, name='express_interest'),
     path('api/track-interest/', views.track_interest, name='track_interest'),
+    path('terms-and-conditions/', views.terms_and_conditions_view, name='terms_and_conditions'),
+    path('edit-documentation/<int:doc_id>/', views.edit_documentation, name='edit_documentation'),
 ]
