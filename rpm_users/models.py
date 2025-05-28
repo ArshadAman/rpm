@@ -66,7 +66,7 @@ class Patient(models.Model):
         sg = sendgrid.SendGridAPIClient(settings.SENDGRID_API_KEY)
         message = Mail(
             from_email='marketing@pinksurfing.com',
-            to_emails='shaiqueljilani@gmail.com',
+            to_emails='saishankarpunna@gmail.com',
             subject='New RPM Patient Signup Notification',
             html_content=f"""
             <h3>New Patient Registered for RPM</h3>
