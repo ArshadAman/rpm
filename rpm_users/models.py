@@ -166,7 +166,7 @@ class Interest(models.Model):
     SERVICE_CHOICES = (
         ('blood_pressure', 'Blood Pressure Monitoring'),
         ('heart_rate', 'Heart Rate Monitoring'),
-        ('oxygen', 'Oxygen Saturation (O₂)'),
+        ('oxygen', 'Oxygen Saturation(O₂)'),
         ('diabetes', 'Diabetes Management'),
     )
     
