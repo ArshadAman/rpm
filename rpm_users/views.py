@@ -854,7 +854,7 @@ def escalate_patient(request, patient_id):
     patient.save()
 
     # SendGrid email notification to doctor
-    sg = sendgrid.SendGridAPIClient(api_key="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")
+    sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
     doctor_email = doctor.user.email
     patient_user = patient.user
     message = Mail(
