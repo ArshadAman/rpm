@@ -34,6 +34,8 @@ class Patient(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     moderator_assigned = models.ForeignKey('Moderator', blank=True, null=True, on_delete=models.SET_NULL, related_name='moderators')
+    doctor_escalated = models.ForeignKey('Doctor', blank=True, null=True, on_delete=models.SET_NULL, related_name='escalated_patients')
+    is_escalated = models.BooleanField(default=False)
     
     def __str__(self):
         return self.user.email
@@ -66,7 +68,7 @@ class Patient(models.Model):
         sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
         message = Mail(
             from_email='marketing@pinksurfing.com',
-            to_emails='saishankarpunna@gmail.com',
+            to_emails=f'{self.user.email}',
             subject='New RPM Patient Signup Notification',
             html_content=f"""
             <h3>New Patient Registered for RPM</h3>
@@ -157,6 +159,13 @@ class PastMedicalHistory(models.Model):
 class Moderator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     
+    def __str__(self):
+        return self.user.username
+
+
+class Doctor(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    specialization = models.CharField(max_length=255, blank=True, null=True)
     def __str__(self):
         return self.user.username
 

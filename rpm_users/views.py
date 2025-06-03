@@ -3,12 +3,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 import requests
-from django.utils.timezone import localtime
+import sendgrid
+from sendgrid.helpers.mail import Mail
+from django.conf import settings
 
 from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
-from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead
+from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
@@ -26,6 +28,7 @@ from django.contrib.admin.sites import site
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.views.decorators.http import require_POST
 
 def home(request):
     """Homepage with options for moderator login and patient registration"""
@@ -168,6 +171,8 @@ def moderator_actions_view(request, patient_id):
         # Access patient details
         reports = Reports.objects.filter(patient=patient)
         context['reports'] = reports  # Add patient details to the context
+        context['doctors'] = Doctor.objects.all()  # Pass all doctors for escalation dropdown
+        print(context['doctors'], "DEBUG: Doctors available for escalation")
         return render(request, 'index.html', context)
 
     elif action == 'update'.lower():
@@ -740,3 +745,144 @@ def edit_documentation(request, doc_id):
         })
     patient = documentation.patient
     return render(request, 'reports/add_docs.html', {'form': form, 'reports': report, 'patient': patient, 'edit_mode': True, 'doc_id': doc_id})
+
+def doctor_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and Doctor.objects.filter(user=user).exists():
+            login(request, user)
+            return redirect('view_escalated_patient')
+        else:
+            messages.error(request, 'Invalid credentials or not a doctor.')
+    return render(request, 'doctor_login.html')
+
+@login_required
+def view_escalated_patient(request):
+    # Only allow doctors
+    try:
+        doctor = Doctor.objects.get(user=request.user)
+    except Doctor.DoesNotExist:
+        logout(request)
+        return redirect('doctor_login')
+    # List all escalated patients assigned to this doctor
+    patients = Patient.objects.filter(doctor_escalated=doctor, is_escalated=True)
+    formatted_patients = []
+    for patient in patients:
+        medications = [med.strip() for med in patient.medications.split('\n')] if patient.medications else []
+        allergies = [allergy.strip() for allergy in patient.allergies.split(',')] if patient.allergies else []
+        family_history = [fh.strip() for fh in patient.family_history.split('\n')] if patient.family_history else []
+        pharmacy_info = [info.strip() for info in patient.pharmacy_info.split('\n')] if patient.pharmacy_info else []
+        formatted_patients.append({
+            'patient': patient,
+            'formatted_medications': medications,
+            'formatted_allergies': allergies,
+            'formatted_family_history': family_history,
+            'formatted_pharmacy': pharmacy_info,
+        })
+    context = {
+        'patients': formatted_patients,
+    }
+    print(context, "DEBUG: Escalated patients context")
+    return render(request, 'view_escalated_patient.html', context)
+
+@login_required
+def doctor_patient_detail(request, patient_id):
+    try:
+        doctor = Doctor.objects.get(user=request.user)
+    except Doctor.DoesNotExist:
+        logout(request)
+        return redirect('doctor_login')
+    patient = get_object_or_404(Patient, id=patient_id, doctor_escalated=doctor, is_escalated=True)
+
+    # Format medications into a list if they exist
+    medications = []
+    if patient.medications:
+        medications = [med.strip() for med in patient.medications.split('\n') if med.strip()]
+
+    # Format pharmacy info into structured data if it exists
+    pharmacy_info = {}
+    if patient.pharmacy_info:
+        try:
+            lines = patient.pharmacy_info.split('\n')
+            for line in lines:
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    pharmacy_info[key.strip()] = value.strip()
+        except:
+            pharmacy_info = {'Details': patient.pharmacy_info}
+
+    # Format allergies into a list if they exist
+    allergies = []
+    if patient.allergies:
+        allergies = [allergy.strip() for allergy in patient.allergies.split(',') if allergy.strip()]
+
+    # Format family history into structured sections if it exists
+    family_history = []
+    if patient.family_history:
+        history_lines = patient.family_history.split('\n')
+        for line in history_lines:
+            if line.strip():
+                family_history.append(line.strip())
+
+    context = {
+        'patient': patient,
+        'formatted_medications': medications,
+        'formatted_pharmacy': pharmacy_info,
+        'formatted_allergies': allergies,
+        'formatted_family_history': family_history
+    }
+    return render(request, 'index.html', context)
+
+def doctor_logout(request):
+    logout(request)
+    return redirect('doctor_login')
+
+
+
+# Escalation logic
+@login_required
+@require_POST
+def escalate_patient(request, patient_id):
+    moderator = get_object_or_404(Moderator, user=request.user)
+    patient = get_object_or_404(Patient, id=patient_id, moderator_assigned=moderator)
+    doctor_id = request.POST.get('doctor_id')
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+    patient.doctor_escalated = doctor
+    patient.is_escalated = True
+    patient.save()
+
+    # SendGrid email notification to doctor
+    sg = sendgrid.SendGridAPIClient(api_key="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")
+    doctor_email = doctor.user.email
+    patient_user = patient.user
+    message = Mail(
+        from_email='marketing@pinksurfing.com',
+        to_emails=doctor_email,
+        subject='A Patient Has Been Escalated to You',
+        html_content=f"""
+        <h3>Patient Escalation Notification</h3>
+        <p>Dear Dr. {doctor.user.get_full_name() or doctor.user.username},</p>
+        <p>The following patient has been escalated to you:</p>
+        <ul>
+            <li><strong>Name:</strong> {patient_user.first_name} {patient_user.last_name}</li>
+            <li><strong>Email:</strong> {patient_user.email}</li>
+            <li><strong>Date of Birth:</strong> {patient.date_of_birth}</li>
+            <li><strong>Sex:</strong> {patient.sex}</li>
+            <li><strong>Phone Number:</strong> {patient.phone_number}</li>
+            <li><strong>Insurance:</strong> {patient.insurance}</li>
+            <li><strong>Allergies:</strong> {patient.allergies or "N/A"}</li>
+            <li><strong>Medications:</strong> {patient.medications or "N/A"}</li>
+            <li><strong>Family History:</strong> {patient.family_history or "N/A"}</li>
+        </ul>
+        <p>Please log in to the portal to view more details.</p>
+        """
+    )
+    try:
+        sg.send(message)
+    except Exception as e:
+        print("SendGrid error:", e)
+
+    messages.success(request, f"Patient escalated to Dr. {doctor.user.get_full_name()}")
+    return redirect('moderator_actions', patient_id=patient.id)

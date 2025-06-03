@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Moderator, Patient, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead
+from .models import Moderator, Patient, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor
 from reports.models import Reports
 
 # class ReportInline(admin.TabularInline):
@@ -22,6 +22,7 @@ from reports.models import Reports
 
 # Register the Patient model
 admin.site.register(Patient)
+admin.site.register(Doctor)
 
 # Register the Moderator model
 admin.site.register(Moderator)

@@ -27,4 +27,10 @@ urlpatterns = [
     path('api/track-interest/', views.track_interest, name='track_interest'),
     path('terms-and-conditions/', views.terms_and_conditions_view, name='terms_and_conditions'),
     path('edit-documentation/<int:doc_id>/', views.edit_documentation, name='edit_documentation'),
+    path('doctor_login/', views.doctor_login, name='doctor_login'),
+    # path('doctor_dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
+    path('doctor_logout/', views.doctor_logout, name='doctor_logout'),
+    path('doctor/patient/<uuid:patient_id>/', views.doctor_patient_detail, name='doctor_patient_detail'),
+    path('view_escalated_patient/', views.view_escalated_patient, name='view_escalated_patient'),
+    path('escalate_patient/<uuid:patient_id>/', views.escalate_patient, name='escalate_patient'),
 ]

@@ -1,6 +1,6 @@
 from django.contrib.admin import AdminSite
 from django.contrib.auth.models import User, Group
-from rpm_users.models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead
+from rpm_users.models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor
 from rpm_users.admin import InterestAdmin
 from reports.models import Reports, Documentation
 
@@ -21,6 +21,7 @@ admin_site.register(User)
 admin_site.register(Group)
 admin_site.register(Patient)
 admin_site.register(Moderator)
+admin_site.register(Doctor)
 admin_site.register(PastMedicalHistory)
 admin_site.register(Reports)
 admin_site.register(Documentation)
