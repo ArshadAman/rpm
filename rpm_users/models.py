@@ -63,7 +63,9 @@ class Patient(models.Model):
         super().save(*args, **kwargs)
         if is_new:
             self.send_signup_notification()
-
+    
+    # Make it using django signals also send the email to the patient that his account has been created
+    # and also send the email to the admin that a new patient has been registered
     def send_signup_notification(self):
         sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
         message = Mail(
@@ -158,7 +160,7 @@ class PastMedicalHistory(models.Model):
 
 class Moderator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-    
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
     def __str__(self):
         return self.user.username
 
@@ -166,6 +168,7 @@ class Moderator(models.Model):
 class Doctor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     specialization = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
     def __str__(self):
         return self.user.username
 

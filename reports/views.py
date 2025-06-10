@@ -276,8 +276,16 @@ def data_from_mio_connect(request):
         report_fields['spo2'] = ''
         report_fields['temperature'] = ''
         report_fields['symptoms'] = ''
+        try:
+            report = Reports.objects.create(patient=patient, **report_fields)
+            # Send the email using sendgrid
+            # Check the critical fields
+            if report_fields['systolic_blood_pressure'] > 170:
+                pass
 
-        report = Reports.objects.create(patient=patient, **report_fields)
+        except Exception as e:
+            print(f"Error creating report: {str(e)}")
+            return JsonResponse({"error": f"Failed to create report: {str(e)}"}, status=500)
         return JsonResponse({
             "success": True,
             "received_data": body,
