@@ -164,8 +164,23 @@
         }
 
         .documentation-card .actions .edit-btn {
-            background: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            height: 30px;
+            margin-left: 8px;
+        }
+
+        .documentation-card .actions .edit-btn:hover {
+            background: linear-gradient(135deg, #45a049, #4CAF50);
         }
 
         .no-documentation {
@@ -242,6 +257,7 @@
                     </div>
                     <div class="actions">
                         <a href="{% url 'view_documentation' %}" class="view-btn">View</a>
+                        <a href="{% url 'edit_documentation' doc.id %}" class="edit-btn">Edit</a>
                     </div>
                 </div>
                 {% endfor %}

@@ -1285,6 +1285,8 @@
           if (!data.documentations || data.documentations.length === 0) {
             docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
           } else {
+            // Sort documentations by created_at descending (newest first)
+            data.documentations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             // Create an array to store the documentation data for easy access
             window.documentations = data.documentations;
 
@@ -1301,7 +1303,7 @@
                       ${doc.written_by}                   
                     </p>
                     <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
-                      Created: ${formattedCreatedAt}
+                      Date of Service: ${formattedCreatedAt}
                     </p>
                   </div>
                 `;
@@ -1355,10 +1357,10 @@
           <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 15px;">
               <h2 style="color: white; font-size: 22px; margin-bottom: 10px;">${doc.title}</h2>
-              <button onclick="window.location.href='/edit-documentation/${doc.id}/'" style="background: #FF0080; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 14px; cursor: pointer; margin-left: 20px;">Edit</button>
+              <button onclick="window.location.href='/reports/edit-documentation/${doc.id}/'" style="background: #FF0080; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 14px; cursor: pointer; margin-left: 20px; transition: background-color 0.2s ease;">Edit</button>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 15px; color: rgba(255, 255, 255, 0.7); font-size: 14px; margin-bottom: 15px;">
-              <span><strong>Created:</strong> ${formattedCreatedAt}</span>
+              <span><strong>Date of Service:</strong> ${formattedCreatedAt}</span>
               <span><strong>Updated:</strong> ${formattedUpdatedAt}</span>
             </div>
         `;

@@ -4,20 +4,28 @@ from .models import Documentation, Reports
 class DocumentationForm(forms.ModelForm):
     # Renamed field in the form for clarity, mapping to history_of_present_illness in the model
     full_documentation = forms.CharField(widget=forms.Textarea(attrs={'rows': 15, 'placeholder': 'Enter full documentation'}))
+    
+    # Patient snapshot fields
+    doc_patient_name = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Patient Name'}))
+    doc_dob = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    doc_sex = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Sex'}))
+    doc_monitoring_params = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Monitoring Parameters'}))
+    doc_clinical_staff = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Clinical Staff'}))
+    doc_moderator = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Moderator'}))
+    doc_report_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
 
     class Meta:
         model = Documentation
         fields = [
             "title",
-            "full_documentation", # Use the new form field name
-            # "file",
-            # Removed individual fields as they are replaced by full_documentation
-            # "history_of_present_illness",
-            # "chief_complaint",
-            # "subjective",
-            # "objective",
-            # "assessment",
-            # "plan",
+            "full_documentation",
+            "doc_patient_name",
+            "doc_dob",
+            "doc_sex",
+            "doc_monitoring_params",
+            "doc_clinical_staff",
+            "doc_moderator",
+            "doc_report_date",
         ]
         # Removed widgets for individual fields
         # widgets = {

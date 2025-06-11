@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if edit_mode %}Edit Documentation{% else %}Add Documentation{% endif %}</title>
+    <title>Edit Documentation</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -244,6 +244,23 @@
             box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
         }
 
+        .edit-button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .edit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(121, 40, 202, 0.3);
+        }
+
         /* Make textarea fields full width */
         .form-group:has(textarea) {
             grid-column: 1 / -1;
@@ -289,330 +306,59 @@
                 padding: 20px;
             }
         }
-
-        .medical-history {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .medical-history h3 {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .history-items {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .history-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 15px;
-            border-radius: 20px;
-            color: var(--secondary);
-            font-size: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .vitals-history {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .vitals-history h3 {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .vitals-grid {
-            display: grid;
-            gap: 15px;
-        }
-
-        .vital-item {
-            background: rgba(255, 255, 255, 0.02);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .vital-date {
-            color: var(--secondary);
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .vital-values {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .vital-values span {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .edit-button {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .edit-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(121, 40, 202, 0.3);
-        }
-
-        .vitals-summary {
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .vitals-summary h3 {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .vitals-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .summary-item {
-            background: rgba(255, 255, 255, 0.02);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .summary-item h4 {
-            color: var(--secondary);
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-
-        .summary-values {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .min-max {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .min-max .label {
-            color: var(--text);
-            font-size: 14px;
-        }
-
-        .min-max .value {
-            color: white;
-            font-weight: 500;
-            font-size: 14px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .no-data {
-            grid-column: 1 / -1;
-            text-align: center;
-            color: var(--text);
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="javascript:history.back()" class="back-button">← Back to Documentation</a>
-        <h2>{% if edit_mode %}Edit Documentation{% else %}Add Documentation{% endif %}</h2>
-        
-        <div class="patient-info">
+        <h2>Edit Documentation</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 20px; font-weight: 600;">
+            <h3>Patient Information</h3>
+        </div>
+        {% comment %} <div class="patient-info">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3>Patient Information</h3>
-                {% comment %} <button type="button" id="editPatientInfoBtn" class="edit-button" onclick="togglePatientInfoEdit()">Edit Information</button> {% endcomment %}
+                <button type="button" id="editPatientInfoBtn" class="edit-button" onclick="togglePatientInfoEdit()">Edit Information</button>
             </div>
             <div id="patientInfoDisplay" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 15px; max-width: 1800px;">
-                <p style="margin: 0;"><strong>Name:</strong> {{ patient.user.first_name }} {{ patient.user.last_name }}</p>
-                <p style="margin: 0;"><strong>Date of Birth:</strong> {{ patient.date_of_birth|date:"F d, Y" }}</p>
-                <p style="margin: 0;"><strong>Sex:</strong> {{ patient.get_sex_display }}</p>
-                <p style="margin: 0;"><strong>Monitoring Parameters:</strong> {{ patient.monitoring_parameters }}</p>
-                <p style="margin: 0;"><strong>Clinical Staff:</strong> {{ patient.clinical_staff.user.get_full_name|default:"N/A" }}</p>
-                <p style="margin: 0;"><strong>Moderator:</strong> {{ patient.moderator|default:"N/A" }}</p>
-                <p style="margin: 0;"><strong>Report Date:</strong> {% now "F d, Y" %}</p>
+                <p style="margin: 0;"><strong>Name:</strong> {{ documentation.doc_patient_name|default:patient.user.get_full_name }}</p>
+                <p style="margin: 0;"><strong>Date of Birth:</strong> {{ documentation.doc_dob|default:patient.date_of_birth|date:"F d, Y" }}</p>
+                <p style="margin: 0;"><strong>Sex:</strong> {{ documentation.doc_sex|default:patient.get_sex_display }}</p>
+                <p style="margin: 0;"><strong>Monitoring Parameters:</strong> {{ documentation.doc_monitoring_params|default:patient.monitoring_parameters }}</p>
+                <p style="margin: 0;"><strong>Clinical Staff:</strong> {{ documentation.doc_clinical_staff|default:"N/A" }}</p>
+                <p style="margin: 0;"><strong>Moderator:</strong> {{ documentation.doc_moderator|default:"N/A" }}</p>
+                <p style="margin: 0;"><strong>Report Date:</strong> {{ documentation.doc_report_date|date:"F d, Y" }}</p>
             </div>
             
             <div id="patientInfoEdit" style="display: none;">
                 <div class="form-group">
                     <label for="id_doc_patient_name">Patient Name</label>
-                    <input type="text" name="doc_patient_name" id="id_doc_patient_name" value="{{ patient.user.first_name }} {{ patient.user.last_name }}">
+                    <input type="text" name="doc_patient_name" id="id_doc_patient_name" value="{{ documentation.doc_patient_name|default:patient.user.get_full_name }}">
                 </div>
                 <div class="form-group">
                     <label for="id_doc_dob">Date of Birth</label>
-                    <input type="date" name="doc_dob" id="id_doc_dob" value="{{ patient.date_of_birth|date:'Y-m-d' }}">
+                    <input type="date" name="doc_dob" id="id_doc_dob" value="{{ documentation.doc_dob|date:'Y-m-d'|default:patient.date_of_birth|date:'Y-m-d' }}">
                 </div>
                 <div class="form-group">
                     <label for="id_doc_sex">Sex</label>
-                    <input type="text" name="doc_sex" id="id_doc_sex" value="{{ patient.get_sex_display }}">
+                    <input type="text" name="doc_sex" id="id_doc_sex" value="{{ documentation.doc_sex|default:patient.get_sex_display }}">
                 </div>
                 <div class="form-group">
                     <label for="id_doc_monitoring_params">Monitoring Parameters</label>
-                    <input type="text" name="doc_monitoring_params" id="id_doc_monitoring_params" value="{{ patient.monitoring_parameters }}">
+                    <input type="text" name="doc_monitoring_params" id="id_doc_monitoring_params" value="{{ documentation.doc_monitoring_params|default:patient.monitoring_parameters }}">
                 </div>
                 <div class="form-group">
                     <label for="id_doc_clinical_staff">Clinical Staff</label>
-                    <input type="text" name="doc_clinical_staff" id="id_doc_clinical_staff" value="{{ patient.clinical_staff.user.get_full_name|default:'N/A' }}">
+                    <input type="text" name="doc_clinical_staff" id="id_doc_clinical_staff" value="{{ documentation.doc_clinical_staff|default:'N/A' }}">
                 </div>
                 <div class="form-group">
                     <label for="id_doc_moderator">Moderator</label>
-                    <input type="text" name="doc_moderator" id="id_doc_moderator" value="{{ patient.moderator|default:'N/A' }}">
+                    <input type="text" name="doc_moderator" id="id_doc_moderator" value="{{ documentation.doc_moderator|default:'N/A' }}">
                 </div>
             </div>
-
-            {% if not edit_mode %}
-            <div class="vitals-history">
-                <h3>Recent Vitals</h3>
-                <div class="vitals-grid">
-                    {% for report in reports %}
-                    <div class="vital-item">
-                        <div class="vital-date">{{ report.created_at|date:"M d, Y" }}</div>
-                        <div class="vital-values">
-                            {% if report.blood_pressure %}
-                                <span>BP: {{ report.blood_pressure }}</span>
-                            {% elif report.systolic_blood_pressure and report.diastolic_blood_pressure %}
-                                <span>BP: {{ report.systolic_blood_pressure }}/{{ report.diastolic_blood_pressure }}</span>
-                            {% endif %}
-                            
-                            {% if report.heart_rate %}
-                                <span>HR: {{ report.heart_rate }}</span>
-                            {% elif report.pulse %}
-                                <span>HR: {{ report.pulse }}</span>
-                            {% endif %}
-                            
-                            {% if report.spo2 %}
-                                <span>SpO2: {{ report.spo2 }}</span>
-                            {% endif %}
-                            
-                            {% if report.temperature %}
-                                <span>Temp: {{ report.temperature }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="vitals-summary">
-                <h3>Last Month's Vital Statistics</h3>
-                <div class="vitals-summary-grid">
-                    {% if reports %}
-                    <div class="summary-item">
-                        <h4>Blood Pressure (Systolic)</h4>
-                        <div class="summary-values">
-                            <div class="min-max">
-                                <span class="label">Min:</span>
-                                <span class="value">{{ min_bp|default:"N/A" }}</span>
-                            </div>
-                            <div class="min-max">
-                                <span class="label">Max:</span>
-                                <span class="value">{{ max_bp|default:"N/A" }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Heart Rate</h4>
-                        <div class="summary-values">
-                            <div class="min-max">
-                                <span class="label">Min:</span>
-                                <span class="value">{{ min_hr|default:"N/A" }}</span>
-                            </div>
-                            <div class="min-max">
-                                <span class="label">Max:</span>
-                                <span class="value">{{ max_hr|default:"N/A" }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>SpO2</h4>
-                        <div class="summary-values">
-                            <div class="min-max">
-                                <span class="label">Min:</span>
-                                <span class="value">{{ min_spo2|default:"N/A" }}</span>
-                            </div>
-                            <div class="min-max">
-                                <span class="label">Max:</span>
-                                <span class="value">{{ max_spo2|default:"N/A" }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Temperature</h4>
-                        <div class="summary-values">
-                            <div class="min-max">
-                                <span class="label">Min:</span>
-                                <span class="value">{{ min_temp|default:"N/A" }}</span>
-                            </div>
-                            <div class="min-max">
-                                <span class="label">Max:</span>
-                                <span class="value">{{ max_temp|default:"N/A" }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="no-data">No vital statistics available for the last month</div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-
-            {% comment %} {% if patient.medical_history.all %}
-            <div class="medical-history">
-                <h3>Past Medical History</h3>
-                <div class="history-items">
-                    {% for history in patient.medical_history.all %}
-                    <span class="history-item">{{ history.pmh }}</span>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %} {% endcomment %}
-        </div>
+        </div> {% endcomment %}
         
-        <form action="{% if edit_mode %}{% url 'edit_documentation' doc_id %}{% else %}{% url 'add_documentation' patient.id %}{% endif %}" method="POST" enctype="multipart/form-data">
+        <form action="{% url 'edit_documentation' documentation.id %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             
             <div class="form-group">
@@ -623,12 +369,42 @@
                 {% endif %}
             </div>
 
+            <!-- Patient Information Fields -->
             <div class="form-group">
-                <label for="id_full_documentation">Full Documentation</label>
-                <textarea id="id_full_documentation" name="full_documentation" placeholder="Enter full documentation" rows="15">{{ form.initial.full_documentation|default_if_none:'' }}</textarea>
+                <label for="id_doc_patient_name">Patient Name</label>
+                <input type="text" name="doc_patient_name" id="id_doc_patient_name" value="{{ documentation.doc_patient_name|default:patient.user.get_full_name }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="id_doc_dob">Date of Birth</label>
+                <input type="date" name="doc_dob" id="id_doc_dob" value="{{ documentation.doc_dob|date:'Y-m-d'|default:patient.date_of_birth|date:'Y-m-d' }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="id_doc_sex">Sex</label>
+                <input type="text" name="doc_sex" id="id_doc_sex" value="{{ documentation.doc_sex|default:patient.get_sex_display }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="id_doc_monitoring_params">Monitoring Parameters</label>
+                <input type="text" name="doc_monitoring_params" id="id_doc_monitoring_params" value="{{ documentation.doc_monitoring_params|default:patient.monitoring_parameters }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="id_doc_clinical_staff">Clinical Staff</label>
+                <input type="text" name="doc_clinical_staff" id="id_doc_clinical_staff" value="{{ documentation.doc_clinical_staff|default:'N/A' }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="id_doc_moderator">Moderator</label>
+                <input type="text" name="doc_moderator" id="id_doc_moderator" value="{{ documentation.doc_moderator|default:'N/A' }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="id_doc_report_date">Report Date</label>
+                <input type="date" name="doc_report_date" id="id_doc_report_date" value="{{ documentation.doc_report_date|date:'Y-m-d'|default:now|date:'Y-m-d' }}" class="form-control">
             </div>
 
-            <button type="submit">{% if edit_mode %}Update Documentation{% else %}Save Documentation{% endif %}</button>
+            <div class="form-group">
+                <label for="id_full_documentation">Full Documentation</label>
+                <textarea id="id_full_documentation" name="full_documentation" placeholder="Enter full documentation" rows="15" class="form-control">{{ documentation.history_of_present_illness }}</textarea>
+            </div>
+
+            <button type="submit">Update Documentation</button>
         </form>
     </div>
 
@@ -649,8 +425,31 @@
             }
         }
 
-        // Add event listener for title selection
+        // Add event listeners to sync editable fields with hidden fields
         document.addEventListener('DOMContentLoaded', function() {
+            const editableFields = {
+                'doc_patient_name': 'id_doc_patient_name',
+                'doc_dob': 'id_doc_dob',
+                'doc_sex': 'id_doc_sex',
+                'doc_monitoring_params': 'id_doc_monitoring_params',
+                'doc_clinical_staff': 'id_doc_clinical_staff',
+                'doc_moderator': 'id_doc_moderator'
+            };
+
+            // Add change event listeners to all editable fields
+            Object.entries(editableFields).forEach(([fieldName, inputId]) => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.addEventListener('change', function() {
+                        const hiddenField = document.querySelector(`input[name="${fieldName}"]`);
+                        if (hiddenField) {
+                            hiddenField.value = this.value;
+                        }
+                    });
+                }
+            });
+
+            // Add template functionality
             const titleSelect = document.getElementById('id_title');
             const documentationTextarea = document.getElementById('id_full_documentation');
             
@@ -856,7 +655,7 @@ Spent over 60 minutes of non-face-to-face chronic care management services were 
 Signed: [Name, Title]
 Date: [MM/DD/YYYY]`;
 
-            // Set default value to Progress Note
+            // Set default value to Progress Note if empty
             if (titleSelect.value === '') {
                 titleSelect.value = 'Progress Note';
                 documentationTextarea.value = '';
@@ -877,4 +676,4 @@ Date: [MM/DD/YYYY]`;
         });
     </script>
 </body>
-</html>
+</html> 

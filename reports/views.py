@@ -20,6 +20,9 @@ from django.forms.models import model_to_dict
 
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
+from django.contrib import messages
+from django.utils import timezone
+from datetime import timedelta
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -173,41 +176,135 @@ def create_report(request):
         serializer = ReportSerializer(report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response({"error": "Patient not exists"}, status=status.HTTP_404_NOT_FOUND)
+
 @login_required
 def add_documentation(request, patient_id):
-    user = request.user
-    print(user)
-    # Check if the user is a moderator
-    if not Moderator.objects.filter(user=user).exists():
-        return render(request, "errors/403.html", {"error": "Only moderators can add documentation"}, status=403)
-
     patient = get_object_or_404(Patient, id=patient_id)
     
-    # Get the latest three reports for this patient if they exist
-    latest_reports = Reports.objects.filter(patient=patient).order_by('-created_at')[:3]
-    
-    if request.method == "POST":
+    # Get reports from the last month
+    one_month_ago = timezone.now() - timedelta(days=30)
+    reports = Reports.objects.filter(
+        patient=patient,
+    ).order_by('-created_at')
+    # Calculate min/max values for vitals
+    min_bp = None
+    max_bp = None
+    min_hr = None
+    max_hr = None
+    min_spo2 = None
+    max_spo2 = None
+    min_temp = None
+    max_temp = None
+
+    for report in reports:
+        # Blood Pressure - try both old and new fields
+        bp_value = None
+        if report.blood_pressure:
+            try:
+                bp_values = [int(x.strip()) for x in report.blood_pressure.split('/')]
+                if len(bp_values) == 2:
+                    bp_value = bp_values[0]
+            except (ValueError, AttributeError):
+                pass
+        elif report.systolic_blood_pressure:
+            try:
+                bp_value = int(report.systolic_blood_pressure)
+            except (ValueError, AttributeError):
+                pass
+
+        if bp_value is not None:
+            if min_bp is None or bp_value < min_bp:
+                min_bp = bp_value
+            if max_bp is None or bp_value > max_bp:
+                max_bp = bp_value
+
+        # Heart Rate - try both old and new fields
+        hr_value = None
+        if report.heart_rate:
+            try:
+                hr_value = int(report.heart_rate)
+            except (ValueError, AttributeError):
+                pass
+        elif report.pulse:
+            try:
+                hr_value = int(report.pulse)
+            except (ValueError, AttributeError):
+                pass
+
+        if hr_value is not None:
+            if min_hr is None or hr_value < min_hr:
+                min_hr = hr_value
+            if max_hr is None or hr_value > max_hr:
+                max_hr = hr_value
+
+        # SpO2
+        if report.spo2:
+            try:
+                spo2 = int(report.spo2)
+                if min_spo2 is None or spo2 < min_spo2:
+                    min_spo2 = spo2
+                if max_spo2 is None or spo2 > max_spo2:
+                    max_spo2 = spo2
+            except (ValueError, AttributeError):
+                pass
+
+        # Temperature
+        if report.temperature:
+            try:
+                temp = float(report.temperature)
+                if min_temp is None or temp < min_temp:
+                    min_temp = temp
+                if max_temp is None or temp > max_temp:
+                    max_temp = temp
+            except (ValueError, AttributeError):
+                pass
+    print("min_bp", min_bp)
+    print("max_bp", max_bp)
+    print("min_hr", min_hr)
+    print("max_hr", max_hr)
+    print("min_spo2", min_spo2)
+    print("max_spo2", max_spo2)
+    print("min_temp", min_temp)
+    if request.method == 'POST':
         form = DocumentationForm(request.POST, request.FILES)
         if form.is_valid():
             documentation = form.save(commit=False)
             documentation.patient = patient
-            # Add the moderator who wrote the documentation
-            documentation.written_by = user
-            # Only associate with report if it exists
-            if latest_reports:
-                documentation.report = latest_reports[0]
+            
+            # Update patient snapshot fields
+            documentation.doc_patient_name = f"{patient.user.first_name} {patient.user.last_name}"
+            documentation.doc_dob = patient.date_of_birth
+            documentation.doc_sex = patient.get_sex_display()
+            documentation.doc_monitoring_params = patient.monitoring_parameters
+            documentation.doc_clinical_staff = str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"
+            documentation.doc_moderator = str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"
+            documentation.doc_report_date = timezone.now().date()
+            
+            # Update the history_of_present_illness with the full_documentation value
+            documentation.history_of_present_illness = request.POST.get('full_documentation', '')
+            
             documentation.save()
-            return redirect(f"/view-patient/{patient_id}/?action=access")  # Redirect to patient's view page
+            messages.success(request, 'Documentation added successfully.')
+            return redirect('view_documentation', patient_id=patient.id)
     else:
         form = DocumentationForm()
 
     context = {
-        "form": form, 
-        "patient": patient,
-        "reports": latest_reports
+        'form': form,
+        'patient': patient,
+        'reports': reports,
+        'min_bp': min_bp,
+        'max_bp': max_bp,
+        'min_hr': min_hr,
+        'max_hr': max_hr,
+        'min_spo2': min_spo2,
+        'max_spo2': max_spo2,
+        'min_temp': min_temp,
+        'max_temp': max_temp,
+        'now': timezone.now()
     }
-    
-    return render(request, "reports/add_docs.html", context)
+    print("context", context)
+    return render(request, 'reports/add_docs.html', context)
 
 
 @csrf_exempt
@@ -396,3 +493,56 @@ def edit_patient(request, patient_id):
     return render(request, "reports/edit_patient.html", {
         'patient': patient
     })
+
+@login_required
+def edit_documentation(request, doc_id):
+    documentation = get_object_or_404(Documentation, id=doc_id)
+    patient = documentation.patient
+    
+    # Check if the user is a moderator
+    if not Moderator.objects.filter(user=request.user).exists():
+        return render(request, "errors/403.html", {"error": "Only moderators can edit documentation"}, status=403)
+    
+    if request.method == 'POST':
+        form = DocumentationForm(request.POST, request.FILES, instance=documentation)
+        if form.is_valid():
+            documentation = form.save(commit=False)
+            
+            # Update patient snapshot fields
+            documentation.doc_patient_name = request.POST.get('doc_patient_name', f"{patient.user.first_name} {patient.user.last_name}")
+            documentation.doc_dob = request.POST.get('doc_dob', patient.date_of_birth)
+            documentation.doc_sex = request.POST.get('doc_sex', patient.get_sex_display())
+            documentation.doc_monitoring_params = request.POST.get('doc_monitoring_params', patient.monitoring_parameters)
+            documentation.doc_clinical_staff = request.POST.get('doc_clinical_staff', str(patient.moderator_assigned) if patient.moderator_assigned else "N/A")
+            documentation.doc_moderator = request.POST.get('doc_moderator', str(patient.moderator_assigned) if patient.moderator_assigned else "N/A")
+            documentation.doc_report_date = request.POST.get('doc_report_date', timezone.now().date())
+            
+            # Update the history_of_present_illness with the full_documentation value
+            documentation.history_of_present_illness = request.POST.get('full_documentation', '')
+            
+            documentation.save()
+            messages.success(request, 'Documentation updated successfully.')
+            return redirect('view_documentation', patient_id=patient.id)
+    else:
+        # Pre-fill the form with existing documentation data
+        initial_data = {
+            'title': documentation.title,
+            'doc_patient_name': documentation.doc_patient_name or f"{patient.user.first_name} {patient.user.last_name}",
+            'doc_dob': documentation.doc_dob or patient.date_of_birth,
+            'doc_sex': documentation.doc_sex or patient.get_sex_display(),
+            'doc_monitoring_params': documentation.doc_monitoring_params or patient.monitoring_parameters,
+            'doc_clinical_staff': documentation.doc_clinical_staff or (str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"),
+            'doc_moderator': documentation.doc_moderator or (str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"),
+            'doc_report_date': documentation.doc_report_date or timezone.now().date(),
+            'full_documentation': documentation.history_of_present_illness
+        }
+        form = DocumentationForm(instance=documentation, initial=initial_data)
+    
+    context = {
+        'form': form,
+        'documentation': documentation,
+        'patient': patient,
+        'now': timezone.now()
+    }
+    
+    return render(request, 'reports/edit_docs.html', context)
