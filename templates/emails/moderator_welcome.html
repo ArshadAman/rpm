@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to {{ site_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .tagline {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .message {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: #555;
+            line-height: 1.7;
+        }
+        
+        .features {
+            margin: 30px 0;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border-radius: 2px;
+        }
+        
+        .feature-list, .steps-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .feature-list li, .steps-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .feature-list li::before {
+            content: '📊';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            font-size: 16px;
+        }
+        
+        .steps-list li::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: 12px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .steps-list {
+            counter-reset: step-counter;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(39, 174, 96, 0.05), rgba(46, 204, 113, 0.05));
+            border-radius: 12px;
+            border: 1px solid rgba(39, 174, 96, 0.1);
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.2s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .admin-note {
+            background: linear-gradient(135deg, #e8f5e8, #f0fff0);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border-left: 4px solid #27ae60;
+        }
+        
+        .admin-note-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #27ae60;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .admin-note-text {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .support-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .support-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .support-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .support-email {
+            color: #27ae60;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .footer-text {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        
+        .footer-company {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .header, .content {
+                padding: 30px 20px;
+            }
+            
+            .welcome-title {
+                font-size: 20px;
+            }
+            
+            .greeting {
+                font-size: 16px;
+            }
+            
+            .cta-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">RPM</div>
+            <div class="tagline">Remote Patient Monitoring System</div>
+            <div class="welcome-title">Welcome to the Admin Team!</div>
+            <div class="role-badge">Healthcare Moderator</div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Hello {{ first_name }}{% if last_name %} {{ last_name }}{% endif %},
+            </div>
+            
+            <div class="message">
+                Welcome to RPM! We're excited to have you join our healthcare moderation team. Your moderator account has been successfully created, giving you access to our comprehensive administrative platform where you'll play a crucial role in managing patient care coordination and monitoring operations.
+            </div>
+            
+            <!-- Admin Note -->
+            <div class="admin-note">
+                <div class="admin-note-title">
+                    🛡️ Administrative Access
+                </div>
+                <div class="admin-note-text">
+                    As a healthcare moderator, you have elevated privileges to manage patient registrations, coordinate with doctors, and ensure the smooth operation of our remote monitoring services. Your role is vital to maintaining high-quality patient care.
+                </div>
+            </div>
+            
+            <!-- Features Section -->
+            <div class="features">
+                <div class="section-title">Your Administrative Tools</div>
+                <ul class="feature-list">
+                    {% for feature in features %}
+                    <li>{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Next Steps -->
+            <div class="features">
+                <div class="section-title">Getting Started</div>
+                <ol class="steps-list">
+                    {% for step in next_steps %}
+                    <li>{{ step }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            
+            <!-- Call to Action -->
+            <div class="cta-section">
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">Access Your Moderator Dashboard</h3>
+                <p style="margin-bottom: 20px; color: #666;">Start managing patient care coordination and monitoring operations.</p>
+                <a href="{{ dashboard_url }}" class="cta-button">Access Admin Panel</a>
+            </div>
+            
+            <!-- Support Section -->
+            <div class="support-section">
+                <div class="support-title">Administrative Support</div>
+                <div class="support-text">
+                    Our technical support team is available to help you with platform administration, user management, and system configuration.
+                </div>
+                <a href="mailto:{{ support_email }}" class="support-email">{{ support_email }}</a>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-text">
+                This email was sent to {{ email }} because you were granted moderator privileges.
+            </div>
+            <div class="footer-company">{{ company_name }} - Healthcare Administration</div>
+        </div>
+    </div>
+</body>
+</html>

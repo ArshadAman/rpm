@@ -1,0 +1,122 @@
+ERROR 2025-06-13 23:06:44,391 signals 17873 8606654208 Error determining user type for test@example.com: Model instances passed to related filters must be saved.
+ERROR 2025-06-13 23:06:44,392 signals 17873 8606654208 Error determining user type for test@example.com: Model instances passed to related filters must be saved.
+ERROR 2025-06-13 23:06:44,392 signals 17873 8606654208 Error determining user type for test@example.com: Model instances passed to related filters must be saved.
+WARNING 2025-06-13 23:10:27,121 log 7 281473756110880 Not Found: /favicon.ico
+WARNING 2025-06-13 23:11:21,492 log 7 281473756110880 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:11:23,108 log 7 281473756110880 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:11:30,206 log 7 281473756110880 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:11:35,606 log 7 281473756110880 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-13 23:11:35,612 log 7 281473756110880 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:11:35,623 log 7 281473756110880 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-13 23:11:35,641 log 7 281473756110880 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-13 23:11:35,647 log 7 281473756110880 Not Found: /static/admin/img/icon-changelink.svg
+WARNING 2025-06-13 23:11:35,650 log 7 281473756110880 Not Found: /static/admin/img/icon-viewlink.svg
+WARNING 2025-06-13 23:11:35,654 log 7 281473756110880 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-13 23:11:35,658 log 7 281473756110880 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-13 23:11:35,661 log 7 281473756110880 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-13 23:11:41,760 log 7 281473756110880 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:11:43,685 log 7 281473756110880 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-13 23:11:43,690 log 7 281473756110880 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:11:43,700 log 7 281473756110880 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-13 23:11:43,713 log 7 281473756110880 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-13 23:11:43,722 log 7 281473756110880 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-13 23:11:43,727 log 7 281473756110880 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-13 23:11:43,730 log 7 281473756110880 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-13 23:35:06,242 log 6 281473607811104 Not Found: /admin/create-user/
+WARNING 2025-06-13 23:35:47,348 log 7 281473861341216 Not Found: /admin/create-staff/
+WARNING 2025-06-13 23:36:52,589 log 7 281473861341216 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:37:02,715 log 7 281473861341216 Not Found: /admin/create-staff/
+ERROR 2025-06-13 23:44:54,052 signals 6 281473787252768 Failed to send welcome email to Sjilani@pinksurfing.com: Connection unexpectedly closed
+WARNING 2025-06-13 23:48:08,338 log 7 281473392029728 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:48:13,536 log 7 281473392029728 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:48:17,291 log 7 281473392029728 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:48:18,440 log 7 281473392029728 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:48:20,682 log 7 281473392029728 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:48:22,114 log 7 281473392029728 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:48:26,045 log 7 281473392029728 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-13 23:48:27,037 log 7 281473392029728 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:40:29,441 log 7 281473879601184 Not Found: /users/staff/verify-password/
+ERROR 2025-06-14 00:41:13,445 signals 7 281473879601184 Failed to send welcome email to test_moderator_123@example.com: Connection unexpectedly closed
+WARNING 2025-06-14 00:48:20,421 log 7 281473759772704 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:48:22,411 log 7 281473759772704 Not Found: /static/admin/img/logo.png
+ERROR 2025-06-14 00:48:46,608 signals 7 281473759772704 Failed to send welcome email to test_moderator_789@example.com: Connection unexpectedly closed
+WARNING 2025-06-14 00:50:33,739 log 7 281472973688864 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-14 00:50:33,762 log 7 281472973688864 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-14 00:50:33,776 log 7 281472973688864 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-14 00:50:33,797 log 7 281472973688864 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-14 00:50:33,814 log 7 281472973688864 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:50:42,350 log 7 281472973688864 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-14 00:50:42,356 log 7 281472973688864 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-14 00:50:42,364 log 7 281472973688864 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:50:42,370 log 7 281472973688864 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-14 00:50:42,390 log 7 281472973688864 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-14 00:50:52,526 log 7 281472973688864 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:50:53,722 log 7 281472973688864 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:51:25,641 log 7 281472973688864 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-14 00:51:25,651 log 7 281472973688864 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-14 00:51:25,655 log 7 281472973688864 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:51:25,671 log 7 281472973688864 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-14 00:51:25,679 log 7 281472973688864 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-14 00:51:35,520 log 7 281472973688864 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-14 00:51:35,526 log 7 281472973688864 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:51:35,535 log 7 281472973688864 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-14 00:51:35,549 log 7 281472973688864 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-14 00:51:35,555 log 7 281472973688864 Not Found: /static/admin/js/change_form.js
+ERROR 2025-06-14 00:52:12,232 signals 7 281472973688864 Failed to send welcome email to mca.24mmce23@silicon.ac.in: Connection unexpectedly closed
+WARNING 2025-06-14 00:57:21,640 log 7 281473259786272 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:57:25,294 log 7 281473259786272 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 00:57:26,165 log 7 281473259786272 Not Found: /static/admin/img/logo.png
+ERROR 2025-06-14 00:58:09,005 signals 7 281473259786272 Failed to send welcome email to mca.24mmce23@silicon.ac.in: Connection unexpectedly closed
+WARNING 2025-06-14 00:58:17,234 log 7 281473259786272 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:04:25,799 log 7 281473549987872 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:04:30,645 log 7 281473549987872 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:04:36,296 log 7 281473549987872 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:04:37,675 log 7 281473549987872 Not Found: /static/admin/img/logo.png
+ERROR 2025-06-14 01:05:36,686 signals 7 281473549987872 Failed to send welcome email to mca.24mmce23@silicon.ac.in: HTTP Error 401: Unauthorized
+WARNING 2025-06-14 01:06:24,801 log 7 281473549987872 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:06:28,416 log 7 281473549987872 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:06:29,339 log 7 281473549987872 Not Found: /static/admin/img/logo.png
+ERROR 2025-06-14 01:07:20,575 signals 7 281473549987872 Failed to send welcome email to mca.24mmce23@silicon.ac.in: HTTP Error 401: Unauthorized
+WARNING 2025-06-14 01:07:26,850 log 7 281473549987872 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:09:27,609 log 7 281473841987616 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:09:29,090 log 7 281473841987616 Not Found: /static/admin/img/logo.png
+ERROR 2025-06-14 01:10:04,315 signals 7 281473841987616 Failed to send welcome email to mca.24mmce23@silicon.ac.in: HTTP Error 401: Unauthorized
+WARNING 2025-06-14 01:16:17,935 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:16:20,940 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:16:21,847 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+INFO 2025-06-14 01:16:26,590 signals 7 281473663275040 Welcome email sent successfully to mca.24mmce23@silicon.ac.in (moderator)
+INFO 2025-06-14 01:18:27,311 signals 7 281473663275040 Welcome email sent successfully to sjilani@pinksurfing.com (patient)
+WARNING 2025-06-14 01:23:37,097 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:23:38,989 log 7 281473663275040 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-14 01:23:38,995 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:23:39,004 log 7 281473663275040 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-14 01:23:39,024 log 7 281473663275040 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-14 01:23:39,030 log 7 281473663275040 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-14 01:23:45,651 log 7 281473663275040 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-14 01:23:45,666 log 7 281473663275040 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-14 01:23:45,675 log 7 281473663275040 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-14 01:23:45,681 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:23:45,686 log 7 281473663275040 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-14 01:23:52,143 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:23:54,157 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:23:55,620 log 7 281473663275040 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-14 01:23:55,628 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:23:55,635 log 7 281473663275040 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-14 01:23:55,651 log 7 281473663275040 Not Found: /static/admin/img/icon-viewlink.svg
+WARNING 2025-06-14 01:23:55,660 log 7 281473663275040 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-14 01:23:55,664 log 7 281473663275040 Not Found: /static/admin/img/icon-changelink.svg
+WARNING 2025-06-14 01:23:55,668 log 7 281473663275040 Not Found: /static/admin/img/icon-deletelink.svg
+WARNING 2025-06-14 01:23:55,672 log 7 281473663275040 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-14 01:24:07,387 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:24:08,929 log 7 281473663275040 Not Found: /static/admin/css/forms.css
+WARNING 2025-06-14 01:24:08,939 log 7 281473663275040 Not Found: /static/admin/js/prepopulate_init.js
+WARNING 2025-06-14 01:24:08,946 log 7 281473663275040 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:24:08,962 log 7 281473663275040 Not Found: /static/admin/img/icon-changelink.svg
+WARNING 2025-06-14 01:24:08,969 log 7 281473663275040 Not Found: /static/admin/img/icon-viewlink.svg
+WARNING 2025-06-14 01:24:08,974 log 7 281473663275040 Not Found: /static/admin/img/icon-addlink.svg
+WARNING 2025-06-14 01:24:08,978 log 7 281473663275040 Not Found: /static/admin/js/change_form.js
+WARNING 2025-06-14 01:28:51,773 log 7 281473643167776 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:28:54,826 log 7 281473643167776 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:28:58,508 log 7 281473643167776 Not Found: /static/admin/img/logo.png
+WARNING 2025-06-14 01:28:59,364 log 7 281473643167776 Not Found: /static/admin/img/logo.png
+INFO 2025-06-14 01:29:44,325 signals 7 281473643167776 Welcome email sent successfully to sjilani@pinksurfing.com (doctor)

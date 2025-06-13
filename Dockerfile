@@ -10,4 +10,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . /app/
 
+# Create logs directory
+RUN mkdir -p /app/logs
+
 CMD ["gunicorn", "rpm.wsgi:application", "--bind", "0.0.0.0:8000"]

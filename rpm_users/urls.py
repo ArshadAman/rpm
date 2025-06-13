@@ -33,4 +33,10 @@ urlpatterns = [
     path('doctor/patient/<uuid:patient_id>/', views.doctor_patient_detail, name='doctor_patient_detail'),
     path('view_escalated_patient/', views.view_escalated_patient, name='view_escalated_patient'),
     path('escalate_patient/<uuid:patient_id>/', views.escalate_patient, name='escalate_patient'),
+    
+    # Admin-verified user creation
+    path('staff/create-user/', views.admin_create_user, name='admin_create_user'),
+    path('staff/verify-password/', views.verify_admin_password, name='verify_admin_password'),
+    path('staff/create-account/', views.create_staff_user, name='create_staff_user'),
+    path('test-staff-ui/', views.test_staff_ui, name='test_staff_ui'),
 ]

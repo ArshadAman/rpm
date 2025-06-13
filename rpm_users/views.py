@@ -886,3 +886,182 @@ def escalate_patient(request, patient_id):
 
     messages.success(request, f"Patient escalated to Dr. {doctor.user.get_full_name()}")
     return redirect('moderator_actions', patient_id=patient.id)
+
+# Admin-verified user creation views
+def admin_create_user(request):
+    """Display form for creating moderator or doctor accounts with admin verification"""
+    return render(request, 'admin_create_user.html')
+
+def test_staff_ui(request):
+    """Test page for staff creation workflow"""
+    with open('/app/test_staff_ui.html', 'r') as f:
+        content = f.read()
+    return HttpResponse(content, content_type='text/html')
+
+@csrf_exempt
+def verify_admin_password(request):
+    """Verify admin password before allowing user creation"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            admin_password = data.get('admin_password')
+            
+            # Get the first superuser for authentication
+            admin_user = User.objects.filter(is_superuser=True).first()
+            
+            if not admin_user:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No admin user found in the system.'
+                })
+            
+            # Check if the provided password is correct
+            if admin_user.check_password(admin_password):
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Admin password verified successfully.'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid admin password.'
+                })
+                
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid JSON data.'
+            })
+    
+    return JsonResponse({
+        'success': False,
+        'error': 'Invalid request method.'
+    })
+
+def create_staff_user(request):
+    """Create moderator or doctor account after admin verification"""
+    print(f"DEBUG: create_staff_user called with method: {request.method}")
+    print(f"DEBUG: Content type: {request.content_type}")
+    
+    if request.method == 'POST':
+        try:
+            print("DEBUG: Processing POST request for staff user creation")
+            
+            # Verify admin password first
+            admin_password = request.POST.get('admin_password')
+            print(f"DEBUG: Admin password provided: {'Yes' if admin_password else 'No'}")
+            
+            admin_user = User.objects.filter(is_superuser=True).first()
+            
+            if not admin_user or not admin_user.check_password(admin_password):
+                print("DEBUG: Admin password verification failed")
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid admin password.'
+                })
+            
+            print("DEBUG: Admin password verified successfully")
+            
+            # Get form data
+            user_type = request.POST.get('user_type')  # 'moderator' or 'doctor'
+            username = request.POST.get('username')
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            phone_number = request.POST.get('phone_number')
+            
+            print(f"DEBUG: Form data - user_type: {user_type}, username: {username}, email: {email}")
+            
+            # Additional fields for doctor
+            specialization = request.POST.get('specialization') if user_type == 'doctor' else None
+            
+            # Validation
+            if not all([user_type, username, email, password, first_name, last_name]):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'All required fields must be filled.'
+                })
+            
+            if user_type not in ['moderator', 'doctor']:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid user type.'
+                })
+            
+            # Check if username already exists
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Username already exists.'
+                })
+            
+            # Check if email already exists
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Email already exists.'
+                })
+            
+            # Create user
+            print(f"DEBUG: Creating {user_type} user")
+            if user_type == 'moderator':
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    is_staff=True  # Moderators are staff users
+                )
+                print(f"DEBUG: User created with ID: {user.id}")
+                
+                # Create moderator profile
+                moderator = Moderator.objects.create(
+                    user=user,
+                    phone_number=phone_number or ''
+                )
+                print(f"DEBUG: Moderator profile created with ID: {moderator.id}")
+                
+                success_message = f'Moderator account created successfully for {first_name} {last_name}.'
+                
+            elif user_type == 'doctor':
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name
+                )
+                print(f"DEBUG: Doctor user created with ID: {user.id}")
+                
+                # Create doctor profile
+                doctor = Doctor.objects.create(
+                    user=user,
+                    specialization=specialization or '',
+                    phone_number=phone_number or ''
+                )
+                print(f"DEBUG: Doctor profile created with ID: {doctor.id}")
+                
+                success_message = f'Doctor account created successfully for Dr. {first_name} {last_name}.'
+            
+            print(f"DEBUG: Returning success response: {success_message}")
+            return JsonResponse({
+                'success': True,
+                'message': success_message
+            })
+            
+        except Exception as e:
+            print(f"DEBUG: Exception occurred: {str(e)}")
+            print(f"DEBUG: Exception type: {type(e)}")
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({
+                'success': False,
+                'error': f'An error occurred: {str(e)}'
+            })
+    
+    return JsonResponse({
+        'success': False,
+        'error': 'Invalid request method.'
+    })

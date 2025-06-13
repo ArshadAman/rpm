@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Staff - RPM System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .step-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(121, 40, 202, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .user-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .user-type-card {
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .user-type-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-type-card.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(121, 40, 202, 0.1), rgba(255, 0, 128, 0.1));
+        }
+
+        .user-type-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .user-type-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .user-type-description {
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: rgba(255, 78, 78, 0.1);
+            border: 1px solid rgba(255, 78, 78, 0.3);
+            color: var(--error);
+        }
+
+        .alert-success {
+            background: rgba(0, 204, 136, 0.1);
+            border: 1px solid rgba(0, 204, 136, 0.3);
+            color: var(--success);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px;
+                margin: 10px;
+            }
+
+            .user-type-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Add Staff Account</h1>
+        
+        <div id="alert-container"></div>
+
+        <!-- Step 1: Admin Verification -->
+        <div class="step active" id="step1">
+            <div class="step-title">🔐 Admin Verification Required</div>
+            <p style="text-align: center; margin-bottom: 30px; color: var(--text);">
+                Please enter the admin password to proceed with creating staff accounts.
+            </p>
+            
+            <div class="form-group">
+                <label for="admin_password">Admin Password</label>
+                <input type="password" id="admin_password" placeholder="Enter admin password" required>
+            </div>
+
+            <div class="button-group">
+                <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+                <button type="button" class="btn btn-primary" onclick="verifyAdminPassword()">
+                    Verify Password
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: User Type Selection -->
+        <div class="step" id="step2">
+            <div class="step-title">👥 Select User Type</div>
+            
+            <div class="user-type-selector">
+                <div class="user-type-card" onclick="selectUserType('moderator')">
+                    <div class="user-type-icon">👨‍⚕️</div>
+                    <div class="user-type-title">Moderator</div>
+                    <div class="user-type-description">Healthcare staff who manage patients</div>
+                </div>
+                <div class="user-type-card" onclick="selectUserType('doctor')">
+                    <div class="user-type-icon">🩺</div>
+                    <div class="user-type-title">Doctor</div>
+                    <div class="user-type-description">Medical doctors for escalated cases</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
+                <button type="button" class="btn btn-primary" onclick="goToStep(3)" id="nextToForm" disabled>
+                    Continue
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: User Details Form -->
+        <div class="step" id="step3">
+            <div class="step-title" id="formTitle">Create User Account</div>
+            
+            <form id="createUserForm">
+                {% csrf_token %}
+                <input type="hidden" id="selectedUserType" name="user_type">
+                <input type="hidden" id="hiddenAdminPassword" name="admin_password">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="username">Username <span style="color: var(--secondary);">*</span></label>
+                        <input type="text" id="username" name="username" placeholder="Enter username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email <span style="color: var(--secondary);">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="Enter email address" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="first_name">First Name <span style="color: var(--secondary);">*</span></label>
+                        <input type="text" id="first_name" name="first_name" placeholder="Enter first name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last_name">Last Name <span style="color: var(--secondary);">*</span></label>
+                        <input type="text" id="last_name" name="last_name" placeholder="Enter last name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password <span style="color: var(--secondary);">*</span></label>
+                        <input type="password" id="password" name="password" placeholder="Enter password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone_number">Phone Number</label>
+                        <input type="tel" id="phone_number" name="phone_number" placeholder="Enter phone number">
+                    </div>
+
+                    <div class="form-group full-width" id="specializationGroup" style="display: none;">
+                        <label for="specialization">Specialization <span style="color: var(--secondary);">*</span></label>
+                        <input type="text" id="specialization" name="specialization" placeholder="e.g., Cardiology, Internal Medicine">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
+                    <button type="submit" class="btn btn-primary">
+                        Create Account
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="testFormSubmission()" style="margin-left: 10px;">
+                        Test Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <div>Processing request...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let selectedType = null;
+        let verifiedAdminPassword = null;
+
+        function showAlert(message, type = 'error') {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    alertContainer.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        function goToStep(step) {
+            // Clear any existing alerts when changing steps
+            document.getElementById('alert-container').innerHTML = '';
+            
+            // Handle specific step transitions
+            if (step === 1) {
+                // Going back to step 1 - clear verification but keep the password field
+                // Don't clear verifiedAdminPassword so user can proceed faster if they want
+            } else if (step === 2) {
+                // Going to step 2 - ensure we have verified admin password
+                if (!verifiedAdminPassword) {
+                    showAlert('Please verify admin password first.');
+                    return;
+                }
+                // Restore user type selection if returning from step 3
+                setTimeout(() => restoreUserTypeSelection(), 50);
+            } else if (step === 3) {
+                // Going to step 3 - ensure we have selected user type
+                if (!selectedType) {
+                    showAlert('Please select a user type first.');
+                    return;
+                }
+                // Set the hidden form fields
+                document.getElementById('selectedUserType').value = selectedType;
+                document.getElementById('hiddenAdminPassword').value = verifiedAdminPassword;
+            }
+            
+            // Update UI
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            currentStep = step;
+        }
+
+        async function verifyAdminPassword() {
+            const password = document.getElementById('admin_password').value;
+            
+            if (!password) {
+                showAlert('Please enter the admin password.');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('step1').style.display = 'none';
+
+            try {
+                const response = await fetch('{% url "verify_admin_password" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        admin_password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (data.success) {
+                    verifiedAdminPassword = password;
+                    goToStep(2);
+                    showAlert('Admin password verified successfully!', 'success');
+                } else {
+                    showAlert(data.error || 'Invalid admin password.');
+                    document.getElementById('step1').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                showAlert('An error occurred while verifying the password.');
+                document.getElementById('step1').style.display = 'block';
+            }
+        }
+
+        function selectUserType(type) {
+            console.log('selectUserType called with:', type);
+            selectedType = type;
+            
+            // Update UI - remove selection from all cards first
+            document.querySelectorAll('.user-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            event.currentTarget.classList.add('selected');
+            
+            // Enable next button
+            const nextButton = document.getElementById('nextToForm');
+            nextButton.disabled = false;
+            console.log('Next button enabled, selectedType:', selectedType);
+            
+            // Update form title and show/hide specialization field
+            const formTitle = document.getElementById('formTitle');
+            const specializationGroup = document.getElementById('specializationGroup');
+            const specializationInput = document.getElementById('specialization');
+            
+            if (type === 'doctor') {
+                formTitle.textContent = '🩺 Create Doctor Account';
+                specializationGroup.style.display = 'block';
+                specializationInput.required = true;
+            } else {
+                formTitle.textContent = '👨‍⚕️ Create Moderator Account';
+                specializationGroup.style.display = 'none';
+                specializationInput.required = false;
+                specializationInput.value = ''; // Clear specialization if switching from doctor
+            }
+            
+            console.log('User type selection complete:', type);
+        }
+
+        // Function to restore user type selection when navigating back
+        function restoreUserTypeSelection() {
+            if (selectedType) {
+                // Find and select the appropriate card
+                const cards = document.querySelectorAll('.user-type-card');
+                cards.forEach(card => {
+                    const title = card.querySelector('.user-type-title').textContent.toLowerCase();
+                    if (title === selectedType) {
+                        card.classList.add('selected');
+                    }
+                });
+                
+                // Enable the continue button
+                document.getElementById('nextToForm').disabled = false;
+                
+                // Update form title
+                const formTitle = document.getElementById('formTitle');
+                const specializationGroup = document.getElementById('specializationGroup');
+                const specializationInput = document.getElementById('specialization');
+                
+                if (selectedType === 'doctor') {
+                    formTitle.textContent = '🩺 Create Doctor Account';
+                    specializationGroup.style.display = 'block';
+                    specializationInput.required = true;
+                } else {
+                    formTitle.textContent = '👨‍⚕️ Create Moderator Account';
+                    specializationGroup.style.display = 'none';
+                    specializationInput.required = false;
+                }
+            }
+        }
+
+        document.getElementById('createUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            console.log('=== FORM SUBMISSION DEBUG ===');
+            console.log('Form submission started');
+            console.log('Selected user type:', selectedType);
+            console.log('Verified admin password:', verifiedAdminPassword ? 'Yes' : 'No');
+            console.log('Current step:', currentStep);
+            
+            // Validate we have all required data
+            if (!selectedType) {
+                console.error('ERROR: No user type selected');
+                showAlert('Please select a user type first.');
+                return;
+            }
+            
+            if (!verifiedAdminPassword) {
+                console.error('ERROR: No admin password verified');
+                showAlert('Please verify admin password first.');
+                return;
+            }
+            
+            // Validate required form fields
+            const requiredFields = ['username', 'email', 'password', 'first_name', 'last_name'];
+            const missingFields = [];
+            
+            for (let field of requiredFields) {
+                const value = document.getElementById(field).value.trim();
+                if (!value) {
+                    missingFields.push(field);
+                }
+            }
+            
+            // For doctors, specialization is also required
+            if (selectedType === 'doctor') {
+                const specialization = document.getElementById('specialization').value.trim();
+                if (!specialization) {
+                    missingFields.push('specialization');
+                }
+            }
+            
+            if (missingFields.length > 0) {
+                console.error('ERROR: Missing required fields:', missingFields);
+                showAlert('Please fill in all required fields: ' + missingFields.join(', '));
+                return;
+            }
+            
+            // Ensure hidden fields are set
+            document.getElementById('selectedUserType').value = selectedType;
+            document.getElementById('hiddenAdminPassword').value = verifiedAdminPassword;
+            
+            const formData = new FormData(this);
+            
+            // Debug: Log form data
+            console.log('=== FORM DATA ===');
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ': ' + value);
+            }
+            console.log('=== END FORM DATA ===');
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('step3').style.display = 'none';
+
+            try {
+                console.log('Making fetch request to:', '{% url "create_staff_user" %}');
+                const response = await fetch('{% url "create_staff_user" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: formData
+                });
+
+                console.log('Response received - Status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    
+                    // Reset form and go back to step 1 after 3 seconds
+                    setTimeout(() => {
+                        document.getElementById('createUserForm').reset();
+                        selectedType = null;
+                        verifiedAdminPassword = null;
+                        document.getElementById('admin_password').value = '';
+                        document.getElementById('nextToForm').disabled = true;
+                        document.querySelectorAll('.user-type-card').forEach(card => {
+                            card.classList.remove('selected');
+                        });
+                        goToStep(1);
+                    }, 3000);
+                } else {
+                    showAlert(data.error || 'An error occurred while creating the account.');
+                    document.getElementById('step3').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                document.getElementById('loading').style.display = 'none';
+                showAlert('An error occurred while creating the account.');
+                document.getElementById('step3').style.display = 'block';
+            }
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        function testFormSubmission() {
+            console.log('=== TEST FORM SUBMISSION ===');
+            console.log('Current step:', currentStep);
+            console.log('Selected type:', selectedType);
+            console.log('Verified admin password:', verifiedAdminPassword ? 'Yes' : 'No');
+            
+            if (currentStep !== 3) {
+                showAlert('Please navigate to step 3 first.');
+                return;
+            }
+            
+            if (!selectedType) {
+                showAlert('Please select a user type first.');
+                return;
+            }
+            
+            if (!verifiedAdminPassword) {
+                showAlert('Please verify admin password first.');
+                return;
+            }
+            
+            // Trigger form submission
+            const form = document.getElementById('createUserForm');
+            const event = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(event);
+        }
+    </script>
+</body>
+</html>
