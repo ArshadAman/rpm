@@ -291,6 +291,210 @@
             grid-column: 1 / -1;
         }
 
+        /* Past Medical History Section Styling */
+        .pmh-section {
+            margin-top: 20px;
+        }
+
+        .pmh-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .pmh-container {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .pmh-container:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .pmh-search-box {
+            position: relative;
+            margin-bottom: 20px;
+            max-width: 400px;
+        }
+
+        .pmh-search-input {
+            width: 100%;
+            padding: 12px 16px 12px 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .pmh-search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .pmh-search-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
+        }
+
+        .pmh-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .pmh-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pmh-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .pmh-card.selected {
+            background: linear-gradient(135deg, rgba(121, 40, 202, 0.15), rgba(255, 0, 128, 0.15));
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(121, 40, 202, 0.2);
+        }
+
+        .pmh-checkbox {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .pmh-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0;
+            min-height: 70px;
+        }
+
+        .pmh-checkbox-visual {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .pmh-checkbox:checked + .pmh-label .pmh-checkbox-visual {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .pmh-checkbox:checked + .pmh-label .pmh-checkbox-visual::after {
+            content: '';
+            width: 6px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .pmh-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .pmh-code {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pmh-name {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.3;
+            font-weight: 400;
+        }
+
+        .pmh-card.selected .pmh-name {
+            color: white;
+            font-weight: 500;
+        }
+
+        .pmh-selected-count {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: rgba(121, 40, 202, 0.1);
+            border: 1px solid rgba(121, 40, 202, 0.2);
+            border-radius: 8px;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .pmh-card.hidden {
+            display: none;
+        }
+
+        /* Scrollbar styling for PMH grid */
+        .pmh-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .pmh-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .pmh-grid::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .pmh-grid::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
         /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
@@ -519,20 +723,38 @@
                               placeholder="Enter current medications"
                               rows="3">{{ form_data.medications|default:'' }}</textarea>
                 </div>
-                <div class="form-group">
-                    <label for="past_medical_history">Past Medical History</label>
-                    <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
-                        {% for value, label in pmh_choices %}
-                            <div class="checkbox-item" style="display: flex; align-items: center; gap: 8px;">
-                                <input type="checkbox" 
-                                       id="pmh_{{ value }}" 
-                                       name="past_medical_history" 
-                                       value="{{ value }}"
-                                       style="width: 18px; height: 18px; cursor: pointer;"
-                                       {% if value in form_data.past_medical_history %}checked{% endif %}>
-                                <label for="pmh_{{ value }}" style="cursor: pointer; font-size: 14px;">{{ label }}</label>
-                            </div>
-                        {% endfor %}
+                <div class="form-group pmh-section" style="grid-column: 1 / -1;">
+                    <label for="past_medical_history" class="pmh-title">Past Medical History</label>
+                    <div class="pmh-container">
+                        <div class="pmh-search-box">
+                            <input type="text" id="pmh-search" placeholder="Search conditions..." class="pmh-search-input">
+                            <!-- <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg> -->
+                        </div>
+                        <div class="pmh-grid">
+                            {% for value, label in pmh_choices %}
+                                <div class="pmh-card" data-condition="{{ label|lower }}">
+                                    <input type="checkbox" 
+                                           id="pmh_{{ value }}" 
+                                           name="past_medical_history" 
+                                           value="{{ value }}"
+                                           class="pmh-checkbox"
+                                           {% if value in form_data.past_medical_history %}checked{% endif %}>
+                                    <label for="pmh_{{ value }}" class="pmh-label">
+                                        <div class="pmh-checkbox-visual"></div>
+                                        <div class="pmh-content">
+                                            <span class="pmh-code">{{ value }}</span>
+                                            <span class="pmh-name">{{ label }}</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="pmh-selected-count">
+                            <span id="selected-count">0</span> conditions selected
+                        </div>
                     </div>
                 </div>
             </div>
@@ -545,6 +767,63 @@
             </div>
         </form>
     </div>
+
+    <script>
+        // Past Medical History functionality
+        function initializePMH() {
+            const searchInput = document.getElementById('pmh-search');
+            const pmhCards = document.querySelectorAll('.pmh-card');
+            const selectedCountElement = document.getElementById('selected-count');
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                pmhCards.forEach(card => {
+                    const condition = card.getAttribute('data-condition');
+                    const code = card.querySelector('.pmh-code').textContent.toLowerCase();
+                    
+                    if (condition.includes(searchTerm) || code.includes(searchTerm)) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Update selected count and card styling
+            function updateSelection() {
+                const checkedBoxes = document.querySelectorAll('.pmh-checkbox:checked');
+                selectedCountElement.textContent = checkedBoxes.length;
+                
+                pmhCards.forEach(card => {
+                    const checkbox = card.querySelector('.pmh-checkbox');
+                    if (checkbox.checked) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
+            }
+            
+            // Add event listeners to all checkboxes
+            pmhCards.forEach(card => {
+                const checkbox = card.querySelector('.pmh-checkbox');
+                checkbox.addEventListener('change', updateSelection);
+            });
+            
+            // Initialize the count
+            updateSelection();
+        }
+        
+        document.addEventListener('DOMContentLoaded', initializePMH);
+
+        // Form submission with loading state
+        document.querySelector('form').addEventListener('submit', function() {
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+        });
+    </script>
 </body>
 </html>
 

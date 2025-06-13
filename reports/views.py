@@ -463,11 +463,28 @@ def edit_patient(request, patient_id):
             patient.weight = request.POST.get('weight')
             patient.height = request.POST.get('height')
             patient.insurance = request.POST.get('insurance')
+            patient.insurance_number = request.POST.get('insurance_number')
             patient.monitoring_parameters = request.POST.get('monitoring_parameters')
             patient.device_serial_number = request.POST.get('device_serial_number')
             patient.drink = request.POST.get('drink')
             patient.smoke = request.POST.get('smoke')
             patient.allergies = request.POST.get('allergies')
+            patient.family_history = request.POST.get('family_history')
+            patient.medications = request.POST.get('medications')
+            
+            # Handle Past Medical History
+            selected_pmh = request.POST.getlist('past_medical_history', [])
+            
+            # Delete existing past medical history
+            patient.medical_history.all().delete()
+            
+            # Create new past medical history records
+            for pmh in selected_pmh:
+                from rpm_users.models import PastMedicalHistory
+                PastMedicalHistory.objects.create(
+                    patient=patient,
+                    pmh=pmh
+                )
             
             # Recalculate BMI
             if patient.weight and patient.height:
@@ -490,9 +507,12 @@ def edit_patient(request, patient_id):
             })
     
     # GET request - display the edit form
-    return render(request, "reports/edit_patient.html", {
-        'patient': patient
-    })
+    from rpm_users.models import PastMedicalHistory
+    context = {
+        'patient': patient,
+        'pmh_choices': PastMedicalHistory.PMH_CHOICES
+    }
+    return render(request, "reports/edit_patient.html", context)
 
 @login_required
 def edit_documentation(request, doc_id):
