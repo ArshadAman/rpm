@@ -60,6 +60,13 @@ class Patient(models.Model):
         # self.bmi = self.weight / (height_in_meters ** 2)  # Calculate BMI
 
         is_new = self._state.adding
+        # Auto-assign moderator with least patients if not already assigned
+        if is_new and not self.moderator_assigned:
+            from django.db.models import Count
+            from rpm_users.models import Moderator
+            moderator = Moderator.objects.annotate(num_patients=models.Count('moderators')).order_by('num_patients').first()
+            if moderator:
+                self.moderator_assigned = moderator
         super().save(*args, **kwargs)
         if is_new:
             self.send_signup_notification()

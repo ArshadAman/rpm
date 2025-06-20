@@ -789,11 +789,11 @@
       </div>
       <div>
         <strong>Start Date</strong>
-        <span>{{patient.created_at|date:"d/m/Y"}}</span>
+        <span>{{patient.created_at|date:"m/d/Y"}}</span>
       </div>
       <div>
         <strong>Last Updated</strong>
-        <span>{{patient.updated_at|date:"d/m/Y"}}</span>
+        <span>{{patient.updated_at|date:"m/y/Y"}}</span>
       </div>
       <div>
         <strong>Assigned Moderator</strong>
@@ -812,10 +812,10 @@
     </div>
 
     <!-- Back Button - Moved here -->
-    <div style="margin: 20px 0;">
+    {% comment %} <div style="margin: 20px 0;">
         <a href="/view-patient/" class="back-btn">← Back to Patient List</a>
     </div>
-    
+     {% endcomment %}
 
     <div class="container">
       <!-- Left Panel -->
@@ -1142,66 +1142,111 @@
           .catch((error) => console.error("Error fetching report:", error));
       }
 
-      function fetchDocumentation() {
-        const date = document.getElementById("date").value;
-        if (!date) {
-          alert("Please select a date");
-          return;
+    function fetchDocumentation() {
+      // const date = document.getElementById("date").value; // Removed date filtering
+      // Only validate date if using filter
+      // if (useFilter && !date) { // Removed date validation
+      //   alert("Please select a date for filtering");
+      //   return;
+      // }
+
+      // Show loading indicator
+      const docListContainer = document.getElementById("documentation-list");
+      docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>Loading documentation...</div>";
+
+      const docDetailsContainer = document.getElementById("documentation-details");
+      docDetailsContainer.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.5);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-bottom: 15px; opacity: 0.5;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p>Select a document to view details</p>
+          </div>
+        `;
+
+      // Get the patient ID from the template
+      const patientId = "{{ patient.id }}";
+
+      // Build URL - now always fetches all documents
+      let url = `/view_documentation/${patientId}/`;
+      // Removed date parameter from URL construction: if (useFilter && date) { url += `?date=${date}`; }
+
+      fetch(url, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
         }
-
-        // Show loading indicator
-        const docContainer = document.getElementById("documentation-details");
-        docContainer.innerHTML = "<p>Loading documentation...</p>";
-
-        // Get the patient ID from the template
-        const patientId = "{{ patient.id }}";
-
-        fetch(`/view_documentation/${patientId}/?date=${date}`, {
-          method: 'GET',
-          credentials: 'same-origin',
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
           }
+          return response.json();
         })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((data) => {
-            if (!data.documentations || data.documentations.length === 0) {
-              docContainer.innerHTML = "<p>No documentation found for the selected date.</p>";
-            } else {
-              let content = '<div class="documentation-grid">';
-              data.documentations.forEach((doc) => {
-                content += `
-                  <div class="documentation-card">
-                    <h4>${doc.title}</h4>
-                    <p>${doc.history_of_present_illness}</p>
-                    ${doc.chief_complaint ? `<p><strong>Chief Complaint:</strong> ${doc.chief_complaint}</p>` : ''}
-                    ${doc.subjective ? `<p><strong>Subjective:</strong> ${doc.subjective}</p>` : ''}
-                    ${doc.objective ? `<p><strong>Objective:</strong> ${doc.objective}</p>` : ''}
-                    ${doc.assessment ? `<p><strong>Assessment:</strong> ${doc.assessment}</p>` : ''}
-                    ${doc.plan ? `<p><strong>Plan:</strong> ${doc.plan}</p>` : ''}
-                    ${doc.file_url ? `<a href="${doc.file_url}" class="download-btn">Download File</a>` : ''}
-                    <p class="date-info">
-                      Created: ${doc.created_at} | Updated: ${doc.updated_at}
+        .then((data) => {
+          if (!data.documentations || data.documentations.length === 0) {
+            docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
+          } else {
+            // Sort documentations by created_at descending (newest first)
+            data.documentations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            // Create an array to store the documentation data for easy access
+            window.documentations = data.documentations;
+
+            // Create the document list HTML
+            let listContent = '';
+            data.documentations.forEach((doc, index) => {
+              const createdAtDate = new Date(doc.created_at);
+              const formattedCreatedAt = `${String(createdAtDate.getMonth() + 1).padStart(2, '0')}/${String(createdAtDate.getDate()).padStart(2, '0')}/${createdAtDate.getFullYear()}`;
+
+              listContent += `
+                  <div class="doc-item" data-index="${index}" style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: background 0.2s ease; position: relative;">
+                    <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${doc.title}</h4>
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 3px 0;">
+                      ${doc.written_by}                   
+                    </p>
+                    <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
+                      Date of Service: ${formattedCreatedAt}
                     </p>
                   </div>
                 `;
-              });
-              content += '</div>';
-              docContainer.innerHTML = content;
-            }
-          })
-          .catch((error) => {
-            console.error("Error fetching documentation:", error);
-            docContainer.innerHTML = `<p>Error loading documentation: ${error.message}</p>`;
-          });
-      }
+            });
+            docListContainer.innerHTML = listContent;
 
+            // Add click event listeners to each document item
+            document.querySelectorAll('.doc-item').forEach(item => {
+              item.addEventListener('click', function () {
+                // Remove selected class from all items
+                document.querySelectorAll('.doc-item').forEach(i => {
+                  i.style.background = '';
+                  i.style.borderLeft = '';
+                });
+
+                // Add selected styling to the clicked item
+                this.style.background = 'rgba(121, 40, 202, 0.2)';
+                this.style.borderLeft = '4px solid #7928CA';
+
+                // Get the documentation index
+                const index = this.getAttribute('data-index');
+                const doc = window.documentations[index];
+
+                // Update the documentation details panel
+                displayDocumentationDetails(doc);
+              });
+            });
+
+            // Select the first document by default
+            if (document.querySelector('.doc-item')) {
+              document.querySelector('.doc-item').click();
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching documentation:", error);
+          docListContainer.innerHTML = `<div style='padding: 15px; text-align: center; color: #FF4E4E;'>Error: ${error.message}</div>`;
+        });
+    }
       function fetchAndDisplayReports(patientId) {
         fetch(`/reports/get-all-reports/${patientId}/`)
           .then(response => response.json())

@@ -120,3 +120,238 @@ WARNING 2025-06-14 01:28:54,826 log 7 281473643167776 Not Found: /static/admin/i
 WARNING 2025-06-14 01:28:58,508 log 7 281473643167776 Not Found: /static/admin/img/logo.png
 WARNING 2025-06-14 01:28:59,364 log 7 281473643167776 Not Found: /static/admin/img/logo.png
 INFO 2025-06-14 01:29:44,325 signals 7 281473643167776 Welcome email sent successfully to sjilani@pinksurfing.com (doctor)
+INFO 2025-06-18 21:44:28,264 autoreload 1840 14192 Watching for file changes with StatReloader
+INFO 2025-06-18 21:48:58,116 autoreload 11932 764 Watching for file changes with StatReloader
+INFO 2025-06-18 21:51:30,024 autoreload 11932 764 C:\Internship\Pinksurfing\rpm\rpm\settings.py changed, reloading.
+INFO 2025-06-18 21:51:31,409 autoreload 22004 24380 Watching for file changes with StatReloader
+INFO 2025-06-18 21:51:41,363 basehttp 22004 24688 "GET / HTTP/1.1" 200 8525
+WARNING 2025-06-18 21:51:44,142 log 22004 24688 Not Found: /favicon.ico
+WARNING 2025-06-18 21:51:44,143 basehttp 22004 24688 "GET /favicon.ico HTTP/1.1" 404 10712
+INFO 2025-06-18 21:51:45,308 basehttp 22004 24688 "GET /staff/create-user/ HTTP/1.1" 200 26775
+INFO 2025-06-18 21:51:59,242 basehttp 22004 24688 "POST /staff/verify-password/ HTTP/1.1" 200 54
+INFO 2025-06-18 21:52:08,435 basehttp 22004 24688 "POST /staff/verify-password/ HTTP/1.1" 200 54
+INFO 2025-06-18 21:52:36,616 basehttp 22004 24688 "POST /staff/verify-password/ HTTP/1.1" 200 54
+INFO 2025-06-18 21:52:40,081 basehttp 22004 24688 "GET /staff/create-user/ HTTP/1.1" 200 26775
+INFO 2025-06-18 21:52:41,298 basehttp 22004 24688 "GET /staff/create-user/ HTTP/1.1" 200 26775
+INFO 2025-06-18 21:52:55,170 basehttp 22004 24688 "POST /staff/verify-password/ HTTP/1.1" 200 54
+INFO 2025-06-18 21:53:07,512 basehttp 22004 24688 "POST /staff/verify-password/ HTTP/1.1" 200 69
+INFO 2025-06-18 21:53:38,562 basehttp 22004 24688 "GET /staff/create-user/ HTTP/1.1" 200 26775
+INFO 2025-06-18 21:53:41,516 basehttp 22004 24688 "POST /staff/verify-password/ HTTP/1.1" 200 69
+INFO 2025-06-18 21:53:45,599 basehttp 22004 24688 "GET / HTTP/1.1" 200 8525
+INFO 2025-06-18 21:56:52,625 basehttp 22004 6900 "GET /staff/create-user/ HTTP/1.1" 200 26775
+INFO 2025-06-18 22:00:52,188 basehttp 22004 19608 "GET /admin/ HTTP/1.1" 200 37359
+WARNING 2025-06-18 22:00:52,257 basehttp 22004 19608 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-20 19:36:17,167 autoreload 29472 25292 Watching for file changes with StatReloader
+INFO 2025-06-20 19:40:45,178 basehttp 29472 16792 "GET / HTTP/1.1" 200 8525
+WARNING 2025-06-20 21:40:23,832 signals 26200 3116 SendGrid not configured. Skipping welcome email for patient@example.com
+WARNING 2025-06-20 21:40:25,563 signals 26200 3116 SendGrid not configured. Skipping welcome email for doctor@example.com
+INFO 2025-06-20 21:44:24,822 basehttp 29472 3852 "GET /staff/create-user/ HTTP/1.1" 200 26775
+INFO 2025-06-20 21:44:31,709 basehttp 29472 3852 "POST /staff/verify-password/ HTTP/1.1" 200 69
+INFO 2025-06-20 21:49:15,916 basehttp 29472 3852 "GET / HTTP/1.1" 200 8525
+INFO 2025-06-21 00:25:34,124 autoreload 14680 31356 Watching for file changes with StatReloader
+INFO 2025-06-21 00:26:27,939 basehttp 14680 25788 "GET / HTTP/1.1" 200 8525
+INFO 2025-06-21 00:26:58,516 autoreload 14680 31356 C:\Internship\Pinksurfing\rpm\rpm_users\models.py changed, reloading.
+INFO 2025-06-21 00:26:59,565 autoreload 18484 11524 Watching for file changes with StatReloader
+INFO 2025-06-21 00:27:18,911 basehttp 18484 13948 "GET /patient_register/ HTTP/1.1" 200 83568
+INFO 2025-06-21 00:27:22,623 basehttp 18484 13948 "GET /admin/ HTTP/1.1" 200 37359
+WARNING 2025-06-21 00:27:22,724 basehttp 18484 13948 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:27:26,144 basehttp 18484 20928 "GET /admin/rpm_users/patient/ HTTP/1.1" 200 27641
+WARNING 2025-06-21 00:27:26,209 basehttp 18484 20928 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:27:49,594 basehttp 18484 6608 "POST /admin/rpm_users/patient/ HTTP/1.1" 200 26383
+WARNING 2025-06-21 00:27:49,640 basehttp 18484 6608 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:27:53,606 basehttp 18484 22208 "POST /admin/rpm_users/patient/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:27:53,646 basehttp 18484 22208 "GET /admin/rpm_users/patient/ HTTP/1.1" 200 24256
+WARNING 2025-06-21 00:27:53,679 basehttp 18484 22208 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:27:57,590 basehttp 18484 5080 "GET /admin/rpm_users/patient/9d009e31-ff05-4e9c-ab8b-28879ccf925e/change/ HTTP/1.1" 200 36947
+WARNING 2025-06-21 00:27:57,642 basehttp 18484 16908 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:27:57,953 basehttp 18484 5080 "GET /static/admin/css/forms.css HTTP/1.1" 200 8525
+INFO 2025-06-21 00:27:57,955 basehttp 18484 30652 "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 200 586
+INFO 2025-06-21 00:27:58,014 basehttp 18484 30652 "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 380
+INFO 2025-06-21 00:27:58,018 basehttp 18484 25564 "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 200 581
+INFO 2025-06-21 00:27:58,018 basehttp 18484 17204 "GET /static/admin/css/widgets.css HTTP/1.1" 200 11991
+INFO 2025-06-21 00:27:58,019 basehttp 18484 30536 "GET /static/admin/js/change_form.js HTTP/1.1" 200 606
+INFO 2025-06-21 00:27:58,033 basehttp 18484 5080 "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 331
+INFO 2025-06-21 00:27:58,039 basehttp 18484 28988 "GET /static/admin/img/icon-deletelink.svg HTTP/1.1" 200 392
+INFO 2025-06-21 00:28:00,907 basehttp 18484 28988 "GET /admin/rpm_users/patient/ HTTP/1.1" 200 24079
+INFO 2025-06-21 00:28:07,379 basehttp 18484 28988 "GET /patient_register/ HTTP/1.1" 200 83568
+WARNING 2025-06-21 00:29:45,233 signals 18484 28988 SendGrid not configured. Skipping welcome email for sai_patient@gmail.com
+INFO 2025-06-21 00:29:45,855 basehttp 18484 28988 "POST /patient_register/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:29:45,864 basehttp 18484 28988 "GET /registration-success/ HTTP/1.1" 200 6338
+INFO 2025-06-21 00:29:52,099 basehttp 18484 28988 "GET /admin/rpm_users/patient/ HTTP/1.1" 200 24620
+WARNING 2025-06-21 00:29:52,128 basehttp 18484 28988 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:29:53,688 basehttp 18484 5080 "GET /admin/rpm_users/patient/93d42014-5bcc-43a3-bd84-4ac5777a1664/change/ HTTP/1.1" 200 37012
+WARNING 2025-06-21 00:29:53,737 basehttp 18484 5080 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:30:39,350 basehttp 18484 25564 "GET /patient_register/ HTTP/1.1" 200 83568
+INFO 2025-06-21 00:30:55,626 basehttp 18484 25564 "GET /express-interest/ HTTP/1.1" 200 58660
+INFO 2025-06-21 00:31:05,204 basehttp 18484 25564 "GET /admin/rpm_users/patient/ HTTP/1.1" 200 24445
+INFO 2025-06-21 00:31:06,584 basehttp 18484 25564 "GET /patient_login/ HTTP/1.1" 200 7265
+INFO 2025-06-21 00:31:08,826 basehttp 18484 25564 "GET / HTTP/1.1" 200 8525
+INFO 2025-06-21 00:31:12,700 basehttp 18484 25564 "GET /patient_login/ HTTP/1.1" 200 7265
+INFO 2025-06-21 00:31:26,758 basehttp 18484 25564 "POST /patient_login/ HTTP/1.1" 200 51
+INFO 2025-06-21 00:31:26,793 basehttp 18484 25564 "GET /patient_home/ HTTP/1.1" 200 36700
+INFO 2025-06-21 00:31:27,439 basehttp 18484 30536 "POST /patient_login/ HTTP/1.1" 200 51
+INFO 2025-06-21 00:31:27,467 basehttp 18484 30536 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:31:59,355 basehttp 18484 30536 "GET /patient_home/ HTTP/1.1" 200 36700
+INFO 2025-06-21 00:31:59,757 basehttp 18484 30536 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:34:15,352 basehttp 18484 30536 "GET /patient_home/ HTTP/1.1" 200 36321
+INFO 2025-06-21 00:34:16,120 basehttp 18484 30536 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:34:24,010 basehttp 18484 26988 "GET / HTTP/1.1" 200 8525
+INFO 2025-06-21 00:34:27,163 basehttp 18484 26988 "GET /moderator_login/ HTTP/1.1" 200 7095
+INFO 2025-06-21 00:34:30,455 basehttp 18484 26988 - Broken pipe from ('127.0.0.1', 64866)
+INFO 2025-06-21 00:34:30,799 basehttp 18484 27144 "POST /moderator_login/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:34:30,812 basehttp 18484 27144 "GET /view_all_assigned_patient/ HTTP/1.1" 200 7328
+INFO 2025-06-21 00:34:46,092 basehttp 18484 30536 "GET /admin/rpm_users/patient/9d009e31-ff05-4e9c-ab8b-28879ccf925e/change/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:34:46,151 basehttp 18484 30536 "GET /admin/login/?next=/admin/rpm_users/patient/9d009e31-ff05-4e9c-ab8b-28879ccf925e/change/ HTTP/1.1" 200 20558
+WARNING 2025-06-21 00:34:46,227 basehttp 18484 30536 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:34:47,113 basehttp 18484 25564 "GET /admin/rpm_users/patient/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:34:47,131 basehttp 18484 25564 "GET /admin/login/?next=/admin/rpm_users/patient/ HTTP/1.1" 200 20470
+WARNING 2025-06-21 00:34:51,038 log 18484 25564 Forbidden (CSRF token from POST incorrect.): /admin/rpm_users/patient/
+WARNING 2025-06-21 00:34:51,040 basehttp 18484 25564 "POST /admin/rpm_users/patient/ HTTP/1.1" 403 2503
+INFO 2025-06-21 00:34:53,035 basehttp 18484 25564 "GET /admin/rpm_users/patient/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:34:53,052 basehttp 18484 25564 "GET /admin/login/?next=/admin/rpm_users/patient/ HTTP/1.1" 200 20470
+INFO 2025-06-21 00:34:55,507 basehttp 18484 25564 "POST /admin/login/?next=/admin/rpm_users/patient/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:34:55,553 basehttp 18484 25564 "GET /admin/rpm_users/patient/ HTTP/1.1" 200 24445
+WARNING 2025-06-21 00:34:55,615 basehttp 18484 25564 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:34:58,203 basehttp 18484 31244 "GET /admin/rpm_users/patient/93d42014-5bcc-43a3-bd84-4ac5777a1664/change/ HTTP/1.1" 200 37012
+WARNING 2025-06-21 00:34:58,267 basehttp 18484 31244 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:35:04,885 basehttp 18484 16716 "POST /admin/rpm_users/patient/93d42014-5bcc-43a3-bd84-4ac5777a1664/change/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:35:04,933 basehttp 18484 16716 "GET /admin/rpm_users/patient/ HTTP/1.1" 200 24738
+WARNING 2025-06-21 00:35:05,026 basehttp 18484 16716 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:35:12,341 basehttp 18484 27144 "GET /moderator_login/ HTTP/1.1" 200 7095
+INFO 2025-06-21 00:35:15,591 basehttp 18484 27144 "POST /moderator_login/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:35:15,601 basehttp 18484 27144 "GET /view_all_assigned_patient/ HTTP/1.1" 200 7761
+INFO 2025-06-21 00:35:16,846 basehttp 18484 27144 "GET /view-patient/93d42014-5bcc-43a3-bd84-4ac5777a1664/?action=access HTTP/1.1" 200 47383
+INFO 2025-06-21 00:35:17,196 basehttp 18484 27144 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:35:21,471 basehttp 18484 27144 "GET /view_documentation/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 22
+INFO 2025-06-21 00:35:23,262 basehttp 18484 27144 "GET /reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/add-documentation/ HTTP/1.1" 200 22471
+INFO 2025-06-21 00:35:34,391 basehttp 18484 27144 "POST /reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/add-documentation/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:35:34,408 basehttp 18484 27144 "GET /view_documentation/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 310
+INFO 2025-06-21 00:35:39,746 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:35:39,754 basehttp 18484 2348 "GET /patient_login/ HTTP/1.1" 200 7265
+INFO 2025-06-21 00:35:48,892 basehttp 18484 2348 "POST /patient_login/ HTTP/1.1" 200 51
+INFO 2025-06-21 00:35:48,920 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 36303
+INFO 2025-06-21 00:35:49,438 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:35:53,373 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 36303
+INFO 2025-06-21 00:35:53,808 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:35:56,619 basehttp 18484 27144 "GET /reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/add-documentation/ HTTP/1.1" 200 22471
+INFO 2025-06-21 00:35:58,455 basehttp 18484 27144 "POST /reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/add-documentation/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:35:58,473 basehttp 18484 27144 "GET /view_documentation/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 600
+INFO 2025-06-21 00:36:02,503 basehttp 18484 27144 "GET /view-patient/93d42014-5bcc-43a3-bd84-4ac5777a1664/?action=access HTTP/1.1" 200 47383
+INFO 2025-06-21 00:36:02,656 basehttp 18484 27144 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:36:03,158 basehttp 18484 27144 "GET /view-patient/93d42014-5bcc-43a3-bd84-4ac5777a1664/?action=access HTTP/1.1" 200 47383
+INFO 2025-06-21 00:36:03,256 basehttp 18484 27144 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:36:03,992 basehttp 18484 27144 "GET /view_documentation/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 600
+INFO 2025-06-21 00:36:22,822 basehttp 18484 27144 "GET /reports/edit-documentation/44/ HTTP/1.1" 200 18547
+ERROR 2025-06-21 00:36:44,942 log 18484 2348 Internal Server Error: /view-patient/
+Traceback (most recent call last):
+  File "C:\Internship\Pinksurfing\rpm\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Internship\Pinksurfing\rpm\env\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Internship\Pinksurfing\rpm\env\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Internship\Pinksurfing\rpm\rpm_users\views.py", line 279, in view_assigned_patient
+    moderator = Moderator.objects.get(user=request.user)
+  File "C:\Internship\Pinksurfing\rpm\env\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Internship\Pinksurfing\rpm\env\Lib\site-packages\django\db\models\query.py", line 633, in get
+    raise self.model.DoesNotExist(
+        "%s matching query does not exist." % self.model._meta.object_name
+    )
+rpm_users.models.Moderator.DoesNotExist: Moderator matching query does not exist.
+ERROR 2025-06-21 00:36:44,948 basehttp 18484 2348 "GET /view-patient/ HTTP/1.1" 500 95263
+INFO 2025-06-21 00:36:48,593 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 36303
+INFO 2025-06-21 00:36:49,350 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:36:50,828 basehttp 18484 2348 "GET /patient_login/ HTTP/1.1" 200 7265
+INFO 2025-06-21 00:37:02,995 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 36179
+INFO 2025-06-21 00:37:03,365 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:37:05,829 basehttp 18484 2348 "GET /reports/edit-patient/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 95005
+INFO 2025-06-21 00:37:40,972 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 36558
+INFO 2025-06-21 00:37:41,434 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:37:46,136 basehttp 18484 2348 "GET /view_documentation/93d42014-5bcc-43a3-bd84-4ac5777a1664/?date=2025-06-21 HTTP/1.1" 200 600
+INFO 2025-06-21 00:40:14,830 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 36166
+INFO 2025-06-21 00:40:15,924 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:40:46,259 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 35913
+INFO 2025-06-21 00:40:47,203 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:40:53,901 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 36558
+INFO 2025-06-21 00:40:54,380 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:42:18,498 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 39101
+INFO 2025-06-21 00:42:19,251 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:42:43,636 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 38722
+INFO 2025-06-21 00:42:44,366 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:43:19,490 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 41216
+INFO 2025-06-21 00:43:20,198 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:45:07,067 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 38685
+INFO 2025-06-21 00:45:08,453 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:45:41,541 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 35788
+INFO 2025-06-21 00:45:42,551 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:45:51,694 basehttp 18484 2348 "GET /patient_home/ HTTP/1.1" 200 41216
+INFO 2025-06-21 00:45:52,321 basehttp 18484 2348 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:48:40,578 basehttp 18484 16096 "GET /patient_home/ HTTP/1.1" 200 41293
+INFO 2025-06-21 00:48:42,698 basehttp 18484 16096 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:49:16,419 basehttp 18484 16096 "GET /patient_home/ HTTP/1.1" 200 41350
+INFO 2025-06-21 00:49:17,012 basehttp 18484 16096 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:49:42,714 basehttp 18484 16096 "GET /patient_home/ HTTP/1.1" 200 39101
+INFO 2025-06-21 00:49:43,702 basehttp 18484 16096 "GET /reports/get-all-reports/93d42014-5bcc-43a3-bd84-4ac5777a1664/ HTTP/1.1" 200 15
+INFO 2025-06-21 00:49:56,710 basehttp 18484 16096 "GET /doctor_login/ HTTP/1.1" 200 6720
+INFO 2025-06-21 00:49:59,457 basehttp 18484 16096 "POST /doctor_login/ HTTP/1.1" 200 6863
+INFO 2025-06-21 00:50:02,919 basehttp 18484 16096 "POST /doctor_login/ HTTP/1.1" 200 6863
+INFO 2025-06-21 00:50:05,966 basehttp 18484 16096 "POST /doctor_login/ HTTP/1.1" 200 6863
+INFO 2025-06-21 00:50:08,504 basehttp 18484 16096 "GET /doctor_login/ HTTP/1.1" 200 6720
+INFO 2025-06-21 00:50:10,405 basehttp 18484 16096 "GET / HTTP/1.1" 200 8525
+INFO 2025-06-21 00:50:11,704 basehttp 18484 16096 "GET /doctor_login/ HTTP/1.1" 200 6720
+INFO 2025-06-21 00:50:14,219 basehttp 18484 16096 "POST /doctor_login/ HTTP/1.1" 200 6863
+INFO 2025-06-21 00:50:21,606 basehttp 18484 16096 "POST /doctor_login/ HTTP/1.1" 200 6863
+INFO 2025-06-21 00:50:23,065 basehttp 18484 16096 "GET /doctor_login/ HTTP/1.1" 200 6720
+INFO 2025-06-21 00:50:42,351 basehttp 18484 16096 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:50:42,423 basehttp 18484 16096 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 20434
+WARNING 2025-06-21 00:50:42,494 basehttp 18484 16096 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:50:46,225 basehttp 18484 6384 "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:50:46,253 basehttp 18484 6384 "GET /admin/ HTTP/1.1" 200 37357
+WARNING 2025-06-21 00:50:46,309 basehttp 18484 6384 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:54:37,700 basehttp 18484 9156 "GET /staff/create-user/ HTTP/1.1" 200 26775
+INFO 2025-06-21 00:55:21,101 basehttp 18484 9156 "GET /admin/rpm_users/doctor/ HTTP/1.1" 200 23975
+WARNING 2025-06-21 00:55:21,142 basehttp 18484 9156 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:55:23,905 basehttp 18484 6584 "GET /admin/rpm_users/doctor/1/change/ HTTP/1.1" 200 22779
+WARNING 2025-06-21 00:55:23,993 basehttp 18484 6584 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:55:26,936 basehttp 18484 12040 "GET /admin/rpm_users/doctor/ HTTP/1.1" 200 23975
+INFO 2025-06-21 00:55:28,062 basehttp 18484 12040 "GET /admin/rpm_users/doctor/add/ HTTP/1.1" 200 22553
+WARNING 2025-06-21 00:55:28,104 basehttp 18484 12040 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:55:31,417 basehttp 18484 2240 "GET /doctor_login/ HTTP/1.1" 200 6720
+WARNING 2025-06-21 00:55:49,252 signals 18484 2240 SendGrid not configured. Skipping welcome email for sai_patient@gmail.com
+INFO 2025-06-21 00:55:49,268 basehttp 18484 2240 "POST /admin/rpm_users/doctor/add/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:55:49,307 basehttp 18484 2240 "GET /admin/rpm_users/doctor/ HTTP/1.1" 200 24524
+WARNING 2025-06-21 00:55:49,359 basehttp 18484 2240 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:55:58,509 basehttp 18484 27660 "POST /doctor_login/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:55:58,528 basehttp 18484 27660 "GET /view_escalated_patient/ HTTP/1.1" 200 6138
+INFO 2025-06-21 00:56:02,931 basehttp 18484 27660 "GET /register-patient/ HTTP/1.1" 200 84406
+INFO 2025-06-21 00:56:05,670 basehttp 18484 27660 "GET /doctor_logout/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:56:05,674 basehttp 18484 27660 "GET /doctor_login/ HTTP/1.1" 200 6720
+INFO 2025-06-21 00:56:12,395 basehttp 18484 27660 "GET /admin/rpm_users/doctor/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:56:12,409 basehttp 18484 27660 "GET /admin/login/?next=/admin/rpm_users/doctor/ HTTP/1.1" 200 20468
+WARNING 2025-06-21 00:56:12,463 basehttp 18484 27660 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:56:15,408 basehttp 18484 21880 "POST /admin/login/?next=/admin/rpm_users/doctor/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:56:15,450 basehttp 18484 21880 "GET /admin/rpm_users/doctor/ HTTP/1.1" 200 24270
+WARNING 2025-06-21 00:56:15,505 basehttp 18484 21880 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:56:20,074 basehttp 18484 27448 "GET /admin/login/?next=/admin/rpm_users/doctor/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:56:20,100 basehttp 18484 27448 "GET /admin/ HTTP/1.1" 200 37357
+INFO 2025-06-21 00:56:23,024 basehttp 18484 27448 "GET /admin/rpm_users/patient/ HTTP/1.1" 200 24445
+WARNING 2025-06-21 00:56:23,082 basehttp 18484 27448 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:56:25,578 basehttp 18484 11716 "GET /admin/rpm_users/patient/add/ HTTP/1.1" 200 36659
+WARNING 2025-06-21 00:56:25,622 basehttp 18484 11716 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:56:51,589 basehttp 18484 10464 "POST /admin/rpm_users/patient/add/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:56:51,622 basehttp 18484 10464 "GET /admin/rpm_users/patient/ HTTP/1.1" 200 25039
+WARNING 2025-06-21 00:56:51,666 basehttp 18484 10464 "GET /static/admin/img/logo.png HTTP/1.1" 404 1868
+INFO 2025-06-21 00:56:53,750 basehttp 18484 6608 "GET /doctor_login/ HTTP/1.1" 200 6720
+INFO 2025-06-21 00:57:05,986 basehttp 18484 6608 "POST /doctor_login/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:57:06,015 basehttp 18484 6608 "GET /view_escalated_patient/ HTTP/1.1" 200 6138
+INFO 2025-06-21 00:57:09,424 basehttp 18484 6608 "GET /doctor_logout/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:57:09,431 basehttp 18484 6608 "GET /doctor_login/ HTTP/1.1" 200 6720
+INFO 2025-06-21 00:58:21,695 basehttp 18484 6608 "GET /moderator_login/ HTTP/1.1" 200 7095
+INFO 2025-06-21 00:58:23,978 basehttp 18484 6608 "POST /moderator_login/ HTTP/1.1" 302 0
+INFO 2025-06-21 00:58:23,994 basehttp 18484 6608 "GET /view_all_assigned_patient/ HTTP/1.1" 200 8176
+INFO 2025-06-21 00:58:29,533 basehttp 18484 6608 "GET /view-patient/9d009e31-ff05-4e9c-ab8b-28879ccf925e/?action=access HTTP/1.1" 200 47400
+INFO 2025-06-21 00:58:30,167 basehttp 18484 6608 "GET /reports/get-all-reports/9d009e31-ff05-4e9c-ab8b-28879ccf925e/ HTTP/1.1" 200 5939
+INFO 2025-06-21 00:58:33,453 basehttp 18484 6608 "GET /view_documentation/9d009e31-ff05-4e9c-ab8b-28879ccf925e/ HTTP/1.1" 200 1211
+INFO 2025-06-21 00:58:41,561 basehttp 18484 6608 "GET /reports/edit-patient/9d009e31-ff05-4e9c-ab8b-28879ccf925e/ HTTP/1.1" 200 95013
