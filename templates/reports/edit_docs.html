@@ -315,48 +315,6 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 20px; font-weight: 600;">
             <h3>Patient Information</h3>
         </div>
-        {% comment %} <div class="patient-info">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>Patient Information</h3>
-                <button type="button" id="editPatientInfoBtn" class="edit-button" onclick="togglePatientInfoEdit()">Edit Information</button>
-            </div>
-            <div id="patientInfoDisplay" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 15px; max-width: 1800px;">
-                <p style="margin: 0;"><strong>Name:</strong> {{ documentation.doc_patient_name|default:patient.user.get_full_name }}</p>
-                <p style="margin: 0;"><strong>Date of Birth:</strong> {{ documentation.doc_dob|default:patient.date_of_birth|date:"F d, Y" }}</p>
-                <p style="margin: 0;"><strong>Sex:</strong> {{ documentation.doc_sex|default:patient.get_sex_display }}</p>
-                <p style="margin: 0;"><strong>Monitoring Parameters:</strong> {{ documentation.doc_monitoring_params|default:patient.monitoring_parameters }}</p>
-                <p style="margin: 0;"><strong>Clinical Staff:</strong> {{ documentation.doc_clinical_staff|default:"N/A" }}</p>
-                <p style="margin: 0;"><strong>Moderator:</strong> {{ documentation.doc_moderator|default:"N/A" }}</p>
-                <p style="margin: 0;"><strong>Report Date:</strong> {{ documentation.doc_report_date|date:"F d, Y" }}</p>
-            </div>
-            
-            <div id="patientInfoEdit" style="display: none;">
-                <div class="form-group">
-                    <label for="id_doc_patient_name">Patient Name</label>
-                    <input type="text" name="doc_patient_name" id="id_doc_patient_name" value="{{ documentation.doc_patient_name|default:patient.user.get_full_name }}">
-                </div>
-                <div class="form-group">
-                    <label for="id_doc_dob">Date of Birth</label>
-                    <input type="date" name="doc_dob" id="id_doc_dob" value="{{ documentation.doc_dob|date:'Y-m-d'|default:patient.date_of_birth|date:'Y-m-d' }}">
-                </div>
-                <div class="form-group">
-                    <label for="id_doc_sex">Sex</label>
-                    <input type="text" name="doc_sex" id="id_doc_sex" value="{{ documentation.doc_sex|default:patient.get_sex_display }}">
-                </div>
-                <div class="form-group">
-                    <label for="id_doc_monitoring_params">Monitoring Parameters</label>
-                    <input type="text" name="doc_monitoring_params" id="id_doc_monitoring_params" value="{{ documentation.doc_monitoring_params|default:patient.monitoring_parameters }}">
-                </div>
-                <div class="form-group">
-                    <label for="id_doc_clinical_staff">Clinical Staff</label>
-                    <input type="text" name="doc_clinical_staff" id="id_doc_clinical_staff" value="{{ documentation.doc_clinical_staff|default:'N/A' }}">
-                </div>
-                <div class="form-group">
-                    <label for="id_doc_moderator">Moderator</label>
-                    <input type="text" name="doc_moderator" id="id_doc_moderator" value="{{ documentation.doc_moderator|default:'N/A' }}">
-                </div>
-            </div>
-        </div> {% endcomment %}
         
         <form action="{% url 'edit_documentation' documentation.id %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
@@ -367,41 +325,63 @@
                 {% if form.title.errors %}
                 <div class="error-message">{{ form.title.errors }}</div>
                 {% endif %}
-            </div>
-
-            <!-- Patient Information Fields -->
+            </div>            <!-- Patient Information Fields -->
             <div class="form-group">
                 <label for="id_doc_patient_name">Patient Name</label>
-                <input type="text" name="doc_patient_name" id="id_doc_patient_name" value="{{ documentation.doc_patient_name|default:patient.user.get_full_name }}" class="form-control">
+                {{ form.doc_patient_name }}
+                {% if form.doc_patient_name.errors %}
+                <div class="error-message">{{ form.doc_patient_name.errors }}</div>
+                {% endif %}
             </div>
             <div class="form-group">
                 <label for="id_doc_dob">Date of Birth</label>
-                <input type="date" name="doc_dob" id="id_doc_dob" value="{{ documentation.doc_dob|date:'Y-m-d'|default:patient.date_of_birth|date:'Y-m-d' }}" class="form-control">
+                {{ form.doc_dob }}
+                {% if form.doc_dob.errors %}
+                <div class="error-message">{{ form.doc_dob.errors }}</div>
+                {% endif %}
             </div>
             <div class="form-group">
                 <label for="id_doc_sex">Sex</label>
-                <input type="text" name="doc_sex" id="id_doc_sex" value="{{ documentation.doc_sex|default:patient.get_sex_display }}" class="form-control">
+                {{ form.doc_sex }}
+                {% if form.doc_sex.errors %}
+                <div class="error-message">{{ form.doc_sex.errors }}</div>
+                {% endif %}
             </div>
             <div class="form-group">
                 <label for="id_doc_monitoring_params">Monitoring Parameters</label>
-                <input type="text" name="doc_monitoring_params" id="id_doc_monitoring_params" value="{{ documentation.doc_monitoring_params|default:patient.monitoring_parameters }}" class="form-control">
+                {{ form.doc_monitoring_params }}
+                {% if form.doc_monitoring_params.errors %}
+                <div class="error-message">{{ form.doc_monitoring_params.errors }}</div>
+                {% endif %}
             </div>
             <div class="form-group">
                 <label for="id_doc_clinical_staff">Clinical Staff</label>
-                <input type="text" name="doc_clinical_staff" id="id_doc_clinical_staff" value="{{ documentation.doc_clinical_staff|default:'N/A' }}" class="form-control">
+                {{ form.doc_clinical_staff }}
+                {% if form.doc_clinical_staff.errors %}
+                <div class="error-message">{{ form.doc_clinical_staff.errors }}</div>
+                {% endif %}
             </div>
             <div class="form-group">
                 <label for="id_doc_moderator">Moderator</label>
-                <input type="text" name="doc_moderator" id="id_doc_moderator" value="{{ documentation.doc_moderator|default:'N/A' }}" class="form-control">
+                {{ form.doc_moderator }}
+                {% if form.doc_moderator.errors %}
+                <div class="error-message">{{ form.doc_moderator.errors }}</div>
+                {% endif %}
             </div>
             <div class="form-group">
-                <label for="id_doc_report_date">Report Date</label>
-                <input type="date" name="doc_report_date" id="id_doc_report_date" value="{{ documentation.doc_report_date|date:'Y-m-d'|default:now|date:'Y-m-d' }}" class="form-control">
+                <label for="id_doc_report_date">Date of Service</label>
+                {{ form.doc_report_date }}
+                {% if form.doc_report_date.errors %}
+                <div class="error-message">{{ form.doc_report_date.errors }}</div>
+                {% endif %}
             </div>
 
             <div class="form-group">
                 <label for="id_full_documentation">Full Documentation</label>
-                <textarea id="id_full_documentation" name="full_documentation" placeholder="Enter full documentation" rows="15" class="form-control">{{ documentation.history_of_present_illness }}</textarea>
+                {{ form.full_documentation }}
+                {% if form.full_documentation.errors %}
+                <div class="error-message">{{ form.full_documentation.errors }}</div>
+                {% endif %}
             </div>
 
             <button type="submit">Update Documentation</button>
@@ -447,9 +427,7 @@
                         }
                     });
                 }
-            });
-
-            // Add template functionality
+            });            // Add template functionality
             const titleSelect = document.getElementById('id_title');
             const documentationTextarea = document.getElementById('id_full_documentation');
             
@@ -653,26 +631,39 @@ MD, NP, PA only
 Spent over 60 minutes of non-face-to-face chronic care management services were provided this month, addressing hypertension and other ongoing chronic conditions. These services were documented, medically necessary, and performed per Medicare guidelines.
 
 Signed: [Name, Title]
-Date: [MM/DD/YYYY]`;
-
-            // Set default value to Progress Note if empty
+Date: [MM/DD/YYYY]`;            // Set default value to Progress Note if empty
             if (titleSelect.value === '') {
                 titleSelect.value = 'Progress Note';
                 documentationTextarea.value = '';
             }
 
             titleSelect.addEventListener('change', function() {
+                // Only change content if the textarea is empty or we're not in edit mode
+                const isEditMode = document.querySelector('form').action.includes('/edit-documentation/');
+                
                 if (this.value === 'RPM Progress Note') {
-                    documentationTextarea.value = rpmTemplate;
+                    // Only set template if not in edit mode or if textarea is empty
+                    if (!isEditMode || documentationTextarea.value.trim() === '') {
+                        documentationTextarea.value = rpmTemplate;
+                    }
                 } else if (this.value === 'CCN-HTN Progress Note') {
-                    documentationTextarea.value = ccnTemplate;
-                } else {
-                    documentationTextarea.value = '';
+                    // Only set template if not in edit mode or if textarea is empty
+                    if (!isEditMode || documentationTextarea.value.trim() === '') {
+                        documentationTextarea.value = ccnTemplate;
+                    }
+                } else if (this.value === 'Progress Note') {
+                    // Don't clear content in edit mode for Progress Note
+                    if (!isEditMode) {
+                        documentationTextarea.value = '';
+                    }
                 }
             });
 
-            // Trigger change event on page load
-            titleSelect.dispatchEvent(new Event('change'));
+            // Only trigger change event on page load if not in edit mode
+            const isEditMode = document.querySelector('form').action.includes('/edit-documentation/');
+            if (!isEditMode) {
+                titleSelect.dispatchEvent(new Event('change'));
+            }
         });
     </script>
 </body>

@@ -474,7 +474,7 @@
                 <p style="margin: 0;"><strong>Monitoring Parameters:</strong> {{ patient.monitoring_parameters }}</p>
                 <p style="margin: 0;"><strong>Clinical Staff:</strong> {{ patient.clinical_staff.user.get_full_name|default:"N/A" }}</p>
                 <p style="margin: 0;"><strong>Moderator:</strong> {{ patient.moderator|default:"N/A" }}</p>
-                <p style="margin: 0;"><strong>Report Date:</strong> {% now "F d, Y" %}</p>
+                <p style="margin: 0;"><strong>Date of Service:</strong> {% now "F d, Y" %}</p>
             </div>
             
             <div id="patientInfoEdit" style="display: none;">

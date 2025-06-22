@@ -359,16 +359,15 @@ def view_documentation(request, patient_id):
     if not is_moderator and not is_patient:
         print("DEBUG: User is not authorized to view documentation")
         return JsonResponse({"error": "You are not authorized to view this documentation"}, status=403)
-    
-    # Get documentation for the patient
+      # Get documentation for the patient
     patient = get_object_or_404(Patient, id=patient_id)
     
     documentations = Documentation.objects.filter(
         patient=patient,
-    ).order_by('-created_at')
-    
+    ).order_by('-doc_report_date')
     documentation_list = []
     for doc in documentations:
+        print("fldsaf",doc.doc_report_date)
         doc_data = {
             'id': doc.id,
             'title': doc.title,
@@ -380,7 +379,8 @@ def view_documentation(request, patient_id):
             'plan': doc.plan,
             'written_by': doc.written_by,
             'created_at': doc.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            'updated_at': doc.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+            'updated_at': doc.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'doc_report_date': doc.doc_report_date.strftime("%m/%d/%Y") if doc.doc_report_date else None,
         }
         
         # Only add file_url if the file exists
@@ -391,7 +391,8 @@ def view_documentation(request, patient_id):
             
         documentation_list.append(doc_data)
         print(documentation_list)
-    
+    print('DEBUG: Documentation List:', documentation_list)
+
     return JsonResponse({'documentations': documentation_list})
 
 

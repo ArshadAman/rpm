@@ -1,9 +1,13 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,6 +41,7 @@ INSTALLED_APPS = [
     # System apps
     'rpm_users',
     'reports',
+    # 'ai_calls',
     
     # Core apps
     'rest_framework',
@@ -205,6 +210,14 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@rpm-healthcar
 # For development, you can use console backend instead
 if DEBUG and not SENDGRID_API_KEY:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Twilio configuration
+# TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+# TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+# TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
+
+# Synthflow configuration
+# SYNTHFLOW_API_KEY = os.environ.get('SYNTHFLOW_API_KEY')
 
 # Logging configuration
 # Ensure logs directory exists
