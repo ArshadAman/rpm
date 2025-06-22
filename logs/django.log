@@ -1713,3 +1713,6 @@ INFO 2025-06-22 13:17:25,479 basehttp 23664 12212 "GET /view-patient/ HTTP/1.1" 
 INFO 2025-06-22 13:17:27,770 basehttp 23664 12212 "GET /logout/ HTTP/1.1" 302 0
 INFO 2025-06-22 13:17:27,781 basehttp 23664 12212 "GET / HTTP/1.1" 200 8801
 INFO 2025-06-22 13:18:51,739 basehttp 23664 16300 "GET / HTTP/1.1" 200 8525
+INFO 2025-06-22 15:23:54,944 autoreload 10460 24876 Watching for file changes with StatReloader
+INFO 2025-06-22 15:24:11,937 autoreload 10460 24876 C:\Internship\Pinksurfing\rpm\rpm\settings.py changed, reloading.
+INFO 2025-06-22 15:24:12,785 autoreload 24492 18156 Watching for file changes with StatReloader
