@@ -9,5 +9,5 @@ urlpatterns = [
     path('reports/', include('reports.urls')),
     
     path('grappelli/', include('grappelli.urls')),  # Grappelli URLS
-    # path('ai-calls/', include('ai_calls.urls')),
+    # path('voice_bot/', include('voice_bot.urls')),
 ]

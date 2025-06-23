@@ -1,3 +1,6 @@
 /env
 .env
 /logs
+logs/
+logs/django.log
+/rpm/secrets.py

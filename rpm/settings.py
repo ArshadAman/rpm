@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 # from dotenv import load_dotenv
-
+from .secrets import SENDGRID_API_KEY
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     # System apps
     'rpm_users',
     'reports',
-    # 'ai_calls',
+    # 'voice_bot',
     
     # Core apps
     'rest_framework',
@@ -196,7 +196,6 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
-SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

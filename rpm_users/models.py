@@ -5,7 +5,7 @@ from datetime import date
 import sendgrid
 from sendgrid.helpers.mail import Mail
 from django.conf import settings
-
+from rpm.secrets import SENDGRID_API_KEY
 # Create your models here.
 class Patient(models.Model):
     SEX_CHOICES = (('Male', 'Male'), ('Female', 'Female'), ('Others', 'Others'),)
@@ -74,10 +74,10 @@ class Patient(models.Model):
     # Make it using django signals also send the email to the patient that his account has been created
     # and also send the email to the admin that a new patient has been registered
     def send_signup_notification(self):
-        sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+        sg = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
         message = Mail(
             from_email='marketing@pinksurfing.com',
-            to_emails=f'{self.user.email}',
+            to_emails=f'shaiqueljilani@gmail.com',
             subject='New RPM Patient Signup Notification',
             html_content=f"""
             <h3>New Patient Registered for RPM</h3>
@@ -155,6 +155,11 @@ class PastMedicalHistory(models.Model):
         ('GAD', 'Generalized Anxiety Disorder'),
         ('PTSD', 'Post-Traumatic Stress Disorder'),
         ('Peff', 'Pleural Effusion'),
+        ('CHAR','Charcot'),
+        ('DMN','Diabetic neuropathy'),
+        ('DMK',' Diabetic nephropathy (kidney)'),
+        ('DMR','Diabetic retinopathy'),
+        ('OSA','Sleep apnea'),
         ('N/A', 'N/A'),
     ))
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medical_history')
