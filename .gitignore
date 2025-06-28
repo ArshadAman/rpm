@@ -4,3 +4,5 @@
 logs/
 logs/django.log
 /rpm/secrets.py
+d.sqlite3
+d.sqlite3
