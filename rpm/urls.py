@@ -7,7 +7,7 @@ urlpatterns = [
     path('admin/', admin_site.urls),
     path('', include('rpm_users.urls')),
     path('reports/', include('reports.urls')),
+    path('calling-agent/', include('calling_agent.urls')),
     
     path('grappelli/', include('grappelli.urls')),  # Grappelli URLS
-    # path('voice_bot/', include('voice_bot.urls')),
 ]

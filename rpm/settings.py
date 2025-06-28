@@ -41,8 +41,7 @@ INSTALLED_APPS = [
     # System apps
     'rpm_users',
     'reports',
-    # 'voice_bot',
-    
+    'calling_agent',
     # Core apps
     'rest_framework',
     'corsheaders',
@@ -211,12 +210,23 @@ if DEBUG and not SENDGRID_API_KEY:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Twilio configuration
-# TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
-# TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
-# TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
 
-# Synthflow configuration
-# SYNTHFLOW_API_KEY = os.environ.get('SYNTHFLOW_API_KEY')
+# Base URL for webhooks (update this with your actual domain)
+BASE_URL = os.environ.get('BASE_URL')  # Change to your domain in production
+
+# AI/OpenAI configuration for future use
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
+# Twilio-related settings
+if not TWILIO_ACCOUNT_SID:
+    print("Warning: TWILIO_ACCOUNT_SID not set. Calling functionality will not work.")
+if not TWILIO_AUTH_TOKEN:
+    print("Warning: TWILIO_AUTH_TOKEN not set. Calling functionality will not work.")
+if not TWILIO_PHONE_NUMBER:
+    print("Warning: TWILIO_PHONE_NUMBER not set. Calling functionality will not work.")
 
 # Logging configuration
 # Ensure logs directory exists
