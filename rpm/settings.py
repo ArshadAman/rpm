@@ -19,7 +19,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4$7tarn#dic1f!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["strattonhealth.com", "www.strattonhealth.com","localhost","127.0.0.1", "*.ngrok-free.app", "ec64-2406-b400-b5-80f8-a19d-f9f-eba4-5472.ngrok-free.app"]
+ALLOWED_HOSTS = ["strattonhealth.com", "www.strattonhealth.com","localhost","127.0.0.1", "*.ngrok-free.app", "edf6-2406-b400-b5-cd26-a073-626f-a834-aa40.ngrok-free.app"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
@@ -216,7 +216,7 @@ TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
 
 # Base URL for webhooks (update this with your actual domain)
-BASE_URL = os.environ.get('BASE_URL', 'https://ec64-2406-b400-b5-80f8-a19d-f9f-eba4-5472.ngrok-free.app')  # Change to your domain in production
+BASE_URL = os.environ.get('BASE_URL', 'https://edf6-2406-b400-b5-cd26-a073-626f-a834-aa40.ngrok-free.app')  # Change to your domain in production
 
 # AI/OpenAI configuration for future use
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')

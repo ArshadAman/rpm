@@ -7,7 +7,7 @@ from django.urls import reverse
 import logging
 
 logger = logging.getLogger(__name__)
-
+print(getattr(settings, 'BASE_URL', 'BASE_URL not set'))
 
 class TwilioCallService:
     """Service class to handle Twilio voice calls"""
@@ -87,6 +87,8 @@ class TwilioCallService:
         """Get the webhook URL for handling the call conversation"""
         # This would be your domain + the webhook endpoint
         base_url = getattr(settings, 'BASE_URL', 'https://yourdomain.com')
+        print('base', base_url)
+        print('base', base_url)
         return f"{base_url}/calling-agent/api/webhook/{call_session_id}/"
     
     def get_status_callback_url(self, call_session_id):
