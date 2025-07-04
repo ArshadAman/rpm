@@ -5,6 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <title>Vitals Summary</title>
   <style>
     * {
@@ -1067,7 +1070,7 @@
             {% else %}
             <div class="info-empty">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 3v18m0 0l3-3m-3 3l-3-3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                <path d="M9 3v18m0 0l3-3m-3 3l-3-3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <span>No medications recorded</span>
             </div>
@@ -1183,168 +1186,124 @@
       tabButtons.forEach((button) => button.classList.remove("active"));
 
       document.getElementById(tabId).style.display = "block";
-      event.target.classList.add("active");
+      
+      // Find the tab button by matching onclick attribute and set it as active
+      tabButtons.forEach((button) => {
+        if (button.getAttribute('onclick') && button.getAttribute('onclick').includes(`'${tabId}'`)) {
+          button.classList.add("active");
+        }
+      });
 
       // Load documentation automatically when documentation tab is opened
       if (tabId === "documentation") {
         // Only load if not already loaded
         if (!window.documentationsLoaded) {
-          fetchDocumentation(false);
+          fetchDocumentation();
           window.documentationsLoaded = true;
         }
       }
     }
 
-    function showRightTab(tabId) {
-      const tabButtons = document.querySelectorAll(".right-tabs div");
-      tabButtons.forEach((button) => button.classList.remove("active"));
-      event.target.classList.add("active");
-      // Add your right tab content display logic here
-    }
-
-    function fetchReportDetails(reportId) {
-      fetch(`/reports/get-single-report/${reportId}/`)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("DEBUG: Report Data from API:", data); // Debugging
-
-          if (!data.report) {
-            console.error("Error: Missing 'report' object in response", data);
-            return;
-          }
-
-          const report = data.report; // Extract report object
-          const reportContainer = document.getElementById("report-content");
-
-          reportContainer.innerHTML = `
-              <h3>Report Details</h3>
-              <div class="report-grid">
-                <div class="report-item"><strong>Created At:</strong> ${report.created_at
-            }</div>
-                <div class="report-item"><strong>Blood Pressure:</strong> ${report.blood_pressure
-            }</div>
-                <div class="report-item"><strong>Heart Rate:</strong> ${report.heart_rate
-            }</div>
-                <div class="report-item"><strong>SpO2:</strong> ${report.spo2
-            }</div>
-                <div class="report-item"><strong>Temperature:</strong> ${report.temperature
-            }</div>
-                <div class="report-item"><strong>Symptoms:</strong> ${report.symptoms || "N/A"
-            }</div>
-              </div>
-            `;
-          document.getElementById("report-details").style.display = "block";
-        })
-        .catch((error) => console.error("Error fetching report:", error));
-    }
-
     function fetchDocumentation() {
-      // const date = document.getElementById("date").value; // Removed date filtering
-      // Only validate date if using filter
-      // if (useFilter && !date) { // Removed date validation
-      //   alert("Please select a date for filtering");
-      //   return;
-      // }
+  const docListContainer = document.getElementById("documentation-list");
+  docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>Loading documentation...</div>";
 
-      // Show loading indicator
-      const docListContainer = document.getElementById("documentation-list");
-      docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>Loading documentation...</div>";
+  const docDetailsContainer = document.getElementById("documentation-details");
+  docDetailsContainer.innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.5);">
+      <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-bottom: 15px; opacity: 0.5;">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <p>Select a document to view details</p>
+    </div>
+  `;
 
-      const docDetailsContainer = document.getElementById("documentation-details");
-      docDetailsContainer.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.5);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-bottom: 15px; opacity: 0.5;">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p>Select a document to view details</p>
+  const patientId = "{{ patient.id }}";
+  let url = `/view_documentation/${patientId}/`;
+
+  fetch(url, {
+    method: 'GET',
+    credentials: 'same-origin',
+    headers: {
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then((response) => response.json())
+  .then((data) => {
+    if (!data.documentations || data.documentations.length === 0) {
+      docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
+    } else {
+      window.documentations = data.documentations;
+      window.patientDocumentations = data.documentations;
+      let listContent = '';
+      data.documentations.forEach((doc, index) => {
+        const createdAtDate = new Date(doc.created_at);
+        const formattedCreatedAt = `${String(createdAtDate.getMonth() + 1).padStart(2, '0')}/${String(createdAtDate.getDate()).padStart(2, '0')}/${createdAtDate.getFullYear()}`;
+        listContent += `
+          <div class="doc-item" data-index="${index}" style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;">
+            <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${doc.title}</h4>
+            <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 3px 0;">
+              ${doc.written_by}                   
+            </p>
+            <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
+              Date of Service: ${formattedCreatedAt}
+            </p>
           </div>
         `;
-
-      // Get the patient ID from the template
-      const patientId = "{{ patient.id }}";
-
-      // Build URL - now always fetches all documents
-      let url = `/view_documentation/${patientId}/`;
-      // Removed date parameter from URL construction: if (useFilter && date) { url += `?date=${date}`; }
-
-      fetch(url, {
-        method: 'GET',
-        credentials: 'same-origin',
-        headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          if (!data.documentations || data.documentations.length === 0) {
-            docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
-          } else {
-            // Sort documentations by created_at descending (newest first)
-            data.documentations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            // Create an array to store the documentation data for easy access
-            window.documentations = data.documentations;
-
-            // Create the document list HTML
-            let listContent = '';
-            data.documentations.forEach((doc, index) => {
-              const createdAtDate = new Date(doc.created_at);
-              const formattedCreatedAt = `${String(createdAtDate.getMonth() + 1).padStart(2, '0')}/${String(createdAtDate.getDate()).padStart(2, '0')}/${createdAtDate.getFullYear()}`;
-
-              listContent += `
-                  <div class="doc-item" data-index="${index}" style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: background 0.2s ease; position: relative;">
-                    <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${doc.title}</h4>
-                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 3px 0;">
-                      ${doc.written_by}                   
-                    </p>
-                    <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
-                      Date of Service: ${formattedCreatedAt}
-                    </p>
-                  </div>
-                `;
-            });
-            docListContainer.innerHTML = listContent;
-
-            // Add click event listeners to each document item
-            document.querySelectorAll('.doc-item').forEach(item => {
-              item.addEventListener('click', function () {
-                // Remove selected class from all items
-                document.querySelectorAll('.doc-item').forEach(i => {
-                  i.style.background = '';
-                  i.style.borderLeft = '';
-                });
-
-                // Add selected styling to the clicked item
-                this.style.background = 'rgba(121, 40, 202, 0.2)';
-                this.style.borderLeft = '4px solid #7928CA';
-
-                // Get the documentation index
-                const index = this.getAttribute('data-index');
-                const doc = window.documentations[index];
-
-                // Update the documentation details panel
-                displayDocumentationDetails(doc);
-              });
-            });
-
-            // Select the first document by default
-            if (document.querySelector('.doc-item')) {
-              document.querySelector('.doc-item').click();
-            }
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching documentation:", error);
-          docListContainer.innerHTML = `<div style='padding: 15px; text-align: center; color: #FF4E4E;'>Error: ${error.message}</div>`;
+      });
+      docListContainer.innerHTML = listContent;
+      document.querySelectorAll('.doc-item').forEach(item => {
+        item.addEventListener('click', function () {
+          document.querySelectorAll('.doc-item').forEach(i => {
+            i.style.background = '';
+            i.style.borderLeft = '';
+          });
+          this.style.background = 'rgba(121, 40, 202, 0.2)';
+          this.style.borderLeft = '4px solid #7928CA';
+          const index = this.getAttribute('data-index');
+          const doc = window.documentations[index];
+          displayDocumentationDetails(doc);
         });
+      });
+      if (document.querySelector('.doc-item')) {
+        document.querySelector('.doc-item').click();
+      }
+    }
+  })
+  .catch((error) => {
+    docListContainer.innerHTML = "<div style='padding: 15px; text-align: center; color: rgba(255, 255, 255, 0.7);'>Error loading documentation. Please try again later.</div>";
+    console.error('Error fetching documentation:', error);
+  });
+}
+
+    // Toggle share menu visibility - with proper event stopping
+    function toggleShareMenu(docId) {
+      event.stopPropagation(); // Stop event from bubbling up
+    
+      const menu = document.getElementById(`share-menu-${docId}`);
+    
+      // Close all other menus first
+      document.querySelectorAll('[id^="share-menu-"]').forEach(m => {
+        if (m.id !== `share-menu-${docId}`) {
+          m.style.display = 'none';
+          m.style.pointerEvents = 'none';
+        }
+      });
+    
+      if (menu.style.display === 'none' || !menu.style.display) {
+        menu.style.display = 'block';
+        menu.style.pointerEvents = 'auto';
+      } else {
+        menu.style.display = 'none';
+        menu.style.pointerEvents = 'none';
+      }
     }
 
     function displayDocumentationDetails(doc) {
+      // Store the current documentation for PDF export
+      window.currentDocumentation = doc;
+      
       const docDetailsContainer = document.getElementById("documentation-details");
 
       const createdAtDate = new Date(doc.created_at);
@@ -1357,7 +1316,28 @@
           <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 15px;">
               <h2 style="color: white; font-size: 22px; margin-bottom: 10px;">${doc.title}</h2>
-              <button onclick="window.location.href='/reports/edit-documentation/${doc.id}/'" style="background: #FF0080; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 14px; cursor: pointer; margin-left: 20px; transition: background-color 0.2s ease;">Edit</button>
+              <div style="display: flex; gap: 10px;">
+                <div style="position: relative;">
+                  <button onclick="toggleShareMenu(${doc.id}); return false;" id="share-btn-${doc.id}" style="background: #7928CA; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease;">
+                    <i class="fas fa-share-alt"></i> Share as PDF <i class="fas fa-chevron-down" style="margin-left: 5px; font-size: 12px;"></i>
+                  </button>
+                  <div id="share-menu-${doc.id}" style="display: none; pointer-events: none; position: absolute; top: 100%; left: 0; background: #2a2a3e; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; min-width: 200px; z-index: 1000; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+                    <div onclick="downloadPDF(${doc.id}); event.stopPropagation();" style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                      <i class="fas fa-download" style="margin-right: 8px; color: #7928CA;"></i> Download PDF
+                    </div>
+                    <div onclick="shareViaEmail(${doc.id}); event.stopPropagation();" style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                      <i class="fas fa-envelope" style="margin-right: 8px; color: #FF0080;"></i> Share via Email
+                    </div>
+                    <div onclick="copyShareableLink(${doc.id}); event.stopPropagation();" style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                      <i class="fas fa-link" style="margin-right: 8px; color: #00CC88;"></i> Copy Shareable Link
+                    </div>
+                    <div onclick="previewPDF(${doc.id}); event.stopPropagation();" style="padding: 12px 16px; cursor: pointer; color: white; font-size: 14px;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                      <i class="fas fa-eye" style="margin-right: 8px; color: #FFA500;"></i> Preview PDF
+                    </div>
+                  </div>
+                </div>
+                <button onclick="window.location.href='/reports/edit-documentation/${doc.id}/'" style="background: #FF0080; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease;">Edit</button>
+              </div>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 15px; color: rgba(255, 255, 255, 0.7); font-size: 14px; margin-bottom: 15px;">
               <span><strong>Date of Service:</strong> ${formattedCreatedAt}</span>
@@ -1365,189 +1345,385 @@
             </div>
         `;
 
-      // Display the full documentation content under a single heading
-      if (doc.history_of_present_illness) {
-        detailContent += `
-              <div style="margin-bottom: 20px;">
-                <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Documentation</h3>
-                <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5; white-space: pre-wrap;">${doc.history_of_present_illness}</p>
-              </div>
-            `;
-      }
-
-      // Commented out old code for displaying individual fields
-      /*
-      if (doc.chief_complaint) {
-        detailContent += `
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Chief Complaint</h3>
-            <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.chief_complaint}</p>
-          </div>
-        `;
-      }
-      
-      if (doc.history_of_present_illness) {
-        detailContent += `
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">History of Present Illness</h3>
-            <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.history_of_present_illness}</p>
-          </div>
-        `;
-      }
-      
-      if (doc.subjective) {
-        detailContent += `
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Subjective</h3>
-            <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.subjective}</p>
-          </div>
-        `;
-      }
-      
-      if (doc.objective) {
-        detailContent += `
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Objective</h3>
-            <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.objective}</p>
-          </div>
-        `;
-      }
-      
-      if (doc.assessment) {
-        detailContent += `
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Assessment</h3>
-            <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.assessment}</p>
-          </div>
-        `;
-      }
-      
-      if (doc.plan) {
-        detailContent += `
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Plan</h3>
-            <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5;">${doc.plan}</p>
-          </div>
-        `;
-      }
-      */
-
-
-      if (doc.file_url) {
-        detailContent += `
-            <a href="${doc.file_url}" style="display: inline-block; background: #7928CA; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; margin-top: 15px; font-size: 14px;" target="_blank">Download File</a>
+    // Display the full documentation content under a single heading
+    if (doc.history_of_present_illness) {
+      detailContent += `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #FF0080; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px;">Documentation</h3>
+              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.5; white-space: pre-wrap;">${doc.history_of_present_illness}</p>
+            </div>
           `;
-      }
-
-      detailContent += '</div>';
-      docDetailsContainer.innerHTML = detailContent;
     }
 
-    function fetchAndDisplayReports(patientId) {
-      fetch(`/reports/get-all-reports/${patientId}/`)
-        .then(response => response.json())
-        .then(data => {
-          if (!data.reports || data.reports.length === 0) {
-            console.error("No reports found");
-            return;
-          }
+    detailContent += '</div>';
+    docDetailsContainer.innerHTML = detailContent;
+  }
 
-          const tableBody = document.querySelector('#results table tbody');
-          tableBody.innerHTML = '';
+  // Call this function when the page loads
+  document.addEventListener('DOMContentLoaded', function () {
+    // Get the patient ID from the template
+    const patientId = "{{ patient.id }}";
+    fetchAndDisplayReports(patientId);
 
-          // List of all possible fields with human-friendly labels
-          const fieldLabels = {
-            temperature: "Temperature (°C)",
-            heart_rate: "Heart Rate",
-            systolic_blood_pressure: "Systolic BP",
-            diastolic_blood_pressure: "Diastolic BP",
-            pulse: "Pulse",
-            irregular_heartbeat: "Irregular Heartbeat",
-            hand_shaking: "Hand Shaking",
-            triple_mode: "Triple Mode",
-            blood_glucose: "Blood Glucose",
-            glucose_unit: "Glucose Unit",
-              {% comment %} test_paper_type: "Test Paper Type",
-            sample_type: "Sample Type", {% endcomment %}
-              meal_mark: "Meal Mark",
-          {% comment %} signal_level: "Signal Level",
-            blood_pressure: "Blood Pressure",
-              battery_level: "Battery Level",
-                signal_strength: "Signal Strength",
-                  measurement_timestamp: "Measurement Time",
-                    timezone: "Timezone",
-                      measurement_timezone: "Measurement TZ",
-                        upload_timestamp: "Upload Time",
-                          upload_timezone: "Upload TZ", {% endcomment %}
-              // Add more if needed
-            };
-
-    // Find which fields are non-empty in at least one report
-    const nonEmptyFields = Object.keys(fieldLabels).filter(key =>
-      data.reports.some(report => report[key] && report[key] !== "")
-    );
-
-    // Build table rows for each non-empty field
-    nonEmptyFields.forEach(key => {
-      const row = document.createElement('tr');
-      const firstCell = document.createElement('td');
-      firstCell.className = 'fixed-left';
-      firstCell.textContent = fieldLabels[key] || key;
-      row.appendChild(firstCell);
-
-      data.reports.forEach(report => {
-        const cell = document.createElement('td');
-        cell.textContent = (report[key] && report[key] !== "") ? report[key] : "N/A";
-        row.appendChild(cell);
-      });
-
-      tableBody.appendChild(row);
+    // Hide share menus when clicking anywhere else (but not on tabs)
+    document.addEventListener('click', function (e) {
+      // Don't close menus if clicking on tabs or tab buttons
+      if (!e.target.closest('.tabs') && !e.target.closest('[id^="share-"]')) {
+        document.querySelectorAll('[id^="share-menu-"]').forEach(menu => {
+          menu.style.display = 'none';
+          menu.style.pointerEvents = 'none';
+        });
+      }
     });
+  });
 
-    // Update the table header with dates
-    const tableHeader = document.querySelector('#results table thead tr');
-    const headerCells = tableHeader.querySelectorAll('th');
-    const firstHeader = headerCells[0];
-    tableHeader.innerHTML = '';
-    tableHeader.appendChild(firstHeader);
+  // Replace the placeholder functions with these working implementations:
 
-    data.reports.forEach(report => {
-      const date = new Date(report.created_at);
-      const formattedDate = `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-      const th = document.createElement('th');
-      th.textContent = formattedDate;
-      tableHeader.appendChild(th);
-    });
-          })
-          .catch (error => console.error("Error fetching reports:", error));
+  // Helper function to find documentation by ID
+  function findDocumentationById(docId) {
+    if (window.patientDocumentations) {
+      return window.patientDocumentations.find(doc => doc.id == docId);
+    }
+    if (window.currentDocumentation && window.currentDocumentation.id == docId) {
+      return window.currentDocumentation;
+    }
+    return null;
+  }
+
+  // Helper function to get patient info
+  function getPatientInfo() {
+    const patientName = document.querySelector('.patient-details span')?.textContent || 'Unknown Patient';
+    const dobElement = document.querySelector('.patient-details div:nth-child(2) span');
+    const patientDOB = dobElement ? dobElement.textContent : 'Unknown DOB';
+    
+    return { name: patientName, dob: patientDOB };
+  }
+
+  // Show notification to user
+  function showNotification(message, type = 'success') {
+    // Remove any existing notifications
+    const existingNotification = document.getElementById('pdf-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+
+    const notification = document.createElement('div');
+    notification.id = 'pdf-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#00CC88' : '#FF4E4E'};
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10000;
+      font-size: 14px;
+      max-width: 300px;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      if (notification) {
+        notification.remove();
+      }
+    }, 3000);
+  }
+
+    // 1. Download PDF function
+    function downloadPDF(docId) {
+      const doc = findDocumentationById(docId);
+      if (!doc) {
+        showNotification('Documentation not found', 'error');
+        return;
       }
 
-    // Function to add documentation
-    {% comment %} function addDocumentation() {
-      const patientId = "{{ patient.id }}";
-      fetch(`/reports/get-all-reports/${patientId}/`)
-        .then(response => response.json())
-        .then(data => {
-          if (!data.reports || data.reports.length === 0) {
-            alert("No reports found for this patient. Please create a report first.");
-            return;
-          }
+      const patientInfo = getPatientInfo();
+      
+      // Create a new window with the PDF content
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Medical Documentation - ${doc.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333; }
+            .header { border-bottom: 3px solid #7928CA; padding-bottom: 20px; margin-bottom: 30px; }
+            .patient-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+            .doc-content { margin-bottom: 30px; }
+            .signature-section { margin-top: 50px; border-top: 1px solid #ddd; padding-top: 30px; }
+            .signature-line { border-bottom: 1px solid #000; width: 300px; height: 30px; margin: 20px 0; }
+            h1 { color: #7928CA; margin: 0; }
+            h2 { color: #FF0080; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+            .date { color: #666; font-size: 14px; }
+            @media print { 
+              body { margin: 20px; } 
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>RPM - Remote Patient Monitoring</h1>
+            <p class="date">Generated on: ${new Date().toLocaleString()}</p>
+          </div>
+          
+          <div class="patient-info">
+            <h2>Patient Information</h2>
+            <p><strong>Name:</strong> ${patientInfo.name}</p>
+            <p><strong>Date of Birth:</strong> ${patientInfo.dob}</p>
+            <p><strong>Date of Service:</strong> ${new Date(doc.created_at).toLocaleDateString()}</p>
+          </div>
+          
+          <div class="doc-content">
+            <h2>${doc.title}</h2>
+            <div style="white-space: pre-wrap; font-size: 14px; line-height: 1.8;">
+              ${doc.history_of_present_illness || 'No documentation content available.'}
+            </div>
+          </div>
+          
+          <div class="signature-section">
+            <p><strong>Provider:</strong> ${doc.written_by}</p>
+            <p><strong>Date:</strong> ${new Date(doc.updated_at).toLocaleDateString()}</p>
+            
+            <div style="margin-top: 40px;">
+              <p>Provider Signature:</p>
+              <div class="signature-line"></div>
+            </div>
+          </div>
+          
+          <div class="no-print" style="margin-top: 30px; text-align: center;">
+            <button onclick="window.print()" style="background: #7928CA; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">Print/Save as PDF</button>
+            <button onclick="window.close()" style="background: #666; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+          </div>
+        </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      
+      // Auto-trigger print dialog after a short delay
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+      
+      showNotification('PDF preview opened. Use your browser\'s print function to save as PDF.');
+    }
 
-          // Get the most recent report
-          const latestReport = data.reports[0]; // Assuming reports are sorted by date
-          window.location.href = `/reports/${patient.id}/add-documentation/`;
-        })
-        .catch(error => {
-          console.error("Error fetching reports:", error);
-          alert("Error fetching reports. Please try again.");
+    // 2. Share via Email function
+    function shareViaEmail(docId) {
+      const doc = findDocumentationById(docId);
+      if (!doc) {
+        showNotification('Documentation not found', 'error');
+        return;
+      }
+      const patientInfo = getPatientInfo();
+      const subject = `Medical Documentation: ${doc.title} - ${patientInfo.name}`;
+      const link = `${window.location.origin}/documentation/${docId}/view/`;
+      const body = `Dear Colleague,\n\nPlease find the medical documentation details below:\n\nPatient: ${patientInfo.name}\nDate of Birth: ${patientInfo.dob}\nDate of Service: ${new Date(doc.created_at).toLocaleDateString()}\nDocument Title: ${doc.title}\nProvider: ${doc.written_by}\n\nDocumentation Link: ${link}\n\n---\nThis document was generated from RPM - Remote Patient Monitoring System\nGenerated on: ${new Date().toLocaleString()}\n\nBest regards,\nRPM Healthcare Team`;
+      const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailtoLink;
+      showNotification('Email client opened with documentation link.');
+    }
+
+    // 3. Copy Shareable Link function
+    function copyShareableLink(docId) {
+      const doc = findDocumentationById(docId);
+      if (!doc) {
+        showNotification('Documentation not found', 'error');
+        return;
+      }
+      // Use a real, accessible link (adjust as needed for your backend)
+      const shareableLink = `${window.location.origin}/documentation/${docId}/view/`;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(shareableLink).then(() => {
+          showNotification('Shareable link copied to clipboard!');
+        }).catch(() => {
+          fallbackCopyToClipboard(shareableLink);
         });
-    } {% endcomment %}
+      } else {
+        fallbackCopyToClipboard(shareableLink);
+      }
+    }
 
-    // Call this function when the page loads
-    document.addEventListener('DOMContentLoaded', function () {
-      // Get the patient ID from the template
-      const patientId = "{{ patient.id }}";
-      fetchAndDisplayReports(patientId);
+    function fallbackCopyToClipboard(text) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showNotification('Shareable link copied to clipboard!');
+      } catch (err) {
+        showNotification('Failed to copy link. Please copy manually: ' + text, 'error');
+      }
+      document.body.removeChild(textArea);
+    }
+
+    // 4. Preview PDF function
+    function previewPDF(docId) {
+      const doc = findDocumentationById(docId);
+      if (!doc) {
+        showNotification('Documentation not found', 'error');
+        return;
+      }
+
+      const patientInfo = getPatientInfo();
+      
+      // Create a professional PDF preview in a new tab
+      const previewWindow = window.open('', '_blank');
+      previewWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>PDF Preview - ${doc.title}</title>
+          <style>
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              margin: 0; 
+              background: #f5f5f5; 
+              padding: 20px;
+            }
+            .preview-container { 
+              max-width: 800px; 
+              margin: 0 auto; 
+              background: white; 
+              box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+              border-radius: 8px;
+              overflow: hidden;
+            }
+            .toolbar {
+              background: #7928CA;
+              color: white;
+              padding: 15px 20px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+            .content { 
+              padding: 40px; 
+              line-height: 1.8; 
+              color: #333; 
+            }
+            .header { 
+              border-bottom: 3px solid #7928CA; 
+              padding-bottom: 20px; 
+              margin-bottom: 30px; 
+              text-align: center;
+            }
+            .patient-info { 
+              background: #f8f9fa; 
+              padding: 20px; 
+              border-radius: 8px; 
+              margin-bottom: 30px;
+              border-left: 4px solid #FF0080;
+            }
+            .doc-content { 
+              margin-bottom: 30px; 
+              background: #fafafa;
+              padding: 20px;
+              border-radius: 8px;
+            }
+            .signature-section { 
+              margin-top: 50px; 
+              border-top: 2px solid #eee; 
+              padding-top: 30px; 
+            }
+            h1 { color: #7928CA; margin: 0; font-size: 28px; }
+            h2 { color: #FF0080; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+            .date { color: #666; font-size: 14px; margin-top: 10px; }
+            .btn {
+              background: #7928CA;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 5px;
+              cursor: pointer;
+              margin-right: 10px;
+              font-size: 14px;
+            }
+            .btn:hover { background: #6A0DAD; }
+            .btn.secondary { background: #666; }
+            .btn.secondary:hover { background: #555; }
+          </style>
+        </head>
+        <body>
+          <div class="preview-container">
+            <div class="toolbar">
+              <h3 style="margin: 0;">PDF Preview - ${doc.title}</h3>
+              <div>
+                <button class="btn" onclick="window.print()">📄 Print/Save PDF</button>
+                <button class="btn secondary" onclick="window.close()">✕ Close</button>
+              </div>
+            </div>
+            
+            <div class="content">
+              <div class="header">
+                <h1>RPM - Remote Patient Monitoring</h1>
+                <p class="date">Medical Documentation Report</p>
+                <p class="date">Generated on: ${new Date().toLocaleString()}</p>
+              </div>
+              
+              <div class="patient-info">
+                <h2>📋 Patient Information</h2>
+                <p><strong>Patient Name:</strong> ${patientInfo.name}</p>
+                <p><strong>Date of Birth:</strong> ${patientInfo.dob}</p>
+                <p><strong>Date of Service:</strong> ${new Date(doc.created_at).toLocaleDateString()}</p>
+                <p><strong>Document ID:</strong> #${doc.id}</p>
+              </div>
+              
+              <div class="doc-content">
+                <h2>📝 ${doc.title}</h2>
+                <div style="white-space: pre-wrap; font-size: 15px; line-height: 1.8; color: #444;">
+                  ${doc.history_of_present_illness || 'No documentation content available.'}
+                </div>
+              </div>
+              
+              <div class="signature-section">
+                <h2>👨‍⚕️ Provider Information</h2>
+                <p><strong>Provider:</strong> ${doc.written_by}</p>
+                <p><strong>Created:</strong> ${new Date(doc.created_at).toLocaleString()}</p>
+                <p><strong>Last Updated:</strong> ${new Date(doc.updated_at).toLocaleString()}</p>
+                
+                <div style="margin-top: 40px; border: 1px dashed #ccc; padding: 20px; background: #f9f9f9;">
+                  <p><strong>Digital Signature Section</strong></p>
+                  <p style="color: #666; font-size: 14px;">Provider Signature: ________________________</p>
+                  <p style="color: #666; font-size: 14px;">Date: ________________________</p>
+                </div>
+              </div>
+              
+              <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f0f0f0; border-radius: 8px;">
+                <p style="color: #666; font-size: 12px; margin: 0;">
+                  This document was generated from RPM - Remote Patient Monitoring System<br>
+                  For questions or concerns, please contact our support team.
+                </p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+      
+      previewWindow.document.close();
+      showNotification('PDF preview opened in new tab.');
+    }
+
+    // Close share menu when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('[id^="share-btn-"]')) {
+        document.querySelectorAll('[id^="share-menu-"]').forEach(menu => {
+          menu.style.display = 'none';
+          menu.style.pointerEvents = 'none';
+        });
+      }
     });
   </script>
 </body>

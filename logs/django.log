@@ -120,3 +120,17 @@ WARNING 2025-06-14 01:28:54,826 log 7 281473643167776 Not Found: /static/admin/i
 WARNING 2025-06-14 01:28:58,508 log 7 281473643167776 Not Found: /static/admin/img/logo.png
 WARNING 2025-06-14 01:28:59,364 log 7 281473643167776 Not Found: /static/admin/img/logo.png
 INFO 2025-06-14 01:29:44,325 signals 7 281473643167776 Welcome email sent successfully to sjilani@pinksurfing.com (doctor)
+WARNING 2025-07-04 12:22:29,653 log 7 281472983650336 Not Found: /favicon.ico
+WARNING 2025-07-04 12:22:53,100 log 7 281472983650336 Not Found: /static/admin/img/logo.png
+WARNING 2025-07-04 12:22:54,005 log 7 281472983650336 Not Found: /favicon.ico
+WARNING 2025-07-04 12:26:57,834 log 7 281472983650336 Not Found: /static/admin/img/logo.png
+WARNING 2025-07-04 12:44:01,715 log 7 281473369141280 Not Found: /favicon.ico
+WARNING 2025-07-04 14:01:59,871 log 7 281472990335008 Not Found: /favicon.ico
+WARNING 2025-07-04 14:33:51,921 log 7 281473128505376 Not Found: /documentation/share/3/
+WARNING 2025-07-04 14:39:25,062 log 7 281473256611872 Not Found: /documentation/3/view/
+WARNING 2025-07-04 14:40:35,067 log 7 281473256611872 Not Found: /documentation/3/view/
+WARNING 2025-07-04 14:51:39,485 log 7 281473510797344 Not Found: /documentation/3/view/
+WARNING 2025-07-04 14:51:55,110 log 7 281473510797344 Not Found: /documentation/3/view/
+WARNING 2025-07-04 14:52:45,182 log 7 281473411584032 Not Found: /documentation/3/view/
+WARNING 2025-07-04 14:57:55,599 log 7 281473411584032 Not Found: /favicon.ico
+WARNING 2025-07-04 14:57:55,696 log 7 281473411584032 Not Found: /favicon.ico

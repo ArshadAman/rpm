@@ -566,3 +566,7 @@ def edit_documentation(request, doc_id):
     }
     
     return render(request, 'reports/edit_docs.html', context)
+
+def documentation_share_view(request, doc_id):
+    doc = get_object_or_404(Documentation, id=doc_id)
+    return render(request, 'documentation_share.html', {'doc': doc, 'now': timezone.now()})

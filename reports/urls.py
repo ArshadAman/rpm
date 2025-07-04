@@ -14,4 +14,5 @@ urlpatterns = [
     path('edit-documentation/<int:doc_id>/', views.edit_documentation, name='edit_documentation'),
     path('data-telemetry/', views.data_from_mio_connect, name='data_telemetry'),
     path('edit-patient/<uuid:patient_id>/', views.edit_patient, name='edit_patient'),
+    path('documentation/<int:doc_id>/view/', views.documentation_share_view, name='documentation_share_view'),
 ]
