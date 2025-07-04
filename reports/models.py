@@ -1,6 +1,8 @@
 from django.db import models
 import uuid
-
+import sendgrid
+from sendgrid.helpers.mail import Mail
+from rpm.secrets import SENDGRID_API_KEY
 # Create your models here.
 class Reports(models.Model):
     patient = models.ForeignKey('rpm_users.Patient', on_delete=models.CASCADE, related_name='reports')
@@ -46,6 +48,75 @@ class Reports(models.Model):
     
     def __str__(self):
         return f'{self.patient.user.first_name} {self.patient.user.last_name} - {self.created_at.strftime("%Y-%m-%d %H:%M:%S")}'
+    
+    def save(self, *args, **kwargs):
+        # Check if this is a new record (not yet saved)
+        is_new = self.pk is None
+        
+        # Save the model first
+        super().save(*args, **kwargs)
+        
+        # If this is a new record, check the vitals
+        if is_new:
+            self.check_vitals_and_send_alert()
+    
+    def check_vitals_and_send_alert(self):
+        """Check if any vital signs are outside safe ranges and send an alert if needed"""
+        alert_needed = False
+        alert_reasons = []
+        
+        # Check heart rate (pulse) - above 110 is concerning
+        if self.pulse and int(self.pulse) > 110:
+            alert_needed = True
+            alert_reasons.append(f"Heart Rate: {self.pulse} bpm (above 110)")
+        # Check systolic blood pressure - above 170 is concerning
+        if self.systolic_blood_pressure and int(self.systolic_blood_pressure) > 170:
+            alert_needed = True
+            alert_reasons.append(f"Systolic BP: {self.systolic_blood_pressure} mmHg (above 170)")
+        
+        # Check oxygen saturation - below 88 is concerning
+        if self.spo2 and int(self.spo2) < 88:
+            alert_needed = True
+            alert_reasons.append(f"Oxygen Saturation: {self.spo2}% (below 88%)")
+        
+        # If any vital signs are outside safe ranges, send an alert
+        if alert_needed:
+            self.send_alert_email(alert_reasons)
+    
+    def send_alert_email(self, alert_reasons):
+        """Send an email alert to the admin about concerning vital signs"""
+        try:
+            sg = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
+            message = Mail(
+                from_email='marketing@pinksurfing.com',
+                to_emails='shaiqueljilani@gmail.com',  # Admin email
+                subject='ALERT: Abnormal Vital Signs Detected',
+                html_content=f"""
+                <h3>Abnormal Vital Signs Alert</h3>
+                <p>The following patient has reported vital signs outside the normal range:</p>
+                
+                <ul>
+                    <li><strong>Patient:</strong> {self.patient.user.first_name} {self.patient.user.last_name}</li>
+                    <li><strong>Email:</strong> {self.patient.user.email}</li>
+                    <li><strong>Mobile Number:</strong> {self.patient.phone_number}</li>
+                    <li><strong>Date of Birth:</strong> {self.patient.date_of_birth}</li>
+                </ul>
+                
+                <h4>Concerning Vital Signs:</h4>
+                <ul>
+                    {''.join(f'<li><strong>{reason}</strong></li>' for reason in alert_reasons)}
+                </ul>
+                
+                <p>This reading was taken at: {self.measurement_timestamp or self.created_at.strftime('%Y-%m-%d %H:%M:%S')}</p>
+                
+                <p>Please review this patient's data and take appropriate action.</p>
+                """,
+            )
+            
+            sg.send(message)
+            print(f"Alert email sent for patient {self.patient.user.first_name} {self.patient.user.last_name}")
+        except Exception as e:
+            print(f"SendGrid error: {e}")
     
 class Documentation(models.Model):
     TITLE_CHOICES = (

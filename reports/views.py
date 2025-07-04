@@ -279,13 +279,12 @@ def add_documentation(request, patient_id):
             documentation.doc_clinical_staff = str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"
             documentation.doc_moderator = str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"
             documentation.doc_report_date = timezone.now().date()
-            
-            # Update the history_of_present_illness with the full_documentation value
+              # Update the history_of_present_illness with the full_documentation value
             documentation.history_of_present_illness = request.POST.get('full_documentation', '')
-            
+            documentation.written_by = request.user.username
             documentation.save()
             messages.success(request, 'Documentation added successfully.')
-            return redirect('view_documentation', patient_id=patient.id)
+            return redirect('moderator_actions', patient_id=str(patient.id))
     else:
         form = DocumentationForm()
 
@@ -518,7 +517,7 @@ def edit_patient(request, patient_id):
 def edit_documentation(request, doc_id):
     documentation = get_object_or_404(Documentation, id=doc_id)
     patient = documentation.patient
-    
+    print("documentation", documentation,patient)
     # Check if the user is a moderator
     if not Moderator.objects.filter(user=request.user).exists():
         return render(request, "errors/403.html", {"error": "Only moderators can edit documentation"}, status=403)
@@ -539,10 +538,9 @@ def edit_documentation(request, doc_id):
             
             # Update the history_of_present_illness with the full_documentation value
             documentation.history_of_present_illness = request.POST.get('full_documentation', '')
-            
             documentation.save()
             messages.success(request, 'Documentation updated successfully.')
-            return redirect('view_documentation', patient_id=patient.id)
+            return redirect('moderator_actions', patient_id=str(patient.id))
     else:
         # Pre-fill the form with existing documentation data
         initial_data = {
@@ -556,8 +554,9 @@ def edit_documentation(request, doc_id):
             'doc_report_date': documentation.doc_report_date or timezone.now().date(),
             'full_documentation': documentation.history_of_present_illness
         }
+        print("initial_data", initial_data)
         form = DocumentationForm(instance=documentation, initial=initial_data)
-    
+        print("Form",form)
     context = {
         'form': form,
         'documentation': documentation,

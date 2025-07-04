@@ -9,6 +9,6 @@ urlpatterns = [
     path('', include('rpm_users.urls')),
     path('reports/', include('reports.urls')),
     path('documentation/<int:doc_id>/view/', documentation_share_view, name='documentation_share_view_global'),
-
+    path('calling-agent/', include('calling_agent.urls')),
     path('grappelli/', include('grappelli.urls')),  # Grappelli URLS
 ]

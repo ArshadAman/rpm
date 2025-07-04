@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - RPM System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center py-3">
+                    <h1><i class="fas fa-phone-alt"></i> {{ title }}</h1>
+                    <div>
+                        <a href="{% url 'calling_agent:create_call_schedule' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Schedule
+                        </a>
+                        <a href="{% url 'calling_agent:upcoming_calls' %}" class="btn btn-info">
+                            <i class="fas fa-clock"></i> Upcoming Calls
+                        </a>
+                        <form method="post" action="{% url 'calling_agent:test_call_creation' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-vial"></i> Test Call Creation
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="card">
+                    <div class="card-body">
+                        {% if schedules %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Patient</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Frequency</th>
+                                            <th>Preferred Day</th>
+                                            <th>Preferred Time</th>
+                                            <th>Timezone</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for schedule in schedules %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ schedule.patient.user.first_name }} {{ schedule.patient.user.last_name }}</strong>
+                                                </td>
+                                                <td>{{ schedule.patient.user.email }}</td>
+                                                <td>
+                                                    {% if schedule.patient.phone_number %}
+                                                        <i class="fas fa-phone"></i> {{ schedule.patient.phone_number }}
+                                                    {% else %}
+                                                        <span class="text-muted">No phone</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ schedule.get_frequency_display }}</span>
+                                                </td>
+                                                <td>{{ schedule.get_preferred_day_display }}</td>
+                                                <td>{{ schedule.preferred_time|time:"H:i" }}</td>
+                                                <td>{{ schedule.timezone }}</td>
+                                                <td>
+                                                    {% if schedule.is_active %}
+                                                        <span class="badge bg-success">Active</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Inactive</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <a href="{% url 'calling_agent:edit_call_schedule' schedule.id %}" 
+                                                           class="btn btn-outline-primary" title="Edit">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-outline-danger" 
+                                                                onclick="confirmDelete('{{ schedule.id }}', '{{ schedule.patient.user.email }}')" 
+                                                                title="Delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-phone-slash fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">No Call Schedules Found</h4>
+                                <p class="text-muted">Create your first call schedule to get started.</p>
+                                <a href="{% url 'calling_agent:create_call_schedule' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Create First Schedule
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to deactivate the call schedule for <strong id="patientEmail"></strong>?</p>
+                    <p class="text-muted">This will stop all future scheduled calls for this patient.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="post" id="deleteForm" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Deactivate Schedule</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function confirmDelete(scheduleId, patientEmail) {
+            document.getElementById('patientEmail').textContent = patientEmail;
+            document.getElementById('deleteForm').action = `/calling-agent/schedules/${scheduleId}/delete/`;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+</body>
+</html>

@@ -1,9 +1,13 @@
 from pathlib import Path
 import os
 from datetime import timedelta
-
+# from dotenv import load_dotenv
+from .secrets import SENDGRID_API_KEY
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+# load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -15,12 +19,13 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4$7tarn#dic1f!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["strattonhealth.com", "www.strattonhealth.com","localhost","127.0.0.1"]
+ALLOWED_HOSTS = ["strattonhealth.com", "www.strattonhealth.com","localhost","127.0.0.1", "*.ngrok-free.app", "edf6-2406-b400-b5-cd26-a073-626f-a834-aa40.ngrok-free.app"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "https://strattonhealth.com",
     "https://www.strattonhealth.com",
+    "https://*.ngrok-free.app"
 ]
 
 
@@ -37,7 +42,7 @@ INSTALLED_APPS = [
     # System apps
     'rpm_users',
     'reports',
-    
+    'calling_agent',
     # Core apps
     'rest_framework',
     'corsheaders',
@@ -191,7 +196,6 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
-SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -205,6 +209,25 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@rpm-healthcar
 # For development, you can use console backend instead
 if DEBUG and not SENDGRID_API_KEY:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Twilio configuration
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
+
+# Base URL for webhooks (update this with your actual domain)
+BASE_URL = os.environ.get('BASE_URL', 'https://edf6-2406-b400-b5-cd26-a073-626f-a834-aa40.ngrok-free.app')  # Change to your domain in production
+
+# AI/OpenAI configuration for future use
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
+# Twilio-related settings
+if not TWILIO_ACCOUNT_SID:
+    print("Warning: TWILIO_ACCOUNT_SID not set. Calling functionality will not work.")
+if not TWILIO_AUTH_TOKEN:
+    print("Warning: TWILIO_AUTH_TOKEN not set. Calling functionality will not work.")
+if not TWILIO_PHONE_NUMBER:
+    print("Warning: TWILIO_PHONE_NUMBER not set. Calling functionality will not work.")
 
 # Logging configuration
 # Ensure logs directory exists
