@@ -7,7 +7,6 @@ from django.urls import reverse
 import logging
 
 logger = logging.getLogger(__name__)
-print(getattr(settings, 'BASE_URL', 'BASE_URL not set'))
 
 class TwilioCallService:
     """Service class to handle Twilio voice calls"""
@@ -93,7 +92,7 @@ class TwilioCallService:
     
     def get_status_callback_url(self, call_session_id):
         """Get the status callback URL for call status updates"""
-        base_url = getattr(settings, 'BASE_URL', 'https://yourdomain.com')
+        base_url = getattr(settings, 'BASE_URL')
         return f"{base_url}/calling-agent/api/status/{call_session_id}/"
     
     def create_conversation_twiml(self, call_session, step=0):
@@ -135,20 +134,32 @@ class TwilioCallService:
                 
                 if question['type'] == 'scale':
                     response.say("Please press a number from 1 to 10 on your keypad.", voice='alice')
-                    response.gather(
+                    gather = response.gather(
                         input='dtmf',
                         timeout=10,
                         num_digits=1,
                         action=self.get_webhook_url(call_session.id) + f"?step={step}&response=dtmf",
                         method='POST'
                     )
+                    # Add fallback if no input
+                    response.say("I didn't receive any input. Let me move to the next question.", voice='alice')
+                    response.redirect(
+                        url=self.get_webhook_url(call_session.id) + f"?step={step + 1}",
+                        method='POST'
+                    )
                 elif question['type'] == 'yes_no':
                     response.say("Press 1 for yes, or 2 for no.", voice='alice')
-                    response.gather(
+                    gather = response.gather(
                         input='dtmf',
                         timeout=10,
                         num_digits=1,
                         action=self.get_webhook_url(call_session.id) + f"?step={step}&response=dtmf",
+                        method='POST'
+                    )
+                    # Add fallback if no input
+                    response.say("I didn't receive any input. Let me move to the next question.", voice='alice')
+                    response.redirect(
+                        url=self.get_webhook_url(call_session.id) + f"?step={step + 1}",
                         method='POST'
                     )
                 else:
@@ -158,6 +169,12 @@ class TwilioCallService:
                         timeout=30,
                         max_length=120,
                         action=self.get_webhook_url(call_session.id) + f"?step={step}&response=speech",
+                        method='POST'
+                    )
+                    # Add fallback if no recording
+                    response.say("Let me move to the next question.", voice='alice')
+                    response.redirect(
+                        url=self.get_webhook_url(call_session.id) + f"?step={step + 1}",
                         method='POST'
                     )
             else:
