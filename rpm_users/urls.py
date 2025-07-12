@@ -39,4 +39,11 @@ urlpatterns = [
     path('staff/verify-password/', views.verify_admin_password, name='verify_admin_password'),
     path('staff/create-account/', views.create_staff_user, name='create_staff_user'),
     path('test-staff-ui/', views.test_staff_ui, name='test_staff_ui'),
+    
+    # Shortcut management API endpoints
+    path('api/shortcuts/', views.get_shortcuts, name='get_shortcuts'),
+    path('api/shortcuts/create/', views.create_shortcut, name='create_shortcut'),
+    path('api/shortcuts/<int:shortcut_id>/update/', views.update_shortcut, name='update_shortcut'),
+    path('api/shortcuts/<int:shortcut_id>/delete/', views.delete_shortcut, name='delete_shortcut'),
+    path('api/shortcuts/search/', views.search_shortcuts, name='search_shortcuts'),
 ]

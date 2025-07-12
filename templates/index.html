@@ -1179,13 +1179,19 @@
 
   <script>
     function showTab(tabId) {
+      console.log('showTab called with:', tabId); // Debug log
       const tabs = document.querySelectorAll(".table-container");
       const tabButtons = document.querySelectorAll(".tabs div");
 
       tabs.forEach((tab) => (tab.style.display = "none"));
       tabButtons.forEach((button) => button.classList.remove("active"));
 
-      document.getElementById(tabId).style.display = "block";
+      const targetTab = document.getElementById(tabId);
+      if (targetTab) {
+        targetTab.style.display = "block";
+      } else {
+        console.error('Tab not found:', tabId); // Debug log
+      }
       
       // Find the tab button by matching onclick attribute and set it as active
       tabButtons.forEach((button) => {
@@ -1264,97 +1270,18 @@
           const index = this.getAttribute('data-index');
           const doc = window.documentations[index];
           displayDocumentationDetails(doc);
-
-      // Get the patient ID from the template
-      const patientId = "{{ patient.id }}";
-
-      // Build URL - now always fetches all documents
-      let url = `/view_documentation/${patientId}/`;
-      // Removed date parameter from URL construction: if (useFilter && date) { url += `?date=${date}`; }
-
-      fetch(url, {
-        method: 'GET',
-        credentials: 'same-origin',
-        headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          if (!data.documentations || data.documentations.length === 0) {
-            docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
-          } else {
-            // Sort documentations by created_at descending (newest first)
-            // Create an array to store the documentation data for easy access
-            window.documentations = data.documentations;
-
-            // Create the document list HTML
-            let listContent = '';
-            data.documentations.forEach((doc, index) => {
-              const createdAtDate = new Date(doc.created_at);
-              const formattedCreatedAt = `${String(createdAtDate.getMonth() + 1).padStart(2, '0')}/${String(createdAtDate.getDate()).padStart(2, '0')}/${createdAtDate.getFullYear()}`;
-
-              listContent += `
-                  <div class="doc-item" data-index="${index}" style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: background 0.2s ease; position: relative;">
-                    <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${doc.title}</h4>
-                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 3px 0;">
-                      ${doc.written_by}                   
-                    </p>
-                    <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
-                      Date of Service: ${doc.doc_report_date}
-                    </p>
-                  </div>
-                `;
-            });
-            docListContainer.innerHTML = listContent;
-
-            // Add click event listeners to each document item
-            document.querySelectorAll('.doc-item').forEach(item => {
-              item.addEventListener('click', function () {
-                // Remove selected class from all items
-                document.querySelectorAll('.doc-item').forEach(i => {
-                  i.style.background = '';
-                  i.style.borderLeft = '';
-                });
-
-                // Add selected styling to the clicked item
-                this.style.background = 'rgba(121, 40, 202, 0.2)';
-                this.style.borderLeft = '4px solid #7928CA';
-
-                // Get the documentation index
-                const index = this.getAttribute('data-index');
-                const doc = window.documentations[index];
-
-                // Update the documentation details panel
-                displayDocumentationDetails(doc);
-              });
-            });
-
-            // Select the first document by default
-            if (document.querySelector('.doc-item')) {
-              document.querySelector('.doc-item').click();
-            }
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching documentation:", error);
-          docListContainer.innerHTML = `<div style='padding: 15px; text-align: center; color: #FF4E4E;'>Error: ${error.message}</div>`;
         });
       });
+
+      // Select the first document by default
       if (document.querySelector('.doc-item')) {
         document.querySelector('.doc-item').click();
       }
     }
   })
   .catch((error) => {
-    docListContainer.innerHTML = "<div style='padding: 15px; text-align: center; color: rgba(255, 255, 255, 0.7);'>Error loading documentation. Please try again later.</div>";
-    console.error('Error fetching documentation:', error);
+    console.error("Error fetching documentation:", error);
+    docListContainer.innerHTML = `<div style='padding: 15px; text-align: center; color: #FF4E4E;'>Error: ${error.message}</div>`;
   });
 }
 
