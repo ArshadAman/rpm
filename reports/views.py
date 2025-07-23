@@ -688,7 +688,13 @@ def create_report_manual(request):
                     if not (min_val <= num_value <= max_val):
                         errors[field] = f'Value must be between {min_val} and {max_val}'
                     else:
-                        report_fields[field] = str(num_value)
+                        # Save as int if value is whole number, else as float string
+                        if field in ['systolic_blood_pressure', 'diastolic_blood_pressure', 'pulse', 'heart_rate', 'spo2', 'blood_glucose']:
+                            # These fields should be saved as integer strings
+                            report_fields[field] = str(int(num_value))
+                        else:
+                            # For temperature, save as float string
+                            report_fields[field] = str(num_value)
                 except ValueError:
                     errors[field] = 'Must be a valid number'
             elif value:  # Non-numeric fields
