@@ -569,3 +569,207 @@ def edit_documentation(request, doc_id):
 def documentation_share_view(request, doc_id):
     doc = get_object_or_404(Documentation, id=doc_id)
     return render(request, 'documentation_share.html', {'doc': doc, 'now': timezone.now()})
+# Ne
+
+@login_required
+@csrf_exempt
+def update_report(request, report_id):
+    """Update an existing report - Moderator only"""
+    if request.method != 'PUT':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    
+    # Check if user is a moderator
+    if not Moderator.objects.filter(user=request.user).exists():
+        return JsonResponse({'success': False, 'error': 'Only moderators can update reports'}, status=403)
+    
+    try:
+        # Get the report
+        report = get_object_or_404(Reports, id=report_id)
+        
+        # Parse JSON data
+        data = json.loads(request.body)
+        
+        # Validate and update fields
+        valid_fields = [
+            'systolic_blood_pressure', 'diastolic_blood_pressure', 'pulse', 'heart_rate',
+            'spo2', 'temperature', 'blood_glucose', 'glucose_unit', 'symptoms',
+            'blood_pressure', 'irregular_heartbeat', 'hand_shaking', 'battery_level'
+        ]
+        
+        errors = {}
+        
+        # Validate numeric fields
+        numeric_fields = {
+            'systolic_blood_pressure': (70, 250),
+            'diastolic_blood_pressure': (40, 150),
+            'pulse': (30, 200),
+            'heart_rate': (30, 200),
+            'spo2': (70, 100),
+            'temperature': (95.0, 110.0),
+            'blood_glucose': (50, 500)
+        }
+        
+        for field, value in data.items():
+            if field in valid_fields:
+                if field in numeric_fields and value:
+                    try:
+                        num_value = float(value)
+                        min_val, max_val = numeric_fields[field]
+                        if not (min_val <= num_value <= max_val):
+                            errors[field] = f'Value must be between {min_val} and {max_val}'
+                    except ValueError:
+                        errors[field] = 'Must be a valid number'
+                
+                # Update the field if no errors
+                if field not in errors:
+                    setattr(report, field, value)
+        
+        if errors:
+            return JsonResponse({'success': False, 'errors': errors}, status=400)
+        
+        # Save the updated report
+        report.save()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Report updated successfully',
+            'report': model_to_dict(report)
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+def create_report_manual(request):
+    """Create a new report manually - Moderator only"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    
+    # Check if user is a moderator
+    if not Moderator.objects.filter(user=request.user).exists():
+        return JsonResponse({'success': False, 'error': 'Only moderators can create reports'}, status=403)
+    
+    try:
+        # Parse JSON data
+        data = json.loads(request.body)
+        
+        # Get patient
+        patient_id = data.get('patient_id')
+        if not patient_id:
+            return JsonResponse({'success': False, 'error': 'Patient ID is required'}, status=400)
+        
+        patient = get_object_or_404(Patient, id=patient_id)
+        
+        # Validate numeric fields
+        numeric_fields = {
+            'systolic_blood_pressure': (70, 250),
+            'diastolic_blood_pressure': (40, 150),
+            'pulse': (30, 200),
+            'heart_rate': (30, 200),
+            'spo2': (70, 100),
+            'temperature': (95.0, 110.0),
+            'blood_glucose': (50, 500)
+        }
+        
+        errors = {}
+        report_fields = {}
+        
+        # Process and validate fields
+        for field, value in data.items():
+            if field == 'patient_id':
+                continue
+                
+            if field in numeric_fields and value:
+                try:
+                    num_value = float(value)
+                    min_val, max_val = numeric_fields[field]
+                    if not (min_val <= num_value <= max_val):
+                        errors[field] = f'Value must be between {min_val} and {max_val}'
+                    else:
+                        report_fields[field] = str(num_value)
+                except ValueError:
+                    errors[field] = 'Must be a valid number'
+            elif value:  # Non-numeric fields
+                report_fields[field] = str(value)
+        
+        if errors:
+            return JsonResponse({'success': False, 'errors': errors}, status=400)
+        
+        # Create combined blood pressure field if both systolic and diastolic are provided
+        if 'systolic_blood_pressure' in report_fields and 'diastolic_blood_pressure' in report_fields:
+            report_fields['blood_pressure'] = f"{report_fields['systolic_blood_pressure']}/{report_fields['diastolic_blood_pressure']}"
+        
+        # Set default values for required fields
+        report_fields.update({
+            'measurement_timestamp': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'created_at_device': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'data_type': 'manual_entry',
+            'is_test': 'false'
+        })
+        
+        # Create the report
+        report = Reports.objects.create(patient=patient, **report_fields)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Report created successfully',
+            'report': model_to_dict(report)
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def get_recent_reports(request, patient_id):
+    """Get recent reports for a patient - for edit dropdown"""
+    # Check if user is a moderator
+    if not Moderator.objects.filter(user=request.user).exists():
+        return JsonResponse({'success': False, 'error': 'Only moderators can access this endpoint'}, status=403)
+    
+    try:
+        patient = get_object_or_404(Patient, id=patient_id)
+        
+        # Get reports from last 30 days
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        reports = Reports.objects.filter(
+            patient=patient,
+            created_at__gte=thirty_days_ago
+        ).order_by('-created_at')[:20]  # Limit to 20 most recent
+        
+        reports_data = []
+        for report in reports:
+            # Create a summary of vital signs for display
+            vitals_summary = []
+            if report.systolic_blood_pressure and report.diastolic_blood_pressure:
+                vitals_summary.append(f"BP: {report.systolic_blood_pressure}/{report.diastolic_blood_pressure}")
+            elif report.blood_pressure:
+                vitals_summary.append(f"BP: {report.blood_pressure}")
+            
+            if report.pulse:
+                vitals_summary.append(f"HR: {report.pulse}")
+            elif report.heart_rate:
+                vitals_summary.append(f"HR: {report.heart_rate}")
+            
+            if report.spo2:
+                vitals_summary.append(f"SpO2: {report.spo2}%")
+            
+            if report.temperature:
+                vitals_summary.append(f"Temp: {report.temperature}°F")
+            
+            reports_data.append({
+                'id': report.id,
+                'created_at': report.created_at.strftime('%m/%d/%Y %H:%M'),
+                'vitals_summary': ', '.join(vitals_summary) if vitals_summary else 'No vitals recorded',
+                'data': model_to_dict(report)
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'reports': reports_data
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
