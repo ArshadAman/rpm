@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
+from twilio.twiml.voice_response import VoiceResponse
 
 from rpm_users.models import Patient
 from .models import CallSchedule, CallSession, CallQuestionTemplate
@@ -362,29 +363,36 @@ def twilio_webhook(request, call_session_id):
     """
     Twilio webhook to handle call conversation flow
     """
-    call_session = get_object_or_404(CallSession, id=call_session_id)
-    twilio_service = TwilioCallService()
-    
-    # Get current step from query params
-    step = int(request.GET.get('step', 0))
-    response_type = request.GET.get('response', None)
-    
-    # Process response if this is a callback with response data
-    if response_type:
-        if response_type == 'dtmf':
-            digits = request.POST.get('Digits', '')
-            twilio_service.process_response(call_session, step, digits, 'dtmf')
-        elif response_type == 'speech':
-            recording_url = request.POST.get('RecordingUrl', '')
-            twilio_service.process_response(call_session, step, recording_url, 'speech')
+    try:
+        call_session = get_object_or_404(CallSession, id=call_session_id)
+        twilio_service = TwilioCallService()
         
-        # Move to next step
-        step += 1
-    
-    # Generate TwiML for current step
-    twiml = twilio_service.create_conversation_twiml(call_session, step)
-    
-    return HttpResponse(twiml, content_type='text/xml')
+        # Get current step from query params
+        step = int(request.GET.get('step', 0))
+        response_type = request.GET.get('response', None)
+        
+        # Process response if this is a callback with response data
+        if response_type:
+            if response_type == 'dtmf':
+                digits = request.POST.get('Digits', '')
+                twilio_service.process_response(call_session, step, digits, 'dtmf')
+            elif response_type == 'speech':
+                recording_url = request.POST.get('RecordingUrl', '')
+                twilio_service.process_response(call_session, step, recording_url, 'speech')
+            
+            # Move to next step
+            step += 1
+        
+        # Generate TwiML for current step
+        twiml = twilio_service.create_conversation_twiml(call_session, step)
+        return HttpResponse(twiml, content_type='text/xml')
+        
+    except Exception as e:
+        # Always return valid TwiML on error to prevent 64KB limit issues
+        response = VoiceResponse()
+        response.say("Sorry, there was an error. Please try again later.", voice='alice')
+        response.hangup()
+        return HttpResponse(str(response), content_type='text/xml')
 
 
 @csrf_exempt
