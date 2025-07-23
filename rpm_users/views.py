@@ -1066,3 +1066,157 @@ def create_staff_user(request):
         'success': False,
         'error': 'Invalid request method.'
     })
+
+
+# Moderator Shortcut API Views
+@login_required
+def get_shortcuts(request):
+    """Get all shortcuts for the current moderator"""
+    try:
+        moderator = get_object_or_404(Moderator, user=request.user)
+        from .models import ModeratorShortcut
+        shortcuts = ModeratorShortcut.objects.filter(moderator=moderator)
+        shortcuts_data = [
+            {
+                'id': shortcut.id,
+                'shortcut_key': shortcut.shortcut_key,
+                'description': shortcut.description,
+                'content': shortcut.content
+            }
+            for shortcut in shortcuts
+        ]
+        return JsonResponse({'shortcuts': shortcuts_data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+def create_shortcut(request):
+    """Create a new shortcut for the current moderator"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+        
+    try:
+        moderator = get_object_or_404(Moderator, user=request.user)
+        from .models import ModeratorShortcut
+        
+        data = json.loads(request.body)
+        shortcut_key = data.get('shortcut_key', '').strip()
+        description = data.get('description', '').strip()
+        content = data.get('content', '').strip()
+        
+        if not all([shortcut_key, description, content]):
+            return JsonResponse({'error': 'All fields are required'}, status=400)
+        
+        # Check if shortcut already exists for this moderator
+        if ModeratorShortcut.objects.filter(moderator=moderator, shortcut_key=shortcut_key).exists():
+            return JsonResponse({'error': 'Shortcut key already exists'}, status=400)
+        
+        shortcut = ModeratorShortcut.objects.create(
+            moderator=moderator,
+            shortcut_key=shortcut_key,
+            description=description,
+            content=content
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'shortcut': {
+                'id': shortcut.id,
+                'shortcut_key': shortcut.shortcut_key,
+                'description': shortcut.description,
+                'content': shortcut.content
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+def update_shortcut(request, shortcut_id):
+    """Update an existing shortcut"""
+    if request.method != 'PUT':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+        
+    try:
+        moderator = get_object_or_404(Moderator, user=request.user)
+        from .models import ModeratorShortcut
+        shortcut = get_object_or_404(ModeratorShortcut, id=shortcut_id, moderator=moderator)
+        
+        data = json.loads(request.body)
+        shortcut_key = data.get('shortcut_key', '').strip()
+        description = data.get('description', '').strip()
+        content = data.get('content', '').strip()
+        
+        if not all([shortcut_key, description, content]):
+            return JsonResponse({'error': 'All fields are required'}, status=400)
+        
+        # Check if new shortcut key conflicts with existing ones (excluding current)
+        if (shortcut_key != shortcut.shortcut_key and 
+            ModeratorShortcut.objects.filter(moderator=moderator, shortcut_key=shortcut_key).exists()):
+            return JsonResponse({'error': 'Shortcut key already exists'}, status=400)
+        
+        shortcut.shortcut_key = shortcut_key
+        shortcut.description = description
+        shortcut.content = content
+        shortcut.save()
+        
+        return JsonResponse({
+            'success': True,
+            'shortcut': {
+                'id': shortcut.id,
+                'shortcut_key': shortcut.shortcut_key,
+                'description': shortcut.description,
+                'content': shortcut.content
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+def delete_shortcut(request, shortcut_id):
+    """Delete a shortcut"""
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+        
+    try:
+        moderator = get_object_or_404(Moderator, user=request.user)
+        from .models import ModeratorShortcut
+        shortcut = get_object_or_404(ModeratorShortcut, id=shortcut_id, moderator=moderator)
+        shortcut.delete()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def search_shortcuts(request):
+    """Search shortcuts by key for autocomplete"""
+    try:
+        moderator = get_object_or_404(Moderator, user=request.user)
+        from .models import ModeratorShortcut
+        query = request.GET.get('q', '').strip()
+        
+        if not query:
+            return JsonResponse({'shortcuts': []})
+        
+        shortcuts = ModeratorShortcut.objects.filter(
+            moderator=moderator,
+            shortcut_key__icontains=query
+        )[:10]  # Limit to 10 results
+        
+        shortcuts_data = [
+            {
+                'shortcut_key': shortcut.shortcut_key,
+                'description': shortcut.description,
+                'content': shortcut.content
+            }
+            for shortcut in shortcuts
+        ]
+        return JsonResponse({'shortcuts': shortcuts_data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

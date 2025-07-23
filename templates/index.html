@@ -758,6 +758,276 @@
         padding: 8px 16px;
       }
     }
+
+    /* Modal and Form Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+      transform: scale(0.9) translateY(20px);
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-title {
+      color: white;
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-label {
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 12px 15px;
+      color: white;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.2);
+    }
+
+    .form-input::placeholder {
+      color: rgba(224, 195, 252, 0.6);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      justify-content: flex-end;
+      margin-top: 25px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(121, 40, 202, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .error-message {
+      color: var(--error);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .success-message {
+      color: var(--success);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .dropdown-container {
+      position: relative;
+      margin-bottom: 25px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .report-dropdown {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 12px 15px;
+      color: white;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .report-dropdown:focus {
+      border-color: #FF0080;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+    }
+
+    .report-dropdown option {
+      background: var(--background);
+      color: white;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .toolbar-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      margin-left: 8px;
+      backdrop-filter: blur(10px);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    #edit-report-btn {
+      background: linear-gradient(135deg, #FF0080, #7928CA);
+    }
+    
+    #add-report-btn {
+      background: linear-gradient(135deg, #00CC88, #7928CA);
+    }
+
+    .toolbar-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    #edit-report-btn:hover {
+      background: linear-gradient(135deg, #FF2A94, #8B3BD8);
+    }
+    
+    #add-report-btn:hover {
+      background: linear-gradient(135deg, #1AD99C, #8B3BD8);
+    }
+
+    .toolbar-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      pointer-events: none;
+    }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -872,7 +1142,19 @@
       <div class="content">
         <!-- Results Tab -->
         <div id="results" class="table-container">
-          <h3>Vitals Summary</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3>Vitals Summary</h3>
+            <div class="report-toolbar" style="display: flex; gap: 8px;">
+              <button id="edit-report-btn" class="toolbar-btn" title="Edit Report (Ctrl+E)">
+                <i class="fas fa-edit"></i>
+                <span>Edit</span>
+              </button>
+              <button id="add-report-btn" class="toolbar-btn" title="Add New Report (Ctrl+N)">
+                <i class="fas fa-plus"></i>
+                <span>Add</span>
+              </button>
+            </div>
+          </div>
           <div class="scrollable">
             <table>
               <thead>
@@ -1179,13 +1461,19 @@
 
   <script>
     function showTab(tabId) {
+      console.log('showTab called with:', tabId); // Debug log
       const tabs = document.querySelectorAll(".table-container");
       const tabButtons = document.querySelectorAll(".tabs div");
 
       tabs.forEach((tab) => (tab.style.display = "none"));
       tabButtons.forEach((button) => button.classList.remove("active"));
 
-      document.getElementById(tabId).style.display = "block";
+      const targetTab = document.getElementById(tabId);
+      if (targetTab) {
+        targetTab.style.display = "block";
+      } else {
+        console.error('Tab not found:', tabId); // Debug log
+      }
       
       // Find the tab button by matching onclick attribute and set it as active
       tabButtons.forEach((button) => {
@@ -1264,97 +1552,18 @@
           const index = this.getAttribute('data-index');
           const doc = window.documentations[index];
           displayDocumentationDetails(doc);
-
-      // Get the patient ID from the template
-      const patientId = "{{ patient.id }}";
-
-      // Build URL - now always fetches all documents
-      let url = `/view_documentation/${patientId}/`;
-      // Removed date parameter from URL construction: if (useFilter && date) { url += `?date=${date}`; }
-
-      fetch(url, {
-        method: 'GET',
-        credentials: 'same-origin',
-        headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          if (!data.documentations || data.documentations.length === 0) {
-            docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
-          } else {
-            // Sort documentations by created_at descending (newest first)
-            // Create an array to store the documentation data for easy access
-            window.documentations = data.documentations;
-
-            // Create the document list HTML
-            let listContent = '';
-            data.documentations.forEach((doc, index) => {
-              const createdAtDate = new Date(doc.created_at);
-              const formattedCreatedAt = `${String(createdAtDate.getMonth() + 1).padStart(2, '0')}/${String(createdAtDate.getDate()).padStart(2, '0')}/${createdAtDate.getFullYear()}`;
-
-              listContent += `
-                  <div class="doc-item" data-index="${index}" style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: background 0.2s ease; position: relative;">
-                    <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${doc.title}</h4>
-                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 3px 0;">
-                      ${doc.written_by}                   
-                    </p>
-                    <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
-                      Date of Service: ${doc.doc_report_date}
-                    </p>
-                  </div>
-                `;
-            });
-            docListContainer.innerHTML = listContent;
-
-            // Add click event listeners to each document item
-            document.querySelectorAll('.doc-item').forEach(item => {
-              item.addEventListener('click', function () {
-                // Remove selected class from all items
-                document.querySelectorAll('.doc-item').forEach(i => {
-                  i.style.background = '';
-                  i.style.borderLeft = '';
-                });
-
-                // Add selected styling to the clicked item
-                this.style.background = 'rgba(121, 40, 202, 0.2)';
-                this.style.borderLeft = '4px solid #7928CA';
-
-                // Get the documentation index
-                const index = this.getAttribute('data-index');
-                const doc = window.documentations[index];
-
-                // Update the documentation details panel
-                displayDocumentationDetails(doc);
-              });
-            });
-
-            // Select the first document by default
-            if (document.querySelector('.doc-item')) {
-              document.querySelector('.doc-item').click();
-            }
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching documentation:", error);
-          docListContainer.innerHTML = `<div style='padding: 15px; text-align: center; color: #FF4E4E;'>Error: ${error.message}</div>`;
         });
       });
+
+      // Select the first document by default
       if (document.querySelector('.doc-item')) {
         document.querySelector('.doc-item').click();
       }
     }
   })
   .catch((error) => {
-    docListContainer.innerHTML = "<div style='padding: 15px; text-align: center; color: rgba(255, 255, 255, 0.7);'>Error loading documentation. Please try again later.</div>";
-    console.error('Error fetching documentation:', error);
+    console.error("Error fetching documentation:", error);
+    docListContainer.innerHTML = `<div style='padding: 15px; text-align: center; color: #FF4E4E;'>Error: ${error.message}</div>`;
   });
 }
 
@@ -1438,6 +1647,119 @@
 
     detailContent += '</div>';
     docDetailsContainer.innerHTML = detailContent;
+  }
+
+  // Function to fetch and display reports in the vitals table
+  function fetchAndDisplayReports(patientId) {
+    fetch(`/reports/get-all-reports/${patientId}/`)
+      .then(response => response.json())
+      .then(data => {
+        if (!data.reports || data.reports.length === 0) {
+          console.log("No reports found for this patient");
+          // Show empty state message
+          const tableBody = document.querySelector('#results table tbody');
+          tableBody.innerHTML = '<tr><td colspan="100%" style="text-align: center; color: rgba(255, 255, 255, 0.5); padding: 40px;">No vital signs data available</td></tr>';
+          return;
+        }
+
+        console.log("Reports found:", data.reports.length);
+
+        // Get the table elements
+        const tableHeader = document.querySelector('#results table thead tr');
+        const tableBody = document.querySelector('#results table tbody');
+        
+        // Clear existing content
+        tableBody.innerHTML = '';
+
+        // Define vital signs to display
+        const vitalSigns = [
+          { name: 'Systolic BP (mmHg)', key: 'systolic_blood_pressure', fallback: 'blood_pressure' },
+          { name: 'Diastolic BP (mmHg)', key: 'diastolic_blood_pressure' },
+          { name: 'Heart Rate (bpm)', key: 'pulse', fallback: 'heart_rate' },
+          { name: 'SpO2 (%)', key: 'spo2' },
+          { name: 'Temperature (°F)', key: 'temperature' },
+          { name: 'Blood Glucose', key: 'blood_glucose' }
+        ];
+
+        // Create rows for each vital sign
+        vitalSigns.forEach(vital => {
+          const row = document.createElement('tr');
+          const firstCell = document.createElement('td');
+          firstCell.className = 'fixed-left';
+          firstCell.style.fontWeight = '600';
+          firstCell.style.color = '#FF0080';
+          firstCell.textContent = vital.name;
+          row.appendChild(firstCell);
+
+          // Add cells for each report
+          data.reports.forEach(report => {
+            const cell = document.createElement('td');
+            let value = report[vital.key];
+            
+            // Try fallback key if primary key is empty
+            if ((!value || value === '') && vital.fallback) {
+              value = report[vital.fallback];
+            }
+            
+            // Handle blood pressure display
+            if (vital.key === 'systolic_blood_pressure' && report.blood_pressure && report.blood_pressure.includes('/')) {
+              value = report.blood_pressure.split('/')[0];
+            } else if (vital.key === 'diastolic_blood_pressure' && report.blood_pressure && report.blood_pressure.includes('/')) {
+              value = report.blood_pressure.split('/')[1];
+            }
+            
+            cell.textContent = value || '---';
+            cell.style.textAlign = 'center';
+            
+            // Add color coding for abnormal values
+            if (value && value !== '---') {
+              if (vital.key === 'systolic_blood_pressure' && parseInt(value) > 140) {
+                cell.style.color = '#FF4E4E';
+                cell.style.fontWeight = '600';
+              } else if (vital.key === 'pulse' || vital.key === 'heart_rate') {
+                const hr = parseInt(value);
+                if (hr > 100 || hr < 60) {
+                  cell.style.color = '#FF4E4E';
+                  cell.style.fontWeight = '600';
+                }
+              } else if (vital.key === 'spo2' && parseInt(value) < 95) {
+                cell.style.color = '#FF4E4E';
+                cell.style.fontWeight = '600';
+              }
+            }
+            
+            row.appendChild(cell);
+          });
+
+          tableBody.appendChild(row);
+        });
+
+        // Update the table header with dates
+        // Keep the first header cell (Vital Signs)
+        const firstHeader = tableHeader.querySelector('th');
+        tableHeader.innerHTML = '';
+        tableHeader.appendChild(firstHeader);
+
+        // Add new header cells with dates
+        data.reports.forEach(report => {
+          const date = new Date(report.created_at);
+          const formattedDate = `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+          const formattedTime = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+          
+          const th = document.createElement('th');
+          th.innerHTML = `${formattedDate}<br><small style="font-size: 12px; opacity: 0.8;">${formattedTime}</small>`;
+          th.style.textAlign = 'center';
+          th.style.minWidth = '100px';
+          tableHeader.appendChild(th);
+        });
+
+        console.log("Reports table updated successfully");
+      })
+      .catch(error => {
+        console.error("Error fetching reports:", error);
+        const tableBody = document.querySelector('#results table tbody');
+        tableBody.innerHTML = '<tr><td colspan="100%" style="text-align: center; color: #FF4E4E; padding: 40px;">Error loading vital signs data</td></tr>';
+      });
   }
 
   // Call this function when the page loads
@@ -1806,7 +2128,722 @@
         });
       }
     });
+
+    // Report Management Functions
+    let currentEditingReportId = null;
+    const patientId = "{{ patient.id }}";
+
+    // Show form-specific messages
+    function showFormMessage(message, type = 'info') {
+      // Remove any existing form messages
+      const existingMessage = document.querySelector('.form-message');
+      if (existingMessage) {
+        existingMessage.remove();
+      }
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'form-message';
+      messageDiv.style.cssText = `
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+        font-size: 14px;
+        font-weight: 500;
+        ${type === 'success' ? 'background: rgba(0, 204, 136, 0.2); color: #00CC88; border: 1px solid rgba(0, 204, 136, 0.3);' : 
+          type === 'error' ? 'background: rgba(255, 78, 78, 0.2); color: #FF4E4E; border: 1px solid rgba(255, 78, 78, 0.3);' :
+          'background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.2);'}
+      `;
+      messageDiv.textContent = message;
+      
+      const dropdownContainer = document.querySelector('.dropdown-container');
+      if (dropdownContainer) {
+        dropdownContainer.appendChild(messageDiv);
+        
+        // Auto-remove after 3 seconds for success/info messages
+        if (type !== 'error') {
+          setTimeout(() => {
+            if (messageDiv) {
+              messageDiv.remove();
+            }
+          }, 3000);
+        }
+      }
+    }
+
+    // Show notification
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.background = type === 'success' ? 
+        'linear-gradient(135deg, #00CC88, #7928CA)' : 
+        'linear-gradient(135deg, #FF4E4E, #FF0080)';
+      notification.style.transform = 'translateX(0)';
+      
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+      }, 3000);
+    }
+
+    // Clear form errors
+    function clearFormErrors(formPrefix) {
+      document.querySelectorAll(`[id^="${formPrefix}-"][id$="-error"]`).forEach(error => {
+        error.textContent = '';
+      });
+    }
+
+    // Display form errors
+    function displayFormErrors(errors, formPrefix) {
+      Object.keys(errors).forEach(field => {
+        const errorElement = document.getElementById(`${formPrefix}-${field.replace('_', '-')}-error`);
+        if (errorElement) {
+          errorElement.textContent = errors[field];
+        }
+      });
+    }
+
+    // CSRF Token
+    function getCsrfToken() {
+      return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
+    // Open Edit Modal
+    async function openEditModal() {
+      const modal = document.getElementById('edit-report-modal');
+      const select = document.getElementById('report-select');
+      const editBtn = document.getElementById('edit-report-btn');
+      const formContainer = document.getElementById('edit-form-container');
+      const saveBtn = document.getElementById('save-edit-btn');
+      
+      // Check if button is disabled
+      if (editBtn.disabled) {
+        showNotification('No reports available to edit', 'error');
+        return;
+      }
+      
+      // Initialize form state - disabled until report is selected
+      formContainer.style.opacity = '0.5';
+      formContainer.style.pointerEvents = 'none';
+      saveBtn.disabled = true;
+      
+      // Clear any previous form data
+      document.getElementById('edit-report-form').reset();
+      clearFormErrors('edit');
+      currentEditingReportId = null;
+      
+      // Show loading in dropdown
+      select.innerHTML = '<option value="">Loading reports...</option>';
+      modal.classList.add('active');
+      
+      try {
+        const response = await fetch(`/reports/get-recent-reports/${patientId}/`);
+        const data = await response.json();
+        
+        if (data.success && data.reports.length > 0) {
+          select.innerHTML = '<option value="">Select a report to edit...</option>';
+          data.reports.forEach(report => {
+            const option = document.createElement('option');
+            option.value = report.id;
+            
+            // Create a more readable display format
+            const date = new Date(report.created_at).toLocaleDateString();
+            const time = new Date(report.created_at).toLocaleTimeString();
+            
+            // Extract key vitals for display
+            const systolic = report.data.systolic_blood_pressure || '---';
+            const diastolic = report.data.diastolic_blood_pressure || '---';
+            const pulse = report.data.pulse || report.data.heart_rate || '---';
+            
+            option.textContent = `${date} ${time} - BP: ${systolic}/${diastolic}, Pulse: ${pulse}`;
+            option.dataset.reportData = JSON.stringify(report.data);
+            select.appendChild(option);
+          });
+          
+          showFormMessage('Select a report from the dropdown above to begin editing.', 'info');
+        } else {
+          select.innerHTML = '<option value="">No recent reports available</option>';
+          showFormMessage('No recent reports found to edit.', 'error');
+        }
+      } catch (error) {
+        console.error('Error loading reports:', error);
+        select.innerHTML = '<option value="">Error loading reports</option>';
+        showFormMessage('Error loading reports. Please try again.', 'error');
+      }
+    }
+
+    // Populate edit form
+    function populateEditForm(reportData) {
+      document.getElementById('edit-systolic').value = reportData.systolic_blood_pressure || '';
+      document.getElementById('edit-diastolic').value = reportData.diastolic_blood_pressure || '';
+      document.getElementById('edit-pulse').value = reportData.pulse || reportData.heart_rate || '';
+      document.getElementById('edit-spo2').value = reportData.spo2 || '';
+      document.getElementById('edit-temperature').value = reportData.temperature || '';
+      document.getElementById('edit-glucose').value = reportData.blood_glucose || '';
+      document.getElementById('edit-irregular').value = reportData.irregular_heartbeat || '';
+    }
+
+    // Close Edit Modal
+    function closeEditModal() {
+      document.getElementById('edit-report-modal').classList.remove('active');
+      document.getElementById('edit-report-form').reset();
+      clearFormErrors('edit');
+      currentEditingReportId = null;
+      
+      // Reset form state
+      const formContainer = document.getElementById('edit-form-container');
+      const saveBtn = document.getElementById('save-edit-btn');
+      formContainer.style.opacity = '0.5';
+      formContainer.style.pointerEvents = 'none';
+      saveBtn.disabled = true;
+      
+      // Remove any form messages
+      const formMessage = document.querySelector('.form-message');
+      if (formMessage) {
+        formMessage.remove();
+      }
+    }
+
+    // Open Add Modal
+    function openAddModal() {
+      document.getElementById('add-report-modal').classList.add('active');
+    }
+
+    // Close Add Modal
+    function closeAddModal() {
+      document.getElementById('add-report-modal').classList.remove('active');
+      document.getElementById('add-report-form').reset();
+      clearFormErrors('add');
+    }
+
+    // Handle report selection for editing - with null check
+    function setupReportSelectListener() {
+      const reportSelect = document.getElementById('report-select');
+      if (reportSelect) {
+        reportSelect.addEventListener('change', function() {
+          const selectedOption = this.options[this.selectedIndex];
+          const formContainer = document.getElementById('edit-form-container');
+          const saveBtn = document.getElementById('save-edit-btn');
+          
+          if (selectedOption.value && selectedOption.dataset.reportData) {
+            // Enable the form
+            formContainer.style.opacity = '1';
+            formContainer.style.pointerEvents = 'auto';
+            saveBtn.disabled = false;
+            
+            // Populate the form
+            currentEditingReportId = selectedOption.value;
+            const reportData = JSON.parse(selectedOption.dataset.reportData);
+            populateEditForm(reportData);
+            clearFormErrors('edit');
+            
+            // Show success message
+            showFormMessage('Form populated with report data. You can now edit the values.', 'success');
+          } else {
+            // Disable the form
+            formContainer.style.opacity = '0.5';
+            formContainer.style.pointerEvents = 'none';
+            saveBtn.disabled = true;
+            
+            // Clear the form
+            currentEditingReportId = null;
+            const editForm = document.getElementById('edit-report-form');
+            if (editForm) {
+              editForm.reset();
+            }
+            clearFormErrors('edit');
+            
+            if (this.value === '') {
+              showFormMessage('Please select a report to edit.', 'info');
+            }
+          }
+        });
+      }
+    }
+
+    // Handle Edit Form Submission - with null check
+    function setupEditFormListener() {
+      const editForm = document.getElementById('edit-report-form');
+      if (editForm) {
+        editForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          if (!currentEditingReportId) {
+            showNotification('Please select a report to edit', 'error');
+            return;
+          }
+
+          const submitBtn = document.getElementById('save-edit-btn');
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<span class="loading-spinner"></span> Saving...';
+          submitBtn.disabled = true;
+      
+      clearFormErrors('edit');
+
+      // Helper function to safely parse numeric values
+      function parseNumericValue(value, isInteger = false) {
+        if (!value || value === '') return null;
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? null : (isInteger ? Math.round(parsed) : parsed);
+      }
+
+      const formData = {
+        systolic_blood_pressure: parseNumericValue(document.getElementById('edit-systolic').value, true),
+        diastolic_blood_pressure: parseNumericValue(document.getElementById('edit-diastolic').value, true),
+        pulse: parseNumericValue(document.getElementById('edit-pulse').value, true),
+        spo2: parseNumericValue(document.getElementById('edit-spo2').value, true),
+        temperature: parseNumericValue(document.getElementById('edit-temperature').value),
+        blood_glucose: parseNumericValue(document.getElementById('edit-glucose').value, true),
+        irregular_heartbeat: document.getElementById('edit-irregular').value || null
+      };
+
+      try {
+        const response = await fetch(`/reports/update-report/${currentEditingReportId}/`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showNotification('Report updated successfully!');
+          closeEditModal();
+          // Refresh the vitals table
+          fetchAndDisplayReports(patientId);
+        } else {
+          if (data.errors) {
+            displayFormErrors(data.errors, 'edit');
+          } else {
+            showNotification(data.error || 'Failed to update report', 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error updating report:', error);
+        showNotification('Error updating report', 'error');
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+        });
+      }
+    }
+
+    // Handle Add Form Submission - with null check
+    function setupAddFormListener() {
+      const addForm = document.getElementById('add-report-form');
+      if (addForm) {
+        addForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const submitBtn = document.getElementById('save-add-btn');
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<span class="loading-spinner"></span> Adding...';
+          submitBtn.disabled = true;
+      
+      clearFormErrors('add');
+
+      // Helper function to safely parse numeric values
+      function parseNumericValue(value, isInteger = false) {
+        if (!value || value === '') return null;
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? null : (isInteger ? Math.round(parsed) : parsed);
+      }
+
+      const formData = {
+        patient_id: patientId,
+        systolic_blood_pressure: parseNumericValue(document.getElementById('add-systolic').value, true),
+        diastolic_blood_pressure: parseNumericValue(document.getElementById('add-diastolic').value, true),
+        pulse: parseNumericValue(document.getElementById('add-pulse').value, true),
+        spo2: parseNumericValue(document.getElementById('add-spo2').value, true),
+        temperature: parseNumericValue(document.getElementById('add-temperature').value),
+        blood_glucose: parseNumericValue(document.getElementById('add-glucose').value, true),
+        irregular_heartbeat: document.getElementById('add-irregular').value || null
+      };
+
+      try {
+        const response = await fetch('/reports/create-report-manual/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showNotification('Report added successfully!');
+          closeAddModal();
+          // Refresh the vitals table
+          fetchAndDisplayReports(patientId);
+        } else {
+          if (data.errors) {
+            displayFormErrors(data.errors, 'add');
+          } else {
+            showNotification(data.error || 'Failed to add report', 'error');
+          }
+        }
+      } catch (error) {
+        console.error('Error adding report:', error);
+        showNotification('Error adding report', 'error');
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+        });
+      }
+    }
+
+    // Event listeners for toolbar buttons - ensure DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM Content Loaded - Setting up button event listeners'); // Debug log
+      
+      // Attach event listeners
+      const editBtn = document.getElementById('edit-report-btn');
+      const addBtn = document.getElementById('add-report-btn');
+      
+      console.log('Edit button found:', !!editBtn); // Debug log
+      console.log('Add button found:', !!addBtn); // Debug log
+      
+      if (editBtn) {
+        editBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Edit button clicked - event triggered'); // Debug log
+          openEditModal();
+        });
+        console.log('Edit button event listener attached'); // Debug log
+      }
+      
+      if (addBtn) {
+        addBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Add button clicked - event triggered'); // Debug log
+          openAddModal();
+        });
+        console.log('Add button event listener attached'); // Debug log
+      }
+      
+      // Initial call to set button states
+      updateToolbarButtons();
+      
+      // Setup form event listeners
+      setupReportSelectListener();
+      setupEditFormListener();
+      setupAddFormListener();
+      setupModalOverlayListeners();
+    });
+
+    // Close modals on overlay click - with null check
+    function setupModalOverlayListeners() {
+      const modalOverlays = document.querySelectorAll('.modal-overlay');
+      if (modalOverlays.length > 0) {
+        modalOverlays.forEach(overlay => {
+          overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+              if (this.id === 'edit-report-modal') {
+                closeEditModal();
+              } else if (this.id === 'add-report-modal') {
+                closeAddModal();
+              }
+            }
+          });
+        });
+      }
+    }
+
+    // Enable/disable edit button based on data availability
+    function updateToolbarButtons() {
+      const editBtn = document.getElementById('edit-report-btn');
+      const addBtn = document.getElementById('add-report-btn');
+      const hasData = document.querySelector('#results table tbody tr:not(.no-data)');
+      
+      console.log('updateToolbarButtons called, hasData:', !!hasData); // Debug log
+      
+      // Edit button - enable only if there's data
+      if (editBtn) {
+        if (hasData) {
+          editBtn.style.opacity = '1';
+          editBtn.disabled = false;
+          editBtn.style.pointerEvents = 'auto';
+        } else {
+          editBtn.style.opacity = '0.5';
+          editBtn.disabled = true;
+          editBtn.style.pointerEvents = 'none';
+        }
+      }
+      
+      // Add button - always enabled
+      if (addBtn) {
+        addBtn.style.opacity = '1';
+        addBtn.disabled = false;
+        addBtn.style.pointerEvents = 'auto';
+      }
+    }
+
+    // Call updateToolbarButtons when reports are loaded
+    const originalFetchAndDisplayReports = fetchAndDisplayReports;
+    if (typeof fetchAndDisplayReports === 'function') {
+      window.fetchAndDisplayReports = function(patientId) {
+        originalFetchAndDisplayReports(patientId);
+        setTimeout(updateToolbarButtons, 100); // Small delay to ensure DOM is updated
+      };
+    }
+
+    // Initial call to set button states
+    document.addEventListener('DOMContentLoaded', updateToolbarButtons);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // Escape key to close modals
+      if (e.key === 'Escape') {
+        if (document.getElementById('edit-report-modal').classList.contains('active')) {
+          closeEditModal();
+        }
+        if (document.getElementById('add-report-modal').classList.contains('active')) {
+          closeAddModal();
+        }
+      }
+      
+      // Ctrl+E to open edit modal
+      if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        openEditModal();
+      }
+      
+      // Ctrl+N to open add modal
+      if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        openAddModal();
+      }
+    });
+
+    // Real-time validation for numeric fields
+    function addNumericValidation(inputId, min, max, unit = '') {
+      const input = document.getElementById(inputId);
+      const errorElement = document.getElementById(inputId.replace(/^(edit|add)-/, '$1-') + '-error');
+      
+      if (!input || !errorElement) return;
+      
+      input.addEventListener('blur', function() {
+        const value = parseFloat(this.value);
+        if (this.value && (isNaN(value) || value < min || value > max)) {
+          errorElement.textContent = `Value must be between ${min} and ${max}${unit}`;
+          this.style.borderColor = 'var(--error)';
+        } else {
+          errorElement.textContent = '';
+          this.style.borderColor = '';
+        }
+      });
+      
+      input.addEventListener('input', function() {
+        if (this.style.borderColor === 'var(--error)') {
+          this.style.borderColor = '';
+          errorElement.textContent = '';
+        }
+      });
+    }
+
+    // Apply validation to all numeric fields
+    const numericFields = [
+      {id: 'edit-systolic', min: 70, max: 250, unit: ' mmHg'},
+      {id: 'edit-diastolic', min: 40, max: 150, unit: ' mmHg'},
+      {id: 'edit-pulse', min: 30, max: 200, unit: ' bpm'},
+      {id: 'edit-spo2', min: 70, max: 100, unit: '%'},
+      {id: 'edit-temperature', min: 95, max: 110, unit: '°F'},
+      {id: 'edit-glucose', min: 50, max: 500, unit: ' mg/dL'},
+      {id: 'add-systolic', min: 70, max: 250, unit: ' mmHg'},
+      {id: 'add-diastolic', min: 40, max: 150, unit: ' mmHg'},
+      {id: 'add-pulse', min: 30, max: 200, unit: ' bpm'},
+      {id: 'add-spo2', min: 70, max: 100, unit: '%'},
+      {id: 'add-temperature', min: 95, max: 110, unit: '°F'},
+      {id: 'add-glucose', min: 50, max: 500, unit: ' mg/dL'}
+    ];
+
+    numericFields.forEach(field => {
+      addNumericValidation(field.id, field.min, field.max, field.unit);
+    });
   </script>
+
+  <!-- Edit Report Modal -->
+  <div id="edit-report-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Report</h3>
+        <button class="modal-close" onclick="closeEditModal()">&times;</button>
+      </div>
+      
+      <div class="dropdown-container">
+        <label class="form-label" style="display: block; margin-bottom: 8px; color: #FF0080; font-weight: 600;">
+          <i class="fas fa-clipboard-list" style="margin-right: 8px;"></i>
+          Step 1: Select Report to Edit
+        </label>
+        <select id="report-select" class="report-dropdown">
+          <option value="">Loading reports...</option>
+        </select>
+        <div style="margin-top: 8px; font-size: 12px; color: rgba(255, 255, 255, 0.6);">
+          Choose a report from the list to populate the form fields below
+        </div>
+      </div>
+
+      <div id="edit-form-container" style="opacity: 0.5; pointer-events: none; transition: all 0.3s ease;">
+        <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 0, 128, 0.1); border-radius: 8px; border-left: 4px solid #FF0080;">
+          <p style="margin: 0; color: #FF0080; font-size: 14px; font-weight: 600;">
+            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+            Step 2: Edit Report Values
+          </p>
+          <p style="margin: 5px 0 0 0; color: rgba(255, 255, 255, 0.7); font-size: 12px;">
+            Form will be enabled after selecting a report above
+          </p>
+        </div>
+
+      <form id="edit-report-form">
+        <div class="form-grid">
+          <!-- Blood Pressure -->
+          <div class="form-group">
+            <label class="form-label">Systolic BP (mmHg)</label>
+            <input type="number" id="edit-systolic" class="form-input" placeholder="120" min="70" max="250" step="1">
+            <div class="error-message" id="edit-systolic-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Diastolic BP (mmHg)</label>
+            <input type="number" id="edit-diastolic" class="form-input" placeholder="80" min="40" max="150" step="1">
+            <div class="error-message" id="edit-diastolic-error"></div>
+          </div>
+
+          <!-- Heart Rate -->
+          <div class="form-group">
+            <label class="form-label">Pulse/Heart Rate (bpm)</label>
+            <input type="number" id="edit-pulse" class="form-input" placeholder="72" min="30" max="200" step="1">
+            <div class="error-message" id="edit-pulse-error"></div>
+          </div>
+
+          <!-- SpO2 -->
+          <div class="form-group">
+            <label class="form-label">SpO2 (%)</label>
+            <input type="number" id="edit-spo2" class="form-input" placeholder="98" min="70" max="100" step="1">
+            <div class="error-message" id="edit-spo2-error"></div>
+          </div>
+
+          <!-- Temperature -->
+          <div class="form-group">
+            <label class="form-label">Temperature (°F)</label>
+            <input type="number" id="edit-temperature" class="form-input" placeholder="98.6" min="95" max="110" step="0.1">
+            <div class="error-message" id="edit-temperature-error"></div>
+          </div>
+
+          <!-- Blood Glucose -->
+          <div class="form-group">
+            <label class="form-label">Blood Glucose (mg/dL)</label>
+            <input type="number" id="edit-glucose" class="form-input" placeholder="100" min="50" max="500" step="1">
+            <div class="error-message" id="edit-glucose-error"></div>
+          </div>
+
+          <!-- Irregular Heartbeat -->
+          <div class="form-group">
+            <label class="form-label">Irregular Heartbeat</label>
+            <select id="edit-irregular" class="form-input">
+              <option value="">Select...</option>
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+            <div class="error-message" id="edit-irregular-error"></div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-edit-btn" disabled>
+            <i class="fas fa-save"></i>
+            Save Changes
+          </button>
+        </div>
+      </form>
+      </div> <!-- Close edit-form-container -->
+    </div>
+  </div>
+
+  <!-- Add New Report Modal -->
+  <div id="add-report-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Report</h3>
+        <button class="modal-close" onclick="closeAddModal()">&times;</button>
+      </div>
+
+      <form id="add-report-form">
+        <div class="form-grid">
+          <!-- Blood Pressure -->
+          <div class="form-group">
+            <label class="form-label">Systolic BP (mmHg)</label>
+            <input type="number" id="add-systolic" class="form-input" placeholder="120" min="70" max="250" step="1">
+            <div class="error-message" id="add-systolic-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Diastolic BP (mmHg)</label>
+            <input type="number" id="add-diastolic" class="form-input" placeholder="80" min="40" max="150" step="1">
+            <div class="error-message" id="add-diastolic-error"></div>
+          </div>
+
+          <!-- Heart Rate -->
+          <div class="form-group">
+            <label class="form-label">Pulse/Heart Rate (bpm)</label>
+            <input type="number" id="add-pulse" class="form-input" placeholder="72" min="30" max="200" step="1">
+            <div class="error-message" id="add-pulse-error"></div>
+          </div>
+
+          <!-- SpO2 -->
+          <div class="form-group">
+            <label class="form-label">SpO2 (%)</label>
+            <input type="number" id="add-spo2" class="form-input" placeholder="98" min="70" max="100" step="1">
+            <div class="error-message" id="add-spo2-error"></div>
+          </div>
+
+          <!-- Temperature -->
+          <div class="form-group">
+            <label class="form-label">Temperature (°F)</label>
+            <input type="number" id="add-temperature" class="form-input" placeholder="98.6" min="95" max="110" step="0.1">
+            <div class="error-message" id="add-temperature-error"></div>
+          </div>
+
+          <!-- Blood Glucose -->
+          <div class="form-group">
+            <label class="form-label">Blood Glucose (mg/dL)</label>
+            <input type="number" id="add-glucose" class="form-input" placeholder="100" min="50" max="500" step="1">
+            <div class="error-message" id="add-glucose-error"></div>
+          </div>
+
+          <!-- Irregular Heartbeat -->
+          <div class="form-group">
+            <label class="form-label">Irregular Heartbeat</label>
+            <select id="add-irregular" class="form-input">
+              <option value="">Select...</option>
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+            <div class="error-message" id="add-irregular-error"></div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-add-btn">
+            <i class="fas fa-plus"></i>
+            Add Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success/Error Notification -->
+  <div id="notification" style="position: fixed; top: 20px; right: 20px; z-index: 1001; padding: 15px 20px; border-radius: 10px; color: white; font-weight: 500; transform: translateX(100%); transition: transform 0.3s ease; max-width: 300px;">
+  </div>
+
 </body>
 
 </html>

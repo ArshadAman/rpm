@@ -264,3 +264,20 @@ class InterestLead(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     session_key = models.CharField(max_length=64, blank=True, null=True, db_index=True)
+
+
+class ModeratorShortcut(models.Model):
+    """Model to store personal text shortcuts for moderators"""
+    moderator = models.ForeignKey(Moderator, on_delete=models.CASCADE, related_name='shortcuts')
+    shortcut_key = models.CharField(max_length=50, help_text="The shortcut key (e.g., '.pe')")
+    description = models.CharField(max_length=255, help_text="Brief description of the shortcut")
+    content = models.TextField(help_text="The full text content that replaces the shortcut")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['moderator', 'shortcut_key']
+        ordering = ['shortcut_key']
+    
+    def __str__(self):
+        return f"{self.moderator.user.username} - {self.shortcut_key}"

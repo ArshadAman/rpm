@@ -15,4 +15,9 @@ urlpatterns = [
     path('data-telemetry/', views.data_from_mio_connect, name='data_telemetry'),
     path('edit-patient/<uuid:patient_id>/', views.edit_patient, name='edit_patient'),
     path('documentation/<int:doc_id>/view/', views.documentation_share_view, name='documentation_share_view'),
+    
+    # New report management endpoints
+    path('update-report/<int:report_id>/', views.update_report, name='update_report'),
+    path('create-report-manual/', views.create_report_manual, name='create_report_manual'),
+    path('get-recent-reports/<uuid:patient_id>/', views.get_recent_reports, name='get_recent_reports'),
 ]
