@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Doctor - {{ doctor.user.get_full_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--error), #FF6B6B);
+            z-index: 1;
+        }
+
+        .header {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            background: linear-gradient(135deg, var(--error), #FF6B6B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+        }
+
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .warning-icon {
+            text-align: center;
+            font-size: 4rem;
+            color: var(--error);
+            margin-bottom: 20px;
+        }
+
+        .delete-warning {
+            background: rgba(255, 167, 38, 0.1);
+            border: 1px solid rgba(255, 167, 38, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .delete-warning h3 {
+            color: #FFA726;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .delete-warning p {
+            color: #FFA726;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .doctor-info {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .doctor-info h4 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .info-value {
+            color: white;
+        }
+
+        .escalated-patients-warning {
+            background: rgba(255, 78, 78, 0.1);
+            border: 1px solid rgba(255, 78, 78, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .escalated-patients-warning h4 {
+            color: var(--error);
+            margin-bottom: 10px;
+        }
+
+        .escalated-patients-warning p {
+            color: var(--error);
+            font-size: 16px;
+        }
+
+        .patient-count-badge {
+            background: var(--error);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+
+        .safe-delete {
+            background: rgba(0, 204, 136, 0.1);
+            border: 1px solid rgba(0, 204, 136, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .safe-delete h4 {
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
+        .safe-delete p {
+            color: var(--success);
+            font-size: 16px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s;
+            font-weight: 500;
+            min-width: 120px;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #FF6B6B);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 78, 78, 0.3);
+        }
+
+        .btn-danger:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: rgba(0, 204, 136, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(0, 204, 136, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(255, 78, 78, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(255, 78, 78, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Delete Doctor</h1>
+            <p>Confirm deletion of doctor account</p>
+        </div>
+
+        <div class="breadcrumb">
+            <a href="{% url 'admin_dashboard' %}">Admin Dashboard</a> > 
+            <a href="{% url 'doctor_list' %}">Doctor Management</a> > 
+            Delete Doctor
+        </div>
+
+        <div class="content">
+            <!-- Messages -->
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="warning-icon">⚠️</div>
+
+            <div class="delete-warning">
+                <h3>Are you sure you want to delete this doctor?</h3>
+                <p>This action cannot be undone. The doctor's account and all associated data will be permanently removed from the system.</p>
+            </div>
+
+            <!-- Doctor Information -->
+            <div class="doctor-info">
+                <h4>Doctor Information</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Full Name:</span>
+                        <span class="info-value">{{ doctor.user.get_full_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{ doctor.user.email }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Username:</span>
+                        <span class="info-value">{{ doctor.user.username }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Specialization:</span>
+                        <span class="info-value">{{ doctor.specialization|default:"Not specified" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Escalated Patients Check -->
+            {% if not can_delete %}
+                <div class="escalated-patients-warning">
+                    <h4>⚠️ Cannot Delete Doctor</h4>
+                    <p>
+                        This doctor has <span class="patient-count-badge">{{ escalated_patients_count }}</span> 
+                        escalated patients assigned to them. Please reassign these patients to another doctor before deletion.
+                    </p>
+                </div>
+            {% else %}
+                <div class="safe-delete">
+                    <h4>✅ Safe to Delete</h4>
+                    <p>This doctor has no escalated patients and can be safely deleted.</p>
+                </div>
+            {% endif %}
+
+            <!-- Form Actions -->
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <a href="{% url 'doctor_list' %}" class="btn btn-secondary">Cancel</a>
+                    {% if can_delete %}
+                        <button type="submit" class="btn btn-danger" 
+                                onclick="return confirm('Are you absolutely sure you want to delete this doctor? This action cannot be undone.')">
+                            Delete Doctor
+                        </button>
+                    {% else %}
+                        <button type="button" class="btn btn-danger" disabled>
+                            Cannot Delete
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient Information - Admin Dashboard</title>
+    {% load static %}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      /* Global Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #7928CA;
+        --primary-dark: #6A0DAD;
+        --secondary: #FF0080;
+        --text: #E0C3FC;
+        --background: #0F1116;
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --error: #FF4E4E;
+        --success: #00CC88;
+      }
+
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+        min-height: 100vh;
+        color: var(--text);
+        padding: 20px;
+      }
+
+      /* Container */
+      .container {
+        width: 100%;
+        max-width: 1400px;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin: 40px auto;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        z-index: 1;
+      }
+
+      /* Header Section */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 0 20px;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      h2 {
+        color: white;
+        font-size: 32px;
+        font-weight: 600;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        position: relative;
+        display: inline-block;
+      }
+
+      /* Search and Controls */
+      .controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .search-container {
+        position: relative;
+      }
+
+      .search-input {
+        padding: 12px 20px 12px 45px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        font-size: 14px;
+        width: 300px;
+        transition: all 0.3s ease;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.1);
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text);
+        opacity: 0.6;
+      }
+
+      /* Button Styles */
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+      }
+
+      /* Stats */
+      .stats {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .stats-text {
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
+      /* Table Styles */
+      .table-container {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0;
+      }
+
+      th {
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        color: white;
+        font-weight: 500;
+        font-size: 13px;
+        padding: 16px 15px;
+        text-align: left;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+      }
+
+      td {
+        padding: 14px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 13px;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+      }
+
+      .table-link {
+        color: white;
+        text-decoration: none;
+        display: block;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .table-link:hover {
+        color: var(--primary);
+      }
+
+      tr {
+        background: rgba(255, 255, 255, 0.03);
+        transition: all 0.3s ease;
+      }
+
+      tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(3px);
+      }
+
+      /* Status badges */
+      .status-badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .status-assigned {
+        background: rgba(0, 204, 136, 0.2);
+        color: var(--success);
+        border: 1px solid rgba(0, 204, 136, 0.3);
+      }
+
+      .status-escalated {
+        background: rgba(255, 78, 78, 0.2);
+        color: var(--error);
+        border: 1px solid rgba(255, 78, 78, 0.3);
+      }
+
+      .status-unassigned {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 60px 40px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        margin-top: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .empty-state h3 {
+        color: white;
+        margin-bottom: 10px;
+        font-size: 18px;
+      }
+
+      .empty-state p {
+        opacity: 0.7;
+        font-size: 14px;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 1200px) {
+        .container {
+          padding: 30px 20px;
+        }
+        
+        .search-input {
+          width: 250px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px;
+          margin: 10px;
+        }
+
+        .header {
+          flex-direction: column;
+          align-items: stretch;
+          padding: 0;
+        }
+
+        h2 {
+          font-size: 24px;
+          text-align: center;
+          margin-bottom: 10px;
+        }
+
+        .controls {
+          justify-content: center;
+        }
+
+        .search-input {
+          width: 100%;
+          max-width: 300px;
+        }
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+          padding: 12px 20px;
+        }
+
+        .table-container {
+          overflow-x: auto;
+        }
+
+        td, th {
+          padding: 12px 10px;
+          font-size: 12px;
+          min-width: 100px;
+        }
+
+        .status-badge {
+          font-size: 10px;
+          padding: 3px 6px;
+        }
+      }
+
+      /* Scrollbar Styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-dark);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>Patient Information</h2>
+        <div class="controls">
+          <div class="search-container">
+            <form method="GET" style="display: inline;">
+              <input 
+                type="text" 
+                name="search" 
+                class="search-input" 
+                placeholder="Search patients..." 
+                value="{{ search_query }}"
+              >
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+            </form>
+          </div>
+          <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Dashboard
+          </a>
+        </div>
+      </div>
+
+      {% if search_query %}
+      <div class="stats">
+        <p class="stats-text">
+          {% if total_count > 0 %}
+            Found {{ total_count }} patient{{ total_count|pluralize }} matching "{{ search_query }}"
+          {% else %}
+            No patients found matching "{{ search_query }}"
+          {% endif %}
+        </p>
+      </div>
+      {% else %}
+      <div class="stats">
+        <p class="stats-text">Total Patients: {{ total_count }}</p>
+      </div>
+      {% endif %}
+
+      {% if patient_obj %}
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Date of Birth</th>
+              <th>Phone</th>
+              <th>Insurance</th>
+              <th>Monitoring</th>
+              <th>Moderator</th>
+              <th>Doctor</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in patient_obj %}
+              {% with entry.patient as patient %}
+              <tr>
+                <td>
+                  <a href="{% url 'admin_patient_detail' patient.id %}" class="table-link">
+                    {{ patient.user.first_name }} {{ patient.user.last_name }}
+                  </a>
+                </td>
+                <td title="{{ patient.user.email }}">{{ patient.user.email }}</td>
+                <td>{{ patient.date_of_birth|default:"Not provided" }}</td>
+                <td>{{ patient.phone_number|default:"Not provided" }}</td>
+                <td title="{{ patient.insurance }}">{{ patient.insurance|default:"Not provided" }}</td>
+                <td>{{ patient.monitoring_parameters|default:"Not specified" }}</td>
+                <td title="{{ entry.moderator_name }}">{{ entry.moderator_name }}</td>
+                <td title="{{ entry.doctor_name }}">{{ entry.doctor_name }}</td>
+                <td>
+                  {% if patient.is_escalated %}
+                    <span class="status-badge status-escalated">Escalated</span>
+                  {% elif patient.moderator_assigned %}
+                    <span class="status-badge status-assigned">Assigned</span>
+                  {% else %}
+                    <span class="status-badge status-unassigned">Unassigned</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endwith %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <h3>No Patients Found</h3>
+        {% if search_query %}
+          <p>No patients match your search criteria. Try adjusting your search terms.</p>
+        {% else %}
+          <p>No patients have been registered in the system yet.</p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>
