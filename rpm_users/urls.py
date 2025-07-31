@@ -34,6 +34,28 @@ urlpatterns = [
     path('view_escalated_patient/', views.view_escalated_patient, name='view_escalated_patient'),
     path('escalate_patient/<uuid:patient_id>/', views.escalate_patient, name='escalate_patient'),
     
+    # Admin dashboard
+    path('admin-access/', views.admin_access, name='admin_access'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin-logout/', views.admin_logout, name='admin_logout'),
+    
+    # Moderator management
+    path('dashboard/moderators/', views.moderator_list, name='moderator_list'),
+    path('dashboard/moderators/create/', views.moderator_create, name='moderator_create'),
+    path('dashboard/moderators/<int:moderator_id>/edit/', views.moderator_edit, name='moderator_edit'),
+    path('dashboard/moderators/<int:moderator_id>/delete/', views.moderator_delete, name='moderator_delete'),
+    
+    # Doctor management
+    path('dashboard/doctors/', views.doctor_list, name='doctor_list'),
+    path('dashboard/doctors/create/', views.doctor_create, name='doctor_create'),
+    path('dashboard/doctors/<int:doctor_id>/', views.doctor_detail, name='doctor_detail'),
+    path('dashboard/doctors/<int:doctor_id>/edit/', views.doctor_edit, name='doctor_edit'),
+    path('dashboard/doctors/<int:doctor_id>/delete/', views.doctor_delete, name='doctor_delete'),
+    
+    # Patient information management
+    path('dashboard/patients/', views.admin_patient_list, name='admin_patient_list'),
+    path('dashboard/patients/<uuid:patient_id>/', views.admin_patient_detail, name='admin_patient_detail'),
+    
     # Admin-verified user creation
     path('staff/create-user/', views.admin_create_user, name='admin_create_user'),
     path('staff/verify-password/', views.verify_admin_password, name='verify_admin_password'),

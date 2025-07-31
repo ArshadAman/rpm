@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Management - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
+        .header {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+        }
+
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .search-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-size: 16px;
+            /* Prevents zoom on iOS */
+            transition: all 0.3s ease;
+            min-height: 44px;
+            /* Touch-friendly height */
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: rgba(224, 195, 252, 0.6);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            min-height: 44px;
+            /* Minimum touch target size */
+            min-width: 44px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.2),
+                    transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #00E676);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 204, 136, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(23, 162, 184, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #FFA726, #FF7043);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 167, 38, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #FF6B6B);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 78, 78, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .stats-info {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .doctor-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .doctor-table th {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 16px 15px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .doctor-table td {
+            padding: 14px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        .doctor-table tr {
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .doctor-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(3px);
+        }
+
+        .doctor-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .no-doctors {
+            text-align: center;
+            padding: 60px 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .no-doctors i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-doctors h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .no-doctors p {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        .patient-count {
+            background: rgba(0, 204, 136, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(0, 204, 136, 0.3);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .specialization-badge {
+            background: rgba(255, 167, 38, 0.2);
+            color: #FFA726;
+            border: 1px solid rgba(255, 167, 38, 0.3);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: rgba(0, 204, 136, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(0, 204, 136, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(255, 78, 78, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(255, 78, 78, 0.3);
+        }
+
+        /* Enhanced responsive design */
+        @media (max-width: 1024px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .search-form {
+                max-width: none;
+            }
+
+            .doctor-table {
+                font-size: 14px;
+                overflow-x: auto;
+                display: block;
+                white-space: nowrap;
+            }
+
+            .doctor-table th,
+            .doctor-table td {
+                padding: 10px 8px;
+                min-width: 120px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .btn-sm {
+                padding: 10px;
+                text-align: center;
+                width: 100%;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 5px;
+                padding: 15px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .doctor-table {
+                font-size: 12px;
+            }
+
+            .doctor-table th,
+            .doctor-table td {
+                padding: 8px 6px;
+                min-width: 100px;
+            }
+        }
+
+        /* Accessibility improvements */
+        .btn:focus,
+        .search-input:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Screen reader support */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --text: #ffffff;
+                --background: #000000;
+                --card-bg: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Doctor Management</h1>
+            <p>Manage system doctors and their specializations</p>
+        </div>
+
+        <div class="breadcrumb">
+            <a href="{% url 'admin_dashboard' %}">Admin Dashboard</a> > Doctor Management
+        </div>
+
+        <div class="content">
+            <!-- Messages -->
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Search and Actions Section -->
+            <div class="search-section">
+                <form method="GET" class="search-form" role="search" aria-label="Search doctors">
+                    <label for="search-input" class="sr-only">Search doctors</label>
+                    <input type="text" id="search-input" name="search" value="{{ search_query }}"
+                        placeholder="Search by name, email, username, phone, or specialization..." class="search-input"
+                        aria-describedby="search-help">
+                    <div id="search-help" class="sr-only">Search for doctors by name, email, username, phone number, or
+                        specialization</div>
+                    <button type="submit" class="btn btn-primary" aria-label="Search doctors">Search</button>
+                    {% if search_query %}
+                    <a href="{% url 'doctor_list' %}" class="btn btn-secondary"
+                        aria-label="Clear search results">Clear</a>
+                    {% endif %}
+                </form>
+                <a href="{% url 'doctor_create' %}" class="btn btn-success">Add New Doctor</a>
+            </div>
+
+            <!-- Stats Info -->
+            <div class="stats-info">
+                <strong>Total Doctors:</strong> {{ total_count }}
+                {% if search_query %}
+                (filtered from {{ total_count }} total)
+                {% endif %}
+            </div>
+
+            <!-- Doctors Table -->
+            {% if doctors_with_counts %}
+            <table class="doctor-table" role="table" aria-label="Doctors list">
+                <thead>
+                    <tr role="row">
+                        <th role="columnheader" scope="col">Name</th>
+                        <th role="columnheader" scope="col">Username</th>
+                        <th role="columnheader" scope="col">Email</th>
+                        <th role="columnheader" scope="col">Phone Number</th>
+                        <th role="columnheader" scope="col">Specialization</th>
+                        <th role="columnheader" scope="col">Escalated Patients</th>
+                        <th role="columnheader" scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in doctors_with_counts %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.doctor.user.first_name }} {{ item.doctor.user.last_name }}</strong>
+                        </td>
+                        <td>{{ item.doctor.user.username }}</td>
+                        <td>{{ item.doctor.user.email }}</td>
+                        <td>{{ item.doctor.phone_number|default:"Not provided" }}</td>
+                        <td>
+                            {% if item.doctor.specialization %}
+                            <span class="specialization-badge">{{ item.doctor.specialization }}</span>
+                            {% else %}
+                            <span style="color: #6c757d;">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="patient-count">{{ item.escalated_patient_count }} patients</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons" role="group"
+                                aria-label="Actions for {{ item.doctor.user.get_full_name }}">
+                                <a href="{% url 'doctor_detail' item.doctor.id %}" class="btn btn-info btn-sm"
+                                    aria-label="View details for {{ item.doctor.user.get_full_name }}">View</a>
+                                <a href="{% url 'doctor_edit' item.doctor.id %}" class="btn btn-warning btn-sm"
+                                    aria-label="Edit {{ item.doctor.user.get_full_name }}">Edit</a>
+                                <a href="{% url 'doctor_delete' item.doctor.id %}" class="btn btn-danger btn-sm"
+                                    aria-label="Delete {{ item.doctor.user.get_full_name }}"
+                                    onclick="return confirm('Are you sure you want to delete this doctor?')">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-doctors">
+                <i>👨‍⚕️</i>
+                <h3>No Doctors Found</h3>
+                {% if search_query %}
+                <p>No doctors match your search criteria.</p>
+                <a href="{% url 'doctor_list' %}" class="btn btn-primary">View All Doctors</a>
+                {% else %}
+                <p>No doctors have been added yet.</p>
+                <a href="{% url 'doctor_create' %}" class="btn btn-success">Add First Doctor</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>
