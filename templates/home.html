@@ -240,21 +240,21 @@
             </div>
             <a href="{% url 'doctor_login' %}" class="option-button">Login as Doctor</a>
         </div>
-        <div class="option-card">
+        <!-- <div class="option-card">
             <div>
                 <div class="option-icon">🔑</div>
                 <h2 class="option-title">Admin Login</h2>
                 <p class="option-description">Administrators can log in to manage the system settings and user accounts.</p>
             </div>
             <a href="/admin/" class="option-button" target="_blank">Login as Admin</a>
-        </div>
+        </div> -->
         <div class="option-card">
             <div>
-                <div class="option-icon">👥</div>
-                <h2 class="option-title">Add Staff</h2>
-                <p class="option-description">Create new moderator or doctor accounts. Admin password verification required for security.</p>
+                <div class="option-icon">⚙️</div>
+                <h2 class="option-title">Admin Actions</h2>
+                <p class="option-description">Access the administrative dashboard to manage moderators, doctors, and view patient information.</p>
             </div>
-            <a href="{% url 'admin_create_user' %}" class="option-button">Add Staff Account</a>
+            <a href="{% url 'admin_access' %}" class="option-button">Access Admin Dashboard</a>
         </div>
     </div>
 

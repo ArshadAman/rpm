@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Details - {{ doctor.user.get_full_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
+        .header {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+        }
+
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .doctor-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-card h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            flex: 1;
+        }
+
+        .info-value {
+            color: white;
+            flex: 2;
+            text-align: right;
+        }
+
+        .specialization-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .patient-count-badge {
+            background: rgba(0, 204, 136, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(0, 204, 136, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .patients-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .patients-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .patients-table th {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 16px 15px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .patients-table td {
+            padding: 14px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        .patients-table tr {
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .patients-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(3px);
+        }
+
+        .patients-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .no-patients {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .no-patients i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .no-patients h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .no-patients p {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #FFA726, #FF7043);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 167, 38, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #FF6B6B);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 78, 78, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: rgba(0, 204, 136, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(0, 204, 136, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(255, 78, 78, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(255, 78, 78, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .doctor-info {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .info-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .info-value {
+                text-align: left;
+            }
+
+            .patients-table {
+                font-size: 14px;
+            }
+
+            .patients-table th,
+            .patients-table td {
+                padding: 10px 8px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Doctor Details</h1>
+            <p>{{ doctor.user.get_full_name }}</p>
+        </div>
+
+        <div class="breadcrumb">
+            <a href="{% url 'admin_dashboard' %}">Admin Dashboard</a> > 
+            <a href="{% url 'doctor_list' %}">Doctor Management</a> > 
+            Doctor Details
+        </div>
+
+        <div class="content">
+            <!-- Messages -->
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Doctor Information -->
+            <div class="doctor-info">
+                <div class="info-card">
+                    <h3>Personal Information</h3>
+                    <div class="info-item">
+                        <span class="info-label">Full Name:</span>
+                        <span class="info-value">{{ doctor.user.get_full_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{ doctor.user.email }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Username:</span>
+                        <span class="info-value">{{ doctor.user.username }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Phone Number:</span>
+                        <span class="info-value">
+                            {% if doctor.phone_number %}
+                                {{ doctor.phone_number }}
+                            {% else %}
+                                <em style="color: #6c757d;">Not provided</em>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3>Professional Information</h3>
+                    <div class="info-item">
+                        <span class="info-label">Specialization:</span>
+                        <span class="info-value">
+                            {% if doctor.specialization %}
+                                <span class="specialization-badge">{{ doctor.specialization }}</span>
+                            {% else %}
+                                <em style="color: #6c757d;">Not specified</em>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Escalated Patients:</span>
+                        <span class="info-value">
+                            <span class="patient-count-badge">{{ escalated_count }} patients</span>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Account Created:</span>
+                        <span class="info-value">{{ doctor.user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Last Login:</span>
+                        <span class="info-value">
+                            {% if doctor.user.last_login %}
+                                {{ doctor.user.last_login|date:"M d, Y H:i" }}
+                            {% else %}
+                                <em style="color: #6c757d;">Never logged in</em>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Escalated Patients Section -->
+            <div class="patients-section">
+                <h2 class="section-title">Escalated Patients ({{ escalated_count }})</h2>
+                
+                {% if escalated_patients %}
+                    <table class="patients-table">
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Email</th>
+                                <th>Age</th>
+                                <th>Phone</th>
+                                <th>Assigned Moderator</th>
+                                <th>Monitoring Parameter</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in escalated_patients %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.patient.user.get_full_name }}</strong>
+                                    </td>
+                                    <td>{{ item.patient.user.email }}</td>
+                                    <td>
+                                        {% if item.age %}
+                                            {{ item.age }} years
+                                        {% else %}
+                                            <em style="color: #6c757d;">Not provided</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.patient.phone_number|default:"Not provided" }}</td>
+                                    <td>{{ item.moderator_name }}</td>
+                                    <td>{{ item.patient.monitoring_parameters|default:"Not specified" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="no-patients">
+                        <i>📋</i>
+                        <h3>No Escalated Patients</h3>
+                        <p>This doctor currently has no patients escalated to them.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{% url 'doctor_list' %}" class="btn btn-secondary">Back to Doctor List</a>
+                <a href="{% url 'doctor_edit' doctor.id %}" class="btn btn-warning">Edit Doctor</a>
+                <a href="{% url 'doctor_delete' doctor.id %}" 
+                   class="btn btn-danger"
+                   onclick="return confirm('Are you sure you want to delete this doctor?')">Delete Doctor</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
