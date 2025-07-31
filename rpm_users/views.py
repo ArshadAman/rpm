@@ -11,6 +11,7 @@ from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
 from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor
+from django.db import models
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
@@ -23,7 +24,7 @@ from .form import DocumentationForm
 from .forms import PatientForm
 
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.sites import site
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
@@ -33,6 +34,526 @@ from django.views.decorators.http import require_POST
 def home(request):
     """Homepage with options for moderator login and patient registration"""
     return render(request, 'home.html')
+
+def admin_access(request):
+    """Check if user is admin and redirect appropriately"""
+    if request.user.is_authenticated and request.user.is_superuser:
+        # User is authenticated and is a superuser, redirect to admin dashboard
+        return redirect('admin_dashboard')
+    else:
+        # User is not authenticated or not a superuser, redirect to admin login
+        return redirect('/admin/')
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def admin_dashboard(request):
+    """Admin dashboard with three main action sections"""
+    try:
+        # Get counts for dashboard display
+        moderator_count = Moderator.objects.count()
+        doctor_count = Doctor.objects.count()
+        patient_count = Patient.objects.count()
+        
+        context = {
+            'moderator_count': moderator_count,
+            'doctor_count': doctor_count,
+            'patient_count': patient_count,
+        }
+        
+        return render(request, 'admin_dashboard.html', context)
+    except Exception as e:
+        messages.error(request, f'Error loading admin dashboard: {str(e)}')
+        return redirect('home')
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def moderator_list(request):
+    """Display list of all moderators with search and filtering capabilities"""
+    try:
+        # Get search query from request
+        search_query = request.GET.get('search', '').strip()
+        
+        # Start with all moderators
+        moderators = Moderator.objects.select_related('user').all()
+        
+        # Apply search filter if provided
+        if search_query:
+            moderators = moderators.filter(
+                models.Q(user__first_name__icontains=search_query) |
+                models.Q(user__last_name__icontains=search_query) |
+                models.Q(user__email__icontains=search_query) |
+                models.Q(user__username__icontains=search_query) |
+                models.Q(phone_number__icontains=search_query)
+            )
+        
+        # Order by username for consistent display
+        moderators = moderators.order_by('user__username')
+        
+        # Add patient count for each moderator
+        moderators_with_counts = []
+        for moderator in moderators:
+            patient_count = Patient.objects.filter(moderator_assigned=moderator).count()
+            moderators_with_counts.append({
+                'moderator': moderator,
+                'patient_count': patient_count
+            })
+        
+        context = {
+            'moderators_with_counts': moderators_with_counts,
+            'search_query': search_query,
+            'total_count': len(moderators_with_counts)
+        }
+        
+        return render(request, 'admin/moderator_list.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading moderator list: {str(e)}')
+        return redirect('admin_dashboard')
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def moderator_create(request):
+    """Create a new moderator with form handling and validation"""
+    if request.method == 'POST':
+        from .forms import ModeratorForm
+        form = ModeratorForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                # Create the User object
+                user = User.objects.create(
+                    username=form.cleaned_data['username'],
+                    email=form.cleaned_data['email'],
+                    first_name=form.cleaned_data['first_name'],
+                    last_name=form.cleaned_data['last_name']
+                )
+                user.set_password(form.cleaned_data['password'])
+                user.save()
+                
+                # Create the Moderator object
+                moderator = Moderator.objects.create(
+                    user=user,
+                    phone_number=form.cleaned_data['phone_number']
+                )
+                
+                messages.success(request, f'Moderator "{user.get_full_name()}" created successfully.')
+                return redirect('moderator_list')
+                
+            except Exception as e:
+                messages.error(request, f'Error creating moderator: {str(e)}')
+                # Clean up user if moderator creation failed
+                if 'user' in locals():
+                    user.delete()
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        from .forms import ModeratorForm
+        form = ModeratorForm()
+    
+    context = {
+        'form': form,
+        'title': 'Create New Moderator',
+        'action': 'Create'
+    }
+    
+    return render(request, 'admin/moderator_form.html', context)
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def moderator_edit(request, moderator_id):
+    """Edit an existing moderator with form handling and validation"""
+    moderator = get_object_or_404(Moderator, id=moderator_id)
+    
+    if request.method == 'POST':
+        from .forms import ModeratorForm
+        form = ModeratorForm(request.POST, instance=moderator)
+        
+        if form.is_valid():
+            try:
+                # Update the User object
+                user = moderator.user
+                user.username = form.cleaned_data['username']
+                user.email = form.cleaned_data['email']
+                user.first_name = form.cleaned_data['first_name']
+                user.last_name = form.cleaned_data['last_name']
+                
+                # Update password if provided
+                if form.cleaned_data['password']:
+                    user.set_password(form.cleaned_data['password'])
+                
+                user.save()
+                
+                # Update the Moderator object
+                moderator.phone_number = form.cleaned_data['phone_number']
+                moderator.save()
+                
+                messages.success(request, f'Moderator "{user.get_full_name()}" updated successfully.')
+                return redirect('moderator_list')
+                
+            except Exception as e:
+                messages.error(request, f'Error updating moderator: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        from .forms import ModeratorForm
+        form = ModeratorForm(instance=moderator)
+    
+    context = {
+        'form': form,
+        'title': f'Edit Moderator: {moderator.user.get_full_name()}',
+        'action': 'Update',
+        'moderator': moderator
+    }
+    
+    return render(request, 'admin/moderator_form.html', context)
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def moderator_delete(request, moderator_id):
+    """Delete a moderator with confirmation and safety checks"""
+    moderator = get_object_or_404(Moderator, id=moderator_id)
+    
+    # Check if moderator has assigned patients
+    assigned_patients_count = Patient.objects.filter(moderator_assigned=moderator).count()
+    
+    if request.method == 'POST':
+        if assigned_patients_count > 0:
+            messages.error(request, 
+                f'Cannot delete moderator "{moderator.user.get_full_name()}" because they have {assigned_patients_count} assigned patients. Please reassign these patients first.')
+            return redirect('moderator_list')
+        
+        try:
+            moderator_name = moderator.user.get_full_name()
+            user = moderator.user
+            
+            # Delete the moderator (this will also delete the user due to CASCADE)
+            moderator.delete()
+            user.delete()
+            
+            messages.success(request, f'Moderator "{moderator_name}" deleted successfully.')
+            return redirect('moderator_list')
+            
+        except Exception as e:
+            messages.error(request, f'Error deleting moderator: {str(e)}')
+            return redirect('moderator_list')
+    
+    context = {
+        'moderator': moderator,
+        'assigned_patients_count': assigned_patients_count,
+        'can_delete': assigned_patients_count == 0
+    }
+    
+    return render(request, 'admin/moderator_confirm_delete.html', context)
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def doctor_list(request):
+    """Display list of all doctors with search and filtering capabilities"""
+    try:
+        # Get search query from request
+        search_query = request.GET.get('search', '').strip()
+        
+        # Start with all doctors
+        doctors = Doctor.objects.select_related('user').all()
+        
+        # Apply search filter if provided
+        if search_query:
+            doctors = doctors.filter(
+                models.Q(user__first_name__icontains=search_query) |
+                models.Q(user__last_name__icontains=search_query) |
+                models.Q(user__email__icontains=search_query) |
+                models.Q(user__username__icontains=search_query) |
+                models.Q(phone_number__icontains=search_query) |
+                models.Q(specialization__icontains=search_query)
+            )
+        
+        # Order by username for consistent display
+        doctors = doctors.order_by('user__username')
+        
+        # Add escalated patient count for each doctor
+        doctors_with_counts = []
+        for doctor in doctors:
+            escalated_patient_count = Patient.objects.filter(doctor_escalated=doctor).count()
+            doctors_with_counts.append({
+                'doctor': doctor,
+                'escalated_patient_count': escalated_patient_count
+            })
+        
+        context = {
+            'doctors_with_counts': doctors_with_counts,
+            'search_query': search_query,
+            'total_count': len(doctors_with_counts)
+        }
+        
+        return render(request, 'admin/doctor_list.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading doctor list: {str(e)}')
+        return redirect('admin_dashboard')
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def doctor_create(request):
+    """Create a new doctor with form handling and validation"""
+    if request.method == 'POST':
+        from .forms import DoctorForm
+        form = DoctorForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                # Create the User object
+                user = User.objects.create(
+                    username=form.cleaned_data['username'],
+                    email=form.cleaned_data['email'],
+                    first_name=form.cleaned_data['first_name'],
+                    last_name=form.cleaned_data['last_name']
+                )
+                user.set_password(form.cleaned_data['password'])
+                user.save()
+                
+                # Create the Doctor object
+                doctor = Doctor.objects.create(
+                    user=user,
+                    phone_number=form.cleaned_data['phone_number'],
+                    specialization=form.cleaned_data['specialization']
+                )
+                
+                messages.success(request, f'Doctor "{user.get_full_name()}" created successfully.')
+                return redirect('doctor_list')
+                
+            except Exception as e:
+                messages.error(request, f'Error creating doctor: {str(e)}')
+                # Clean up user if doctor creation failed
+                if 'user' in locals():
+                    user.delete()
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        from .forms import DoctorForm
+        form = DoctorForm()
+    
+    context = {
+        'form': form,
+        'title': 'Add New Doctor',
+        'action': 'Create'
+    }
+    
+    return render(request, 'admin/doctor_form.html', context)
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def doctor_detail(request, doctor_id):
+    """Display detailed information about a specific doctor"""
+    try:
+        doctor = get_object_or_404(Doctor, id=doctor_id)
+        
+        # Get escalated patients for this doctor
+        escalated_patients = Patient.objects.filter(doctor_escalated=doctor).select_related('user', 'moderator_assigned')
+        
+        # Format patient data for display
+        formatted_patients = []
+        for patient in escalated_patients:
+            formatted_patients.append({
+                'patient': patient,
+                'age': patient.age,
+                'moderator_name': patient.moderator_assigned.user.get_full_name() if patient.moderator_assigned else 'Not assigned'
+            })
+        
+        context = {
+            'doctor': doctor,
+            'escalated_patients': formatted_patients,
+            'escalated_count': len(formatted_patients)
+        }
+        
+        return render(request, 'admin/doctor_detail.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading doctor details: {str(e)}')
+        return redirect('doctor_list')
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def doctor_edit(request, doctor_id):
+    """Edit an existing doctor with form handling and validation"""
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+    
+    if request.method == 'POST':
+        from .forms import DoctorForm
+        form = DoctorForm(request.POST, instance=doctor)
+        
+        if form.is_valid():
+            try:
+                # Update the User object
+                user = doctor.user
+                user.username = form.cleaned_data['username']
+                user.email = form.cleaned_data['email']
+                user.first_name = form.cleaned_data['first_name']
+                user.last_name = form.cleaned_data['last_name']
+                
+                # Update password if provided
+                if form.cleaned_data['password']:
+                    user.set_password(form.cleaned_data['password'])
+                
+                user.save()
+                
+                # Update the Doctor object
+                doctor.phone_number = form.cleaned_data['phone_number']
+                doctor.specialization = form.cleaned_data['specialization']
+                doctor.save()
+                
+                messages.success(request, f'Doctor "{user.get_full_name()}" updated successfully.')
+                return redirect('doctor_list')
+                
+            except Exception as e:
+                messages.error(request, f'Error updating doctor: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        from .forms import DoctorForm
+        form = DoctorForm(instance=doctor)
+    
+    context = {
+        'form': form,
+        'title': f'Edit Doctor: {doctor.user.get_full_name()}',
+        'action': 'Update',
+        'doctor': doctor
+    }
+    
+    return render(request, 'admin/doctor_form.html', context)
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def doctor_delete(request, doctor_id):
+    """Delete a doctor with confirmation and safety checks"""
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+    
+    # Check if doctor has escalated patients
+    escalated_patients_count = Patient.objects.filter(doctor_escalated=doctor).count()
+    
+    if request.method == 'POST':
+        if escalated_patients_count > 0:
+            messages.error(request, 
+                f'Cannot delete doctor "{doctor.user.get_full_name()}" because they have {escalated_patients_count} escalated patients. Please reassign these patients first.')
+            return redirect('doctor_list')
+        
+        try:
+            doctor_name = doctor.user.get_full_name()
+            user = doctor.user
+            
+            # Delete the doctor (this will also delete the user due to CASCADE)
+            doctor.delete()
+            user.delete()
+            
+            messages.success(request, f'Doctor "{doctor_name}" deleted successfully.')
+            return redirect('doctor_list')
+            
+        except Exception as e:
+            messages.error(request, f'Error deleting doctor: {str(e)}')
+            return redirect('doctor_list')
+    
+    context = {
+        'doctor': doctor,
+        'escalated_patients_count': escalated_patients_count,
+        'can_delete': escalated_patients_count == 0
+    }
+    
+    return render(request, 'admin/doctor_confirm_delete.html', context)
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def admin_patient_list(request):
+    """Display list of all patients in the system for admin access"""
+    try:
+        # Get search query from request
+        search_query = request.GET.get('search', '').strip()
+        
+        # Start with all patients
+        patients = Patient.objects.select_related('user', 'moderator_assigned', 'doctor_escalated').all()
+        
+        # Apply search filter if provided
+        if search_query:
+            patients = patients.filter(
+                models.Q(user__first_name__icontains=search_query) |
+                models.Q(user__last_name__icontains=search_query) |
+                models.Q(user__email__icontains=search_query) |
+                models.Q(phone_number__icontains=search_query) |
+                models.Q(insurance__icontains=search_query) |
+                models.Q(monitoring_parameters__icontains=search_query)
+            )
+        
+        # Order by creation date (newest first)
+        patients = patients.order_by('-created_at')
+        
+        # Format patient data for display
+        formatted_patients = []
+        for patient in patients:
+            # Format medications into a list if they exist
+            medications = []
+            if patient.medications:
+                medications = [med.strip() for med in patient.medications.split('\n') if med.strip()]
+
+            # Format pharmacy info into structured data if it exists
+            pharmacy_info = {}
+            if patient.pharmacy_info:
+                try:
+                    lines = patient.pharmacy_info.split('\n')
+                    for line in lines:
+                        if ':' in line:
+                            key, value = line.split(':', 1)
+                            pharmacy_info[key.strip()] = value.strip()
+                except:
+                    pharmacy_info = {'Details': patient.pharmacy_info}
+
+            # Format allergies into a list if they exist
+            allergies = []
+            if patient.allergies:
+                allergies = [allergy.strip() for allergy in patient.allergies.split(',') if allergy.strip()]
+
+            # Format family history into structured sections if it exists
+            family_history = []
+            if patient.family_history:
+                history_lines = patient.family_history.split('\n')
+                for line in history_lines:
+                    if line.strip():
+                        family_history.append(line.strip())
+
+            formatted_patient = {
+                'patient': patient,
+                'formatted_medications': medications,
+                'formatted_pharmacy': pharmacy_info,
+                'formatted_allergies': allergies,
+                'formatted_family_history': family_history,
+                'moderator_name': patient.moderator_assigned.user.get_full_name() if patient.moderator_assigned else 'Not assigned',
+                'doctor_name': patient.doctor_escalated.user.get_full_name() if patient.doctor_escalated else 'Not escalated'
+            }
+            formatted_patients.append(formatted_patient)
+        
+        context = {
+            'patient_obj': formatted_patients,
+            'search_query': search_query,
+            'total_count': len(formatted_patients),
+            'is_admin_view': True
+        }
+        
+        return render(request, 'admin/admin_patient_list.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading patient list: {str(e)}')
+        return redirect('admin_dashboard')
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def admin_patient_detail(request, patient_id):
+    """Display detailed patient information for admin access"""
+    try:
+        patient = get_object_or_404(Patient, id=patient_id)
+        
+        # Get all reports for this patient
+        reports = Reports.objects.filter(patient=patient).order_by('-created_at')
+        
+        # Get all doctors for potential escalation
+        doctors = Doctor.objects.all()
+        
+        context = {
+            'patient': patient,
+            'reports': reports,
+            'doctors': doctors,
+            'is_admin_view': True
+        }
+        
+        return render(request, 'index.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading patient details: {str(e)}')
+        return redirect('admin_patient_list')
 
 def express_interest(request):
     """Handle the express interest form for potential RPM leads"""
