@@ -379,6 +379,23 @@
             </div>
             <a href="{% url 'admin_patient_list' %}" class="action-button">View Patients</a>
         </div>
+
+        <div class="action-card">
+            <div>
+                <div class="action-icon">📞</div>
+                <h2 class="action-title">Call Summaries</h2>
+                <p class="action-description">
+                    View AI-generated call summaries, monitor patient call interactions, and access detailed call transcripts and analysis.
+                </p>
+                <div class="action-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ call_summary_count }}</span>
+                        <span class="stat-label">Total Summaries</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'retell_calling:call_summaries_list' %}" class="action-button">View Call Summaries</a>
+        </div>
     </div>
 </body>
 </html>

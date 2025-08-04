@@ -11,6 +11,7 @@ from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
 from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor
+from retell_calling.models import CallSummary
 from django.db import models
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
@@ -52,11 +53,13 @@ def admin_dashboard(request):
         moderator_count = Moderator.objects.count()
         doctor_count = Doctor.objects.count()
         patient_count = Patient.objects.count()
+        call_summary_count = CallSummary.objects.count()
         
         context = {
             'moderator_count': moderator_count,
             'doctor_count': doctor_count,
             'patient_count': patient_count,
+            'call_summary_count': call_summary_count,
         }
         
         return render(request, 'admin_dashboard.html', context)
