@@ -35,7 +35,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "https://strattonhealth.com",
     "https://www.strattonhealth.com",
-    "https://*.ngrok-free.app"
+    "https://*.ngrok-free.app",
+    "https://dev.strattonhealth.com",
+    "https://.strattonhealth.com",
 ]
 
 
