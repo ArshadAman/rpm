@@ -36,16 +36,40 @@ def home(request):
     """Homepage with options for moderator login and patient registration"""
     return render(request, 'home.html')
 
+def admin_login(request):
+    """Custom admin login page that only allows superusers"""
+    if request.user.is_authenticated and request.user.is_superuser:
+        # User is already authenticated as admin, redirect to dashboard
+        return redirect('admin_dashboard')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            if user.is_superuser:
+                login(request, user)
+                messages.success(request, 'Successfully logged in as administrator.')
+                return redirect('admin_dashboard')
+            else:
+                messages.error(request, 'Access denied. Administrator privileges required.')
+        else:
+            messages.error(request, 'Invalid username or password.')
+    
+    return render(request, 'admin_login.html')
+
 def admin_access(request):
     """Check if user is admin and redirect appropriately"""
     if request.user.is_authenticated and request.user.is_superuser:
         # User is authenticated and is a superuser, redirect to admin dashboard
         return redirect('admin_dashboard')
     else:
-        # User is not authenticated or not a superuser, redirect to admin login
-        return redirect('/admin/')
+        # User is not authenticated or not a superuser, redirect to custom admin login
+        return redirect('admin_login')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def admin_dashboard(request):
     """Admin dashboard with three main action sections"""
     try:
@@ -67,7 +91,7 @@ def admin_dashboard(request):
         messages.error(request, f'Error loading admin dashboard: {str(e)}')
         return redirect('home')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def moderator_list(request):
     """Display list of all moderators with search and filtering capabilities"""
     try:
@@ -111,7 +135,7 @@ def moderator_list(request):
         messages.error(request, f'Error loading moderator list: {str(e)}')
         return redirect('admin_dashboard')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def moderator_create(request):
     """Create a new moderator with form handling and validation"""
     if request.method == 'POST':
@@ -158,7 +182,7 @@ def moderator_create(request):
     
     return render(request, 'admin/moderator_form.html', context)
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def moderator_edit(request, moderator_id):
     """Edit an existing moderator with form handling and validation"""
     moderator = get_object_or_404(Moderator, id=moderator_id)
@@ -206,7 +230,7 @@ def moderator_edit(request, moderator_id):
     
     return render(request, 'admin/moderator_form.html', context)
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def moderator_delete(request, moderator_id):
     """Delete a moderator with confirmation and safety checks"""
     moderator = get_object_or_404(Moderator, id=moderator_id)
@@ -243,7 +267,7 @@ def moderator_delete(request, moderator_id):
     
     return render(request, 'admin/moderator_confirm_delete.html', context)
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_list(request):
     """Display list of all doctors with search and filtering capabilities"""
     try:
@@ -288,7 +312,7 @@ def doctor_list(request):
         messages.error(request, f'Error loading doctor list: {str(e)}')
         return redirect('admin_dashboard')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_create(request):
     """Create a new doctor with form handling and validation"""
     if request.method == 'POST':
@@ -336,7 +360,7 @@ def doctor_create(request):
     
     return render(request, 'admin/doctor_form.html', context)
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_detail(request, doctor_id):
     """Display detailed information about a specific doctor"""
     try:
@@ -366,7 +390,7 @@ def doctor_detail(request, doctor_id):
         messages.error(request, f'Error loading doctor details: {str(e)}')
         return redirect('doctor_list')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_edit(request, doctor_id):
     """Edit an existing doctor with form handling and validation"""
     doctor = get_object_or_404(Doctor, id=doctor_id)
@@ -415,7 +439,7 @@ def doctor_edit(request, doctor_id):
     
     return render(request, 'admin/doctor_form.html', context)
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_delete(request, doctor_id):
     """Delete a doctor with confirmation and safety checks"""
     doctor = get_object_or_404(Doctor, id=doctor_id)
@@ -452,7 +476,7 @@ def doctor_delete(request, doctor_id):
     
     return render(request, 'admin/doctor_confirm_delete.html', context)
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def admin_patient_list(request):
     """Display list of all patients in the system for admin access"""
     try:
@@ -533,7 +557,7 @@ def admin_patient_list(request):
         messages.error(request, f'Error loading patient list: {str(e)}')
         return redirect('admin_dashboard')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def admin_patient_detail(request, patient_id):
     """Display detailed patient information for admin access"""
     try:
@@ -1136,7 +1160,8 @@ def view_patient(request, patient_id):
 def admin_logout(request):
     """Custom admin logout view that handles both GET and POST requests"""
     logout(request)
-    return redirect('admin:login')
+    messages.success(request, 'You have been successfully logged out.')
+    return redirect('home')
 
 def patient_login(request):
     if request.method == 'POST':
