@@ -5,6 +5,7 @@ logs/
 logs/django.log
 /rpm/secrets.py
 db.sqlite3
+<<<<<<< HEAD
 
 # Python cache files
 __pycache__/
@@ -29,3 +30,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+=======
+.kiro/
+>>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d

@@ -36,6 +36,7 @@ def home(request):
     return render(request, 'home.html')
 
 def admin_access(request):
+<<<<<<< HEAD
     """Display admin password verification form"""
     if request.method == 'POST':
         password = request.POST.get('password')
@@ -60,6 +61,19 @@ def admin_dashboard(request):
         messages.error(request, 'Access denied. Admin authentication required.')
         return redirect('admin_access')
     
+=======
+    """Check if user is admin and redirect appropriately"""
+    if request.user.is_authenticated and request.user.is_superuser:
+        # User is authenticated and is a superuser, redirect to admin dashboard
+        return redirect('admin_dashboard')
+    else:
+        # User is not authenticated or not a superuser, redirect to admin login
+        return redirect('/admin/')
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def admin_dashboard(request):
+    """Admin dashboard with three main action sections"""
+>>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     try:
         # Get counts for dashboard display
         moderator_count = Moderator.objects.count()
@@ -70,7 +84,10 @@ def admin_dashboard(request):
             'moderator_count': moderator_count,
             'doctor_count': doctor_count,
             'patient_count': patient_count,
+<<<<<<< HEAD
             'admin_user': request.user
+=======
+>>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
         }
         
         return render(request, 'admin_dashboard.html', context)
@@ -78,6 +95,7 @@ def admin_dashboard(request):
         messages.error(request, f'Error loading admin dashboard: {str(e)}')
         return redirect('home')
 
+<<<<<<< HEAD
 def moderator_list(request):
     """Display list of all moderators with search and filtering capabilities"""
     # Check if user is authenticated and is superuser
@@ -85,6 +103,11 @@ def moderator_list(request):
         messages.error(request, 'Access denied. Admin authentication required.')
         return redirect('admin_access')
     
+=======
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def moderator_list(request):
+    """Display list of all moderators with search and filtering capabilities"""
+>>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     try:
         # Get search query from request
         search_query = request.GET.get('search', '').strip()
@@ -126,6 +149,7 @@ def moderator_list(request):
         messages.error(request, f'Error loading moderator list: {str(e)}')
         return redirect('admin_dashboard')
 
+<<<<<<< HEAD
 def moderator_create(request):
     """Create a new moderator with form handling and validation"""
     # Check if user is authenticated and is superuser
@@ -133,6 +157,11 @@ def moderator_create(request):
         messages.error(request, 'Access denied. Admin authentication required.')
         return redirect('admin_access')
     
+=======
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def moderator_create(request):
+    """Create a new moderator with form handling and validation"""
+>>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     if request.method == 'POST':
         from .forms import ModeratorForm
         form = ModeratorForm(request.POST)
@@ -177,6 +206,7 @@ def moderator_create(request):
     
     return render(request, 'admin/moderator_form.html', context)
 
+<<<<<<< HEAD
 def moderator_edit(request, moderator_id):
     """Edit an existing moderator with form handling and validation"""
     # Check if user is authenticated and is superuser
@@ -184,6 +214,11 @@ def moderator_edit(request, moderator_id):
         messages.error(request, 'Access denied. Admin authentication required.')
         return redirect('admin_access')
     
+=======
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def moderator_edit(request, moderator_id):
+    """Edit an existing moderator with form handling and validation"""
+>>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     moderator = get_object_or_404(Moderator, id=moderator_id)
     
     if request.method == 'POST':
@@ -229,6 +264,7 @@ def moderator_edit(request, moderator_id):
     
     return render(request, 'admin/moderator_form.html', context)
 
+<<<<<<< HEAD
 def moderator_delete(request, moderator_id):
     """Delete a moderator with confirmation and safety checks"""
     # Check if user is authenticated and is superuser
@@ -236,6 +272,11 @@ def moderator_delete(request, moderator_id):
         messages.error(request, 'Access denied. Admin authentication required.')
         return redirect('admin_access')
     
+=======
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def moderator_delete(request, moderator_id):
+    """Delete a moderator with confirmation and safety checks"""
+>>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     moderator = get_object_or_404(Moderator, id=moderator_id)
     
     # Check if moderator has assigned patients
@@ -270,6 +311,7 @@ def moderator_delete(request, moderator_id):
     
     return render(request, 'admin/moderator_confirm_delete.html', context)
 
+<<<<<<< HEAD
 def doctor_list(request):
     """Display list of all doctors with search and filtering capabilities"""
     # Check if user is authenticated and is superuser
@@ -277,6 +319,11 @@ def doctor_list(request):
         messages.error(request, 'Access denied. Admin authentication required.')
         return redirect('admin_access')
     
+=======
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+def doctor_list(request):
+    """Display list of all doctors with search and filtering capabilities"""
+>>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     try:
         # Get search query from request
         search_query = request.GET.get('search', '').strip()

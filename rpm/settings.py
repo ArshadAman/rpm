@@ -25,7 +25,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "https://strattonhealth.com",
     "https://www.strattonhealth.com",
-    "https://*.ngrok-free.app"
+    "https://*.ngrok-free.app",
+    "https://dev.strattonhealth.com",
+    ".strattonhealth.com",
 ]
 
 
@@ -104,6 +106,12 @@ DATABASES = {
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 
 # DATABASES = {
 #     'default': {
