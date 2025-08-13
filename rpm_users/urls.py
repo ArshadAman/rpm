@@ -57,6 +57,11 @@ urlpatterns = [
     path('dashboard/patients/', views.admin_patient_list, name='admin_patient_list'),
     path('dashboard/patients/<uuid:patient_id>/', views.admin_patient_detail, name='admin_patient_detail'),
     
+    # Leads management
+    path('dashboard/leads/', views.leads_list, name='leads_list'),
+    path('dashboard/leads/<int:lead_id>/', views.lead_detail, name='lead_detail'),
+    path('dashboard/leads/<int:lead_id>/convert/', views.convert_lead_to_patient, name='convert_lead_to_patient'),
+    
     # Admin-verified user creation
     path('staff/create-user/', views.admin_create_user, name='admin_create_user'),
     path('staff/verify-password/', views.verify_admin_password, name='verify_admin_password'),

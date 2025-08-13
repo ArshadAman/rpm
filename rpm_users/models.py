@@ -264,6 +264,61 @@ class InterestLead(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     session_key = models.CharField(max_length=64, blank=True, null=True, db_index=True)
+    
+    # Conversion tracking fields
+    is_converted = models.BooleanField(default=False)
+    converted_patient = models.ForeignKey(Patient, null=True, blank=True, on_delete=models.SET_NULL)
+    converted_at = models.DateTimeField(null=True, blank=True)
+    converted_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    
+    @property
+    def completion_percentage(self):
+        """Calculate how complete the lead data is based on filled fields"""
+        total_fields = 10  # Total number of relevant fields for completion
+        filled_fields = 0
+        
+        # Check each field and count filled ones
+        if self.first_name:
+            filled_fields += 1
+        if self.last_name:
+            filled_fields += 1
+        if self.email:
+            filled_fields += 1
+        if self.phone_number:
+            filled_fields += 1
+        if self.date_of_birth:
+            filled_fields += 1
+        if self.age:
+            filled_fields += 1
+        if self.allergies:
+            filled_fields += 1
+        if self.service_interest:
+            filled_fields += 1
+        if self.insurance:
+            filled_fields += 1
+        if self.additional_comments:
+            filled_fields += 1
+            
+        return round((filled_fields / total_fields) * 100, 1)
+    
+    @property
+    def is_complete(self):
+        """Check if lead has all required fields for patient conversion"""
+        required_fields = [
+            self.first_name,
+            self.last_name,
+            self.email,
+            self.phone_number,
+            self.date_of_birth,
+            self.insurance
+        ]
+        return all(field for field in required_fields)
+    
+    def __str__(self):
+        name = f"{self.first_name or ''} {self.last_name or ''}".strip()
+        if name:
+            return f"{name} - {self.email or 'No email'}"
+        return f"Lead {self.id} - {self.email or 'No email'}"
 
 
 class ModeratorShortcut(models.Model):
