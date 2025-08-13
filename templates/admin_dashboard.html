@@ -396,6 +396,27 @@
             </div>
             <a href="{% url 'retell_calling:call_summaries_list' %}" class="action-button">View Call Summaries</a>
         </div>
+
+        <div class="action-card">
+            <div>
+                <div class="action-icon">🎯</div>
+                <h2 class="action-title">Leads Tracking</h2>
+                <p class="action-description">
+                    Manage leads captured from the express interest form, track conversion rates, and convert qualified leads into patients.
+                </p>
+                <div class="action-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ total_leads }}</span>
+                        <span class="stat-label">Total Leads</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ conversion_rate }}%</span>
+                        <span class="stat-label">Conversion Rate</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'leads_list' %}" class="action-button">Manage Leads</a>
+        </div>
     </div>
 </body>
 </html>
