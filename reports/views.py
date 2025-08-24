@@ -279,7 +279,7 @@ def add_documentation(request, patient_id):
             documentation.doc_clinical_staff = str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"
             documentation.doc_moderator = str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"
             documentation.doc_report_date = timezone.now().date()
-              # Update the history_of_present_illness with the full_documentation value
+            # Update the history_of_present_illness with the full_documentation value
             documentation.history_of_present_illness = request.POST.get('full_documentation', '')
             documentation.written_by = request.user.username
             documentation.save()
@@ -560,7 +560,9 @@ def edit_documentation(request, doc_id):
     context = {
         'form': form,
         'documentation': documentation,
+        'doc_id': documentation.id,  # <-- Add this line
         'patient': patient,
+        # 'reports': reports,
         'now': timezone.now()
     }
     
