@@ -7,6 +7,7 @@ logs/django.log
 db.sqlite3
 .kiro/
 /rpm/settings.py
+/nginx/default.conf
 
 # Python cache files
 __pycache__/
