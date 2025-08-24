@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Documentation</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -17,31 +18,28 @@
             --primary-dark: #6A0DAD;
             --secondary: #FF0080;
             --text: #E0C3FC;
-            --background: #0F1116;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --error: #FF4E4E;
-            --success: #00CC88;
+            --background: #181825;
+            --container: #232336;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            background: var(--background);
             color: var(--text);
             min-height: 100vh;
-            padding: 20px;
         }
 
         .container {
-            max-width: 80%;
-            margin: auto;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            padding: 40px;
+            max-width: 1200px;
+            margin: 40px auto;
+            background: var(--container);
             border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
             position: relative;
-            overflow: hidden;
         }
 
         .container::before {
@@ -53,13 +51,38 @@
             height: 4px;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             z-index: 1;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .header-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .back-button {
+            background: var(--container);
+            color: var(--text);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .back-button:hover {
+            background: var(--primary);
+            color: #fff;
         }
 
         h2 {
             text-align: center;
             color: white;
-            margin-bottom: 40px;
-            font-size: 32px;
+            margin-bottom: 20px;
+            font-size: 28px;
             font-weight: 600;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
@@ -77,196 +100,362 @@
             left: 0;
             width: 100%;
             height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 1px;
         }
 
-        .patient-info {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 25px;
+        .main-content {
+            display: flex;
+            gap: 32px;
+        }
+
+        .left-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-container {
+            background: var(--container);
             border-radius: 16px;
-            margin-bottom: 30px;
+            padding: 24px;
+            box-shadow: 0 4px 24px rgba(121,40,202,0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
         }
 
-        .patient-info::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
         }
 
-        .patient-info h3 {
+        .editor-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .manage-shortcuts-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 8px;
+            transition: all 0.2s;
+        }
+
+        .manage-shortcuts-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(121, 40, 202, 0.3);
+        }
+
+        .title-selector {
+            background: var(--container);
+            color: #fff;
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .title-selector:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(255, 0, 128, 0.2);
+        }
+
+        .quill-container {
+            margin-bottom: 16px;
+        }
+
+        #quill-editor {
+            background: #1a1a2e;
             color: white;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 15px;
+            border-radius: 8px;
+            min-height: 400px;
         }
 
-        .patient-info p {
-            margin-bottom: 10px;
-            font-size: 15px;
+        .ql-toolbar.ql-snow {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--container);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .ql-container.ql-snow {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .ql-editor {
+            color: white;
+            font-size: 14px;
             line-height: 1.6;
         }
 
-        .patient-info strong {
+        .ql-editor.ql-blank::before {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .save-button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 16px 0;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+
+        .save-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(121, 40, 202, 0.3);
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .patient-info, .info-section, .session-info {
+            background: linear-gradient(135deg, rgba(121, 40, 202, 0.1), rgba(255, 0, 128, 0.1));
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 8px rgba(121,40,202,0.05);
+        }
+
+        .patient-info h3, .info-section h4, .session-info h4 {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .patient-info p, .info-section div, .session-info div {
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .vital-label {
+            color: #e0c3fc;
+            font-weight: 500;
+        }
+
+        .vital-value {
             color: var(--secondary);
             font-weight: 500;
+            margin-left: 8px;
         }
 
-        form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .form-group {
-            position: relative;
-            transition: transform 0.3s ease;
-        }
-
-        .form-group:hover {
-            transform: translateY(-2px);
-        }
-
-        .form-group label {
-            display: block;
+        .session-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 8px;
+        }
+
+        .session-detail:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Shortcut Modal Styles */
+        .shortcut-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(24,24,37,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shortcut-modal-content {
+            background: var(--container);
+            border-radius: 16px;
+            padding: 32px;
+            width: 600px;
+            max-width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .shortcut-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .shortcut-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .shortcut-form .form-group {
+            margin-bottom: 16px;
+        }
+
+        .shortcut-form .form-label {
+            display: block;
             color: var(--text);
             font-weight: 500;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-            transition: color 0.3s ease;
+            margin-bottom: 8px;
         }
 
-        .form-group:hover label {
-            color: white;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
+        .form-input, .form-textarea {
             width: 100%;
-            padding: 14px 18px;
+            background: #1a1a2e;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 12px;
             color: white;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
+        .form-input:focus, .form-textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(121, 40, 202, 0.1);
-            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 2px rgba(121, 40, 202, 0.2);
         }
 
-        textarea {
-            min-height: 120px;
+        .form-textarea {
             resize: vertical;
+            min-height: 100px;
         }
 
-        .error-message {
-            color: var(--error);
-            margin-top: 8px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text);
-            padding: 12px 20px;
-            border-radius: 12px;
-            text-decoration: none;
-            margin-bottom: 30px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-        }
-
-        button[type="submit"] {
-            grid-column: 1 / -1;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 16px 32px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 0.5px;
+        .shortcut-buttons {
+            display: flex;
+            gap: 12px;
             margin-top: 20px;
         }
 
-        button[type="submit"]::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.2),
-                transparent
-            );
-            transition: 0.5s;
-        }
-
-        button[type="submit"]:hover::before {
-            left: 100%;
-        }
-
-        button[type="submit"]:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
-        }
-
-        .edit-button {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 8px 16px;
+        .btn-primary, .btn-secondary {
+            flex: 1;
+            padding: 12px 24px;
             border: none;
             border-radius: 8px;
-            font-weight: 500;
             font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
         }
 
-        .edit-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(121, 40, 202, 0.3);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
         }
 
-        /* Make textarea fields full width */
-        .form-group:has(textarea) {
-            grid-column: 1 / -1;
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* Scrollbar styling */
+        .btn-primary:hover, .btn-secondary:hover {
+            transform: translateY(-1px);
+        }
+
+        .shortcuts-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .shortcut-list-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shortcut-info-key {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .shortcut-info-desc {
+            color: var(--text);
+            font-size: 12px;
+        }
+
+        .shortcut-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .right-panel {
+                width: 100%;
+                max-height: 300px;
+                order: -1;
+            }
+            
+            .left-panel {
+                min-height: 500px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .header-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .editor-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .shortcut-modal-content {
+                padding: 20px;
+                width: 95vw;
+            }
+        }
+
+        /* Scrollbar Styling */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -284,387 +473,350 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-dark);
         }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .container {
-                padding: 30px 20px;
-                margin: 10px;
-            }
-
-            form {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            h2 {
-                font-size: 24px;
-                margin-bottom: 30px;
-            }
-
-            .patient-info {
-                padding: 20px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="javascript:history.back()" class="back-button">← Back to Documentation</a>
-        <h2>Edit Documentation</h2>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 20px; font-weight: 600;">
-            <h3>Patient Information</h3>
+        <div class="header-section">
+            <a href="{% url 'moderator_actions' patient.id %}" class="back-button">← Back to Patient</a>
+            <h2>Edit Documentation</h2>
+            <div style="width: 80px;"></div> <!-- Spacer for centering -->
         </div>
         
-        <form action="{% url 'edit_documentation' documentation.id %}" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="id_title">Title</label>
-                {{ form.title }}
-                {% if form.title.errors %}
-                <div class="error-message">{{ form.title.errors }}</div>
-                {% endif %}
-            </div>            <!-- Patient Information Fields -->
-            <div class="form-group">
-                <label for="id_doc_patient_name">Patient Name</label>
-                {{ form.doc_patient_name }}
-                {% if form.doc_patient_name.errors %}
-                <div class="error-message">{{ form.doc_patient_name.errors }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="id_doc_dob">Date of Birth</label>
-                {{ form.doc_dob }}
-                {% if form.doc_dob.errors %}
-                <div class="error-message">{{ form.doc_dob.errors }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="id_doc_sex">Sex</label>
-                {{ form.doc_sex }}
-                {% if form.doc_sex.errors %}
-                <div class="error-message">{{ form.doc_sex.errors }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="id_doc_monitoring_params">Monitoring Parameters</label>
-                {{ form.doc_monitoring_params }}
-                {% if form.doc_monitoring_params.errors %}
-                <div class="error-message">{{ form.doc_monitoring_params.errors }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="id_doc_clinical_staff">Clinical Staff</label>
-                {{ form.doc_clinical_staff }}
-                {% if form.doc_clinical_staff.errors %}
-                <div class="error-message">{{ form.doc_clinical_staff.errors }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="id_doc_moderator">Moderator</label>
-                {{ form.doc_moderator }}
-                {% if form.doc_moderator.errors %}
-                <div class="error-message">{{ form.doc_moderator.errors }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="id_doc_report_date">Date of Service</label>
-                {{ form.doc_report_date }}
-                {% if form.doc_report_date.errors %}
-                <div class="error-message">{{ form.doc_report_date.errors }}</div>
-                {% endif %}
+        <div class="main-content">
+            <!-- Left Panel - Documentation Editor -->
+            <div class="left-panel">
+                <div class="editor-container">
+                    <div class="editor-header">
+                        <div class="editor-title">Edit Documentation</div>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <button type="button" class="manage-shortcuts-btn" onclick="openShortcutModal()">
+                                ⚡ Manage Shortcuts
+                            </button>
+                            <select class="title-selector" id="id_title" name="title" form="documentationForm">
+                                <option value="Progress Note" {% if form.title.value == "Progress Note" %}selected{% endif %}>Progress Note</option>
+                                <option value="RPM Progress Note" {% if form.title.value == "RPM Progress Note" %}selected{% endif %}>RPM Progress Note</option>
+                                <option value="CCN-HTN Progress Note" {% if form.title.value == "CCN-HTN Progress Note" %}selected{% endif %}>CCN-HTN Progress Note</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="editor-content">
+                        <form id="documentationForm" action="{% url 'edit_documentation' documentation.id %}" method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="quill-container">
+                                <div id="quill-editor" data-placeholder="Edit your documentation... Use shortcuts like .pe for quick text insertion"></div>
+                            </div>
+                            <textarea id="id_full_documentation" name="full_documentation" style="display: none;">{{ form.initial.full_documentation|default_if_none:'' }}</textarea>
+                            <button type="submit" class="save-button">Update Documentation</button>
+                        </form>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="id_full_documentation">Full Documentation</label>
-                {{ form.full_documentation }}
-                {% if form.full_documentation.errors %}
-                <div class="error-message">{{ form.full_documentation.errors }}</div>
-                {% endif %}
-            </div>
+            <!-- Right Panel - Patient Information -->
+            <div class="right-panel">
+                <!-- Patient Basic Info -->
+                <div class="patient-info">
+                    <h3>Patient Information</h3>
+                    <p><strong>Name:</strong> {{ patient.user.first_name|default:"" }} {{ patient.user.last_name|default:"" }}</p>
+                    <p><strong>DOB:</strong> {% if patient.date_of_birth %}{{ patient.date_of_birth|date:"M d, Y" }}{% else %}N/A{% endif %}</p>
+                    <p><strong>Sex:</strong> {% if patient.sex %}{{ patient.get_sex_display }}{% else %}N/A{% endif %}</p>
+                    <p><strong>Age:</strong> {% if patient.date_of_birth %}{{ patient.age }} years{% else %}N/A{% endif %}</p>
+                    <p><strong>Phone:</strong> {{ patient.phone_number|default:"N/A" }}</p>
+                    <p><strong>Insurance:</strong> {{ patient.insurance|default:"N/A" }}</p>
+                    <p><strong>Monitoring:</strong> {{ patient.monitoring_parameters|default:"N/A" }}</p>
+                </div>
 
-            <button type="submit">Update Documentation</button>
-        </form>
+                <!-- Medical Information -->
+                {% if patient.allergies or patient.medications or patient.family_history %}
+                <div class="info-section">
+                    <h4>Medical Information</h4>
+                    {% if patient.allergies %}
+                        <div><span class="vital-label">Allergies:</span> <span class="medical-text">{{ patient.allergies }}</span></div>
+                    {% endif %}
+                    {% if patient.medications %}
+                        <div><span class="vital-label">Medications:</span> <span class="medical-text">{{ patient.medications }}</span></div>
+                    {% endif %}
+                    {% if patient.family_history %}
+                        <div><span class="vital-label">Family History:</span> <span class="medical-text">{{ patient.family_history }}</span></div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Past Medical History -->
+                {% if patient.medical_history.all %}
+                <div class="info-section">
+                    <h4>Past Medical History</h4>
+                    {% for history in patient.medical_history.all %}
+                    <div class="vital-compact">
+                        <span class="vital-value">{{ history.pmh }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Session Information -->
+                <div class="session-info">
+                    <h4>Session Information</h4>
+                    <div class="session-detail">
+                        <span class="vital-label">Current Moderator:</span>
+                        <span style="color: white; font-weight: 500;">
+                            {% if request.user.get_full_name %}
+                                {{ request.user.get_full_name }}
+                            {% else %}
+                                {{ request.user.username }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="session-detail">
+                        <span class="vital-label">User Role:</span>
+                        <span style="color: white; font-weight: 500;">
+                            {% if request.user.moderator %}
+                                Moderator
+                            {% elif request.user.doctor %}
+                                Doctor
+                            {% else %}
+                                Admin
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="session-detail">
+                        <span class="vital-label">Date:</span>
+                        <span style="color: white; font-weight: 500;">{% now "M d, Y" %}</span>
+                    </div>
+                    <div class="session-detail">
+                        <span class="vital-label">Time:</span>
+                        <span style="color: white; font-weight: 500;">{% now "H:i" %}</span>
+                    </div>
+                    <div class="session-detail">
+                        <span class="vital-label">Documentation Type:</span>
+                        <span style="color: white; font-weight: 500;" id="current-doc-type">{{ form.title.value|default:"Progress Note" }}</span>
+                    </div>
+                    <div class="session-detail">
+                        <span class="vital-label">Original Created:</span>
+                        <span style="color: white; font-weight: 500;">{{ documentation.created_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Shortcut Management Modal -->
+    <div class="shortcut-modal" id="shortcut-modal">
+        <div class="shortcut-modal-content">
+            <div class="shortcut-modal-header">
+                <div class="shortcut-modal-title">Manage Text Shortcuts</div>
+                <button class="close-modal" onclick="closeShortcutModal()">&times;</button>
+            </div>
+            <div class="shortcut-modal-body">
+                <div class="shortcut-form">
+                    <form id="shortcut-form">
+                        <div class="form-group">
+                            <label class="form-label">Shortcut Key (e.g., .pe)</label>
+                            <input type="text" id="shortcut-key" class="form-input" placeholder="Enter shortcut key" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <input type="text" id="shortcut-description" class="form-input" placeholder="Brief description" maxlength="255">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Content</label>
+                            <textarea id="shortcut-content" class="form-textarea" placeholder="Full text content" rows="4"></textarea>
+                        </div>
+                        <div class="shortcut-buttons">
+                            <button type="button" class="btn-primary" onclick="saveShortcut()">Save Shortcut</button>
+                            <button type="button" class="btn-secondary" onclick="cancelEdit()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="shortcuts-list" id="shortcuts-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script>
-        function togglePatientInfoEdit() {
-            const displayDiv = document.getElementById('patientInfoDisplay');
-            const editDiv = document.getElementById('patientInfoEdit');
-            const editBtn = document.getElementById('editPatientInfoBtn');
-            
-            if (displayDiv.style.display === 'none') {
-                displayDiv.style.display = 'grid';
-                editDiv.style.display = 'none';
-                editBtn.textContent = 'Edit Information';
-            } else {
-                displayDiv.style.display = 'none';
-                editDiv.style.display = 'block';
-                editBtn.textContent = 'Cancel Edit';
-            }
-        }
+        // Global variables
+        let quill;
+        let shortcuts = [];
+        let editingShortcutIndex = -1;
 
-        // Add event listeners to sync editable fields with hidden fields
+        // Initialize Quill editor
         document.addEventListener('DOMContentLoaded', function() {
-            const editableFields = {
-                'doc_patient_name': 'id_doc_patient_name',
-                'doc_dob': 'id_doc_dob',
-                'doc_sex': 'id_doc_sex',
-                'doc_monitoring_params': 'id_doc_monitoring_params',
-                'doc_clinical_staff': 'id_doc_clinical_staff',
-                'doc_moderator': 'id_doc_moderator'
-            };
-
-            // Add change event listeners to all editable fields
-            Object.entries(editableFields).forEach(([fieldName, inputId]) => {
-                const input = document.getElementById(inputId);
-                if (input) {
-                    input.addEventListener('change', function() {
-                        const hiddenField = document.querySelector(`input[name="${fieldName}"]`);
-                        if (hiddenField) {
-                            hiddenField.value = this.value;
-                        }
-                    });
-                }
-            });            // Add template functionality
-            const titleSelect = document.getElementById('id_title');
-            const documentationTextarea = document.getElementById('id_full_documentation');
-            
-            const rpmTemplate = `1. Reason for RPM Enrollment
-Patient is enrolled in RPM for hypertension (I10) to manage and monitor blood pressure remotely with the goal of preventing hypertensive crises, medication noncompliance, and end-organ damage. With additonal goals of reducing hospital time and clinic visits for this chronic condition
-
-Occasional spikes noted in the evening; patient reports periods of stress and dietary types of food intake as possible factors.
-
-2. Patient Communication
-Mode of Communication: Telephonic (20-minute clinical review)
-
-Reviewed data and chart prior to call, spent 12 minutes
-
-Summary of Discussion:
-
-- Reviewed BP data and discussed variability
-
-- Patient adherent to medications
-
-- Denies side effects, no dizziness, cough, or palpitations
-
-- Reinforced low-sodium diet and importance of daily readings
-
-- Recommended evening mindfulness and reduced caffeine
-
-- Advised to maintain BP log and alert team for systolic >160 or diastolic >100
-
-- Advised to go to an ER or urgent care if persistently above systolic 180 or hypotensive and systolic blood pressure below 90
-
-- doing enjoyable activities to recuce stress
-
-- acknowlegding and managing stressors
-
-3. Clinical Assessment and Plan
-1. Hypertension
-2. chest pain
-Blood pressure control improving
-
-Continue current meds; consider dose titration depending on next month's readings and whether there is further improvement.
-
-Continue RPM for next 30-day cycle.
-
-Follow-up appointment scheduling
-
-Patient encouraged to continue consistent daily monitoring.
-
-Billing Codes:
-
-✅ 99454 (Device supply + transmission; billed monthly)
-
-✅ 99457 (First 20 min clinical staff/MD/NP interactive time)
-
-✅ 99458 (Second 20 min clinical staff/MD/NP interactive time)
-
-✅ 99458 (Second 20 min clinical staff/MD/NP interactive time)
-
-Total time Spent: 60 minutes`;
-
-            const ccnTemplate = `Diagnosis(es):
-I10 – Essential (primary) hypertension
-
-
-[Include any other chronic conditions to support CCM eligibility — e.g., E11.9 for Diabetes, E78.5 for Hyperlipidemia]
-
-
-⏱️ Time Spent This Month on CCM Services
-Total Time:  minutes
-
-
-Time Logged by: [Clinical Staff or Physician Name]
-
-
-📋 CCM Summary This Month
-Review of Medical Record:
-
-Reviewed patient's recent BP logs submitted via RPM. Average BP over past 30 days: 144/92.
-
-
-Last in-person visit: [Date]; last telehealth/RPM check-in: [Date].
-
-
-Medication Review:
-
-Patient is currently on Lisinopril 20 mg daily.
-
-
-No side effects reported.
-
-
-Compliance confirmed via RPM data and monthly call.
-
-
-Care Coordination Activities:
-
-
-Discussed medication adjustment options with supervising physician due to persistent blood pressure variability
-
-
-Updated care plan based on pharmacist review and patient-reported side effects.
-
-
-Patient Communication:
-
-Contacted patient for monthly check-in.
-
-
-Discussed BP trends and importance of diet and exercise.
-
-
-Patient expressed mild dizziness when standing — advised hydration and scheduled follow-up.
-
-
-Preventive Services:
-
-Verified any new issues, vaccines
-
-Patient overdue for any exam — referral sent.
-
-
-🧠 Care Plan Update
-Goals:
-
-Achieve and maintain BP <130/80 within 3 months.
-
-
-Reduce sodium intake to <1.5g/day.
-
-
-Walk 30 mins 5x/week.
-
-
-Planned Interventions:
-
-Continue meds
-
-
-Pay attention to dietary intake
-
-
-Reinforce adherence to home BP monitoring (RPM).
-
-
-Follow-up labs 
-
-
-
-
-CPT Code
-
-Description
-
-Who Can Bill
-
-
-99490
-
-20+ min/month CCM by clinical staff under general supervision
-
-MD, NP, PA
-
-
-99439
-
-
-
-99439
-
-
-additional 20 minutes of CCM by clinical staff
-
-
-additional 20 minutes of CCM by clinical staff
-
-MD, NP, PA
-
-
-
-
-99491
-
-30+ min/month CCM personally by physician or NPP
-
-MD, NP, PA only
-
-
-99437
-
-
-
-99437
-
-Each additional 30 min personally by physician/NPP
-
-
-Each additional 30 min personally by physician/NPP
-
-MD, NP, PA only
-
-
-✅ Attestation
-Spent over 60 minutes of non-face-to-face chronic care management services were provided this month, addressing hypertension and other ongoing chronic conditions. These services were documented, medically necessary, and performed per Medicare guidelines.
-
-Signed: [Name, Title]
-Date: [MM/DD/YYYY]`;            // Set default value to Progress Note if empty
-            if (titleSelect.value === '') {
-                titleSelect.value = 'Progress Note';
-                documentationTextarea.value = '';
-            }
-
-            titleSelect.addEventListener('change', function() {
-                // Only change content if the textarea is empty or we're not in edit mode
-                const isEditMode = document.querySelector('form').action.includes('/edit-documentation/');
-                
-                if (this.value === 'RPM Progress Note') {
-                    // Only set template if not in edit mode or if textarea is empty
-                    if (!isEditMode || documentationTextarea.value.trim() === '') {
-                        documentationTextarea.value = rpmTemplate;
-                    }
-                } else if (this.value === 'CCN-HTN Progress Note') {
-                    // Only set template if not in edit mode or if textarea is empty
-                    if (!isEditMode || documentationTextarea.value.trim() === '') {
-                        documentationTextarea.value = ccnTemplate;
-                    }
-                } else if (this.value === 'Progress Note') {
-                    // Don't clear content in edit mode for Progress Note
-                    if (!isEditMode) {
-                        documentationTextarea.value = '';
-                    }
+            quill = new Quill('#quill-editor', {
+                theme: 'snow',
+                placeholder: document.getElementById('quill-editor').dataset.placeholder,
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'indent': '-1'}, { 'indent': '+1' }],
+                        ['link', 'blockquote', 'code-block'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['clean']
+                    ]
                 }
             });
 
-            // Only trigger change event on page load if not in edit mode
-            const isEditMode = document.querySelector('form').action.includes('/edit-documentation/');
-            if (!isEditMode) {
-                titleSelect.dispatchEvent(new Event('change'));
+            // Set initial content for edit mode
+            const initialContent = document.getElementById('id_full_documentation').value;
+            if (initialContent) {
+                quill.root.innerHTML = initialContent;
+            }
+
+            // Load shortcuts from localStorage
+            loadShortcuts();
+
+            // Sync Quill content to textarea on submit
+            document.getElementById('documentationForm').onsubmit = function() {
+                document.getElementById('id_full_documentation').value = quill.root.innerHTML;
+            };
+
+            // Update doc type when title changes
+            const titleSelect = document.getElementById('id_title');
+            titleSelect.addEventListener('change', function() {
+                document.getElementById('current-doc-type').textContent = this.value;
+            });
+
+            // Listen for text changes to detect shortcuts
+            quill.on('text-change', function(delta, oldDelta, source) {
+                if (source === 'user') {
+                    handleShortcutDetection();
+                }
+            });
+        });
+
+        // Shortcut Modal Functions
+        function openShortcutModal() {
+            document.getElementById('shortcut-modal').style.display = 'flex';
+            updateShortcutsList();
+        }
+
+        function closeShortcutModal() {
+            document.getElementById('shortcut-modal').style.display = 'none';
+            clearShortcutForm();
+        }
+
+        function clearShortcutForm() {
+            document.getElementById('shortcut-key').value = '';
+            document.getElementById('shortcut-description').value = '';
+            document.getElementById('shortcut-content').value = '';
+            editingShortcutIndex = -1;
+        }
+
+        function saveShortcut() {
+            const key = document.getElementById('shortcut-key').value.trim();
+            const description = document.getElementById('shortcut-description').value.trim();
+            const content = document.getElementById('shortcut-content').value.trim();
+
+            if (!key || !description || !content) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const shortcut = {
+                shortcut_key: key,
+                description: description,
+                content: content
+            };
+
+            if (editingShortcutIndex >= 0) {
+                shortcuts[editingShortcutIndex] = shortcut;
+            } else {
+                shortcuts.push(shortcut);
+            }
+
+            saveShortcuts();
+            updateShortcutsList();
+            clearShortcutForm();
+        }
+
+        function editShortcut(shortcut) {
+            document.getElementById('shortcut-key').value = shortcut.shortcut_key;
+            document.getElementById('shortcut-description').value = shortcut.description;
+            document.getElementById('shortcut-content').value = shortcut.content;
+            editingShortcutIndex = shortcuts.findIndex(s => s.shortcut_key === shortcut.shortcut_key);
+        }
+
+        function deleteShortcut(index) {
+            if (confirm('Are you sure you want to delete this shortcut?')) {
+                shortcuts.splice(index, 1);
+                saveShortcuts();
+                updateShortcutsList();
+            }
+        }
+
+        function updateShortcutsList() {
+            const list = document.getElementById('shortcuts-list');
+            
+            if (shortcuts.length === 0) {
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text);">No shortcuts created yet</div>';
+                return;
+            }
+
+            list.innerHTML = shortcuts.map((shortcut, index) => `
+                <div class="shortcut-list-item">
+                    <div class="shortcut-info">
+                        <div class="shortcut-info-key">${shortcut.shortcut_key}</div>
+                        <div class="shortcut-info-desc">${shortcut.description}</div>
+                    </div>
+                    <div class="shortcut-actions">
+                        <button class="btn-secondary btn-small" onclick="editShortcut(${JSON.stringify(shortcut).replace(/"/g, '&quot;')})">Edit</button>
+                        <button class="btn-secondary btn-small" onclick="deleteShortcut(${index})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadShortcuts() {
+            const saved = localStorage.getItem('documentationShortcuts');
+            if (saved) {
+                shortcuts = JSON.parse(saved);
+            }
+        }
+
+        function saveShortcuts() {
+            localStorage.setItem('documentationShortcuts', JSON.stringify(shortcuts));
+        }
+
+        function cancelEdit() {
+            clearShortcutForm();
+        }
+
+        // Shortcut detection and replacement
+        function handleShortcutDetection() {
+            const range = quill.getSelection();
+            if (!range) return;
+
+            const text = quill.getText(0, range.index);
+            const words = text.split(/\s+/);
+            const lastWord = words[words.length - 1];
+
+            if (lastWord.startsWith('.') && lastWord.length > 1) {
+                const matchingShortcut = shortcuts.find(s => s.shortcut_key === lastWord);
+                if (matchingShortcut) {
+                    // Calculate the position to replace
+                    const startIndex = range.index - lastWord.length;
+                    
+                    // Replace the shortcut with its content
+                    quill.deleteText(startIndex, lastWord.length);
+                    quill.insertText(startIndex, matchingShortcut.content);
+                    
+                    // Position cursor at the end of inserted text
+                    quill.setSelection(startIndex + matchingShortcut.content.length);
+                }
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('shortcut-modal');
+            if (e.target === modal) {
+                closeShortcutModal();
             }
         });
     </script>
 </body>
-</html> 
+</html>

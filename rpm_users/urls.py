@@ -36,6 +36,7 @@ urlpatterns = [
     
     # Admin dashboard
     path('admin-access/', views.admin_access, name='admin_access'),
+    path('admin-login/', views.admin_login, name='admin_login'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-logout/', views.admin_logout, name='admin_logout'),
     
@@ -55,6 +56,11 @@ urlpatterns = [
     # Patient information management
     path('dashboard/patients/', views.admin_patient_list, name='admin_patient_list'),
     path('dashboard/patients/<uuid:patient_id>/', views.admin_patient_detail, name='admin_patient_detail'),
+    
+    # Leads management
+    path('dashboard/leads/', views.leads_list, name='leads_list'),
+    path('dashboard/leads/<int:lead_id>/', views.lead_detail, name='lead_detail'),
+    path('dashboard/leads/<int:lead_id>/convert/', views.convert_lead_to_patient, name='convert_lead_to_patient'),
     
     # Admin-verified user creation
     path('staff/create-user/', views.admin_create_user, name='admin_create_user'),

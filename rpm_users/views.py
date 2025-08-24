@@ -11,6 +11,7 @@ from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
 from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor
+from retell_calling.models import CallSummary
 from django.db import models
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
@@ -30,64 +31,72 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.views.decorators.http import require_POST
+from django.utils import timezone
+from django.db import transaction
+import re
+import logging
+from datetime import datetime
 
 def home(request):
     """Homepage with options for moderator login and patient registration"""
     return render(request, 'home.html')
 
-def admin_access(request):
-<<<<<<< HEAD
-    """Display admin password verification form"""
+def admin_login(request):
+    """Custom admin login page that only allows superusers"""
+    if request.user.is_authenticated and request.user.is_superuser:
+        # User is already authenticated as admin, redirect to dashboard
+        return redirect('admin_dashboard')
+    
     if request.method == 'POST':
+        username = request.POST.get('username')
         password = request.POST.get('password')
         
-        # Get the first superuser (admin)
-        admin_user = User.objects.filter(is_superuser=True).first()
+        user = authenticate(request, username=username, password=password)
         
-        if admin_user and admin_user.check_password(password):
-            # Password is correct, log in the admin user
-            login(request, admin_user)
-            messages.success(request, 'Admin access granted successfully!')
-            return redirect('admin_dashboard')
+        if user is not None:
+            if user.is_superuser:
+                login(request, user)
+                messages.success(request, 'Successfully logged in as administrator.')
+                return redirect('admin_dashboard')
+            else:
+                messages.error(request, 'Access denied. Administrator privileges required.')
         else:
-            messages.error(request, 'Invalid admin password. Please try again.')
+            messages.error(request, 'Invalid username or password.')
     
-    return render(request, 'admin_access_form.html')
+    return render(request, 'admin_login.html')
 
-def admin_dashboard(request):
-    """Admin dashboard with three main action sections"""
-    # Check if user is authenticated and is superuser
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        messages.error(request, 'Access denied. Admin authentication required.')
-        return redirect('admin_access')
-    
-=======
+def admin_access(request):
     """Check if user is admin and redirect appropriately"""
     if request.user.is_authenticated and request.user.is_superuser:
         # User is authenticated and is a superuser, redirect to admin dashboard
         return redirect('admin_dashboard')
     else:
-        # User is not authenticated or not a superuser, redirect to admin login
-        return redirect('/admin/')
+        # User is not authenticated or not a superuser, redirect to custom admin login
+        return redirect('admin_login')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def admin_dashboard(request):
     """Admin dashboard with three main action sections"""
->>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     try:
         # Get counts for dashboard display
         moderator_count = Moderator.objects.count()
         doctor_count = Doctor.objects.count()
         patient_count = Patient.objects.count()
+        call_summary_count = CallSummary.objects.count()
+        
+        # Get leads statistics
+        total_leads = InterestLead.objects.count()
+        converted_leads = InterestLead.objects.filter(is_converted=True).count()
+        conversion_rate = round((converted_leads / total_leads * 100), 1) if total_leads > 0 else 0
         
         context = {
             'moderator_count': moderator_count,
             'doctor_count': doctor_count,
             'patient_count': patient_count,
-<<<<<<< HEAD
-            'admin_user': request.user
-=======
->>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
+            'call_summary_count': call_summary_count,
+            'total_leads': total_leads,
+            'converted_leads': converted_leads,
+            'conversion_rate': conversion_rate,
         }
         
         return render(request, 'admin_dashboard.html', context)
@@ -95,19 +104,9 @@ def admin_dashboard(request):
         messages.error(request, f'Error loading admin dashboard: {str(e)}')
         return redirect('home')
 
-<<<<<<< HEAD
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def moderator_list(request):
     """Display list of all moderators with search and filtering capabilities"""
-    # Check if user is authenticated and is superuser
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        messages.error(request, 'Access denied. Admin authentication required.')
-        return redirect('admin_access')
-    
-=======
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
-def moderator_list(request):
-    """Display list of all moderators with search and filtering capabilities"""
->>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     try:
         # Get search query from request
         search_query = request.GET.get('search', '').strip()
@@ -149,19 +148,9 @@ def moderator_list(request):
         messages.error(request, f'Error loading moderator list: {str(e)}')
         return redirect('admin_dashboard')
 
-<<<<<<< HEAD
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def moderator_create(request):
     """Create a new moderator with form handling and validation"""
-    # Check if user is authenticated and is superuser
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        messages.error(request, 'Access denied. Admin authentication required.')
-        return redirect('admin_access')
-    
-=======
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
-def moderator_create(request):
-    """Create a new moderator with form handling and validation"""
->>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     if request.method == 'POST':
         from .forms import ModeratorForm
         form = ModeratorForm(request.POST)
@@ -206,19 +195,9 @@ def moderator_create(request):
     
     return render(request, 'admin/moderator_form.html', context)
 
-<<<<<<< HEAD
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def moderator_edit(request, moderator_id):
     """Edit an existing moderator with form handling and validation"""
-    # Check if user is authenticated and is superuser
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        messages.error(request, 'Access denied. Admin authentication required.')
-        return redirect('admin_access')
-    
-=======
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
-def moderator_edit(request, moderator_id):
-    """Edit an existing moderator with form handling and validation"""
->>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     moderator = get_object_or_404(Moderator, id=moderator_id)
     
     if request.method == 'POST':
@@ -264,19 +243,9 @@ def moderator_edit(request, moderator_id):
     
     return render(request, 'admin/moderator_form.html', context)
 
-<<<<<<< HEAD
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def moderator_delete(request, moderator_id):
     """Delete a moderator with confirmation and safety checks"""
-    # Check if user is authenticated and is superuser
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        messages.error(request, 'Access denied. Admin authentication required.')
-        return redirect('admin_access')
-    
-=======
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
-def moderator_delete(request, moderator_id):
-    """Delete a moderator with confirmation and safety checks"""
->>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     moderator = get_object_or_404(Moderator, id=moderator_id)
     
     # Check if moderator has assigned patients
@@ -311,19 +280,9 @@ def moderator_delete(request, moderator_id):
     
     return render(request, 'admin/moderator_confirm_delete.html', context)
 
-<<<<<<< HEAD
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_list(request):
     """Display list of all doctors with search and filtering capabilities"""
-    # Check if user is authenticated and is superuser
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        messages.error(request, 'Access denied. Admin authentication required.')
-        return redirect('admin_access')
-    
-=======
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
-def doctor_list(request):
-    """Display list of all doctors with search and filtering capabilities"""
->>>>>>> e7dcd09c6550a27bd2e669bb3dc655c547aa235d
     try:
         # Get search query from request
         search_query = request.GET.get('search', '').strip()
@@ -366,7 +325,7 @@ def doctor_list(request):
         messages.error(request, f'Error loading doctor list: {str(e)}')
         return redirect('admin_dashboard')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_create(request):
     """Create a new doctor with form handling and validation"""
     if request.method == 'POST':
@@ -414,7 +373,7 @@ def doctor_create(request):
     
     return render(request, 'admin/doctor_form.html', context)
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_detail(request, doctor_id):
     """Display detailed information about a specific doctor"""
     try:
@@ -444,7 +403,7 @@ def doctor_detail(request, doctor_id):
         messages.error(request, f'Error loading doctor details: {str(e)}')
         return redirect('doctor_list')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_edit(request, doctor_id):
     """Edit an existing doctor with form handling and validation"""
     doctor = get_object_or_404(Doctor, id=doctor_id)
@@ -493,7 +452,7 @@ def doctor_edit(request, doctor_id):
     
     return render(request, 'admin/doctor_form.html', context)
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def doctor_delete(request, doctor_id):
     """Delete a doctor with confirmation and safety checks"""
     doctor = get_object_or_404(Doctor, id=doctor_id)
@@ -530,7 +489,7 @@ def doctor_delete(request, doctor_id):
     
     return render(request, 'admin/doctor_confirm_delete.html', context)
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def admin_patient_list(request):
     """Display list of all patients in the system for admin access"""
     try:
@@ -611,7 +570,7 @@ def admin_patient_list(request):
         messages.error(request, f'Error loading patient list: {str(e)}')
         return redirect('admin_dashboard')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/admin/')
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def admin_patient_detail(request, patient_id):
     """Display detailed patient information for admin access"""
     try:
@@ -1214,7 +1173,7 @@ def view_patient(request, patient_id):
 def admin_logout(request):
     """Custom admin logout view that handles both GET and POST requests"""
     logout(request)
-    messages.success(request, 'You have been logged out successfully.')
+    messages.success(request, 'You have been successfully logged out.')
     return redirect('home')
 
 def patient_login(request):
@@ -1294,37 +1253,286 @@ def login_view(request):
 
 @csrf_exempt
 def track_interest(request):
+    """Enhanced API endpoint for tracking partial lead data with session-based tracking"""
     if request.method == "POST":
+        import logging
+        import re
+        from datetime import datetime
+        from django.utils import timezone
+        from django.db import transaction
+        
+        logger = logging.getLogger(__name__)
+        
         try:
-            # Ensure the user has a session
+            # Ensure the user has a session for anonymous tracking
             if not request.session.session_key:
                 request.session.save()
             session_key = request.session.session_key
-
-            data = json.loads(request.body)
-            lead = InterestLead.objects.filter(session_key=session_key).first()
-            if not lead:
-                lead = InterestLead.objects.create(session_key=session_key)
-
-            for field in [
-                "first_name", "last_name", "email", "phone_number", "date_of_birth", "age",
-                "allergies", "service_interest", "insurance",
-                "good_eyesight", "can_follow_instructions", "can_take_readings", "additional_comments"
-            ]:
-                if field in data:
-                    value = data[field]
-                    if field == "date_of_birth" and value == "":
-                        value = None
-                    if field == "age" and (value == "" or value is None):
-                        value = None
-                    setattr(lead, field, value)
-            lead.save()
-            return JsonResponse({"success": True, "lead_id": lead.id})
+            
+            # Log the tracking attempt for monitoring
+            logger.info(f"Lead tracking attempt for session: {session_key}")
+            
+            # Parse and validate JSON data
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError as e:
+                logger.error(f"Invalid JSON in track_interest: {str(e)}, session: {session_key}")
+                return JsonResponse({"success": False, "error": "Invalid JSON data"}, status=400)
+            
+            # Enhanced data validation and sanitization
+            validated_data = {}
+            validation_errors = []
+            
+            # Define comprehensive field validation rules
+            field_rules = {
+                "first_name": {"type": str, "max_length": 100, "sanitize": True},
+                "last_name": {"type": str, "max_length": 100, "sanitize": True},
+                "email": {"type": str, "max_length": 254, "validate": "email", "sanitize": True},
+                "phone_number": {"type": str, "max_length": 20, "validate": "phone", "sanitize": True},
+                "date_of_birth": {"type": str, "validate": "date"},
+                "age": {"type": int, "min": 0, "max": 150},
+                "allergies": {"type": str, "max_length": 1000, "sanitize": True},
+                "service_interest": {"type": str, "max_length": 50, "sanitize": True},
+                "insurance": {"type": str, "max_length": 255, "sanitize": True},
+                "additional_comments": {"type": str, "max_length": 2000, "sanitize": True},
+                "good_eyesight": {"type": bool},
+                "can_follow_instructions": {"type": bool},
+                "can_take_readings": {"type": bool},
+            }
+            
+            # Validate and sanitize each field
+            for field, value in data.items():
+                if field not in field_rules:
+                    logger.warning(f"Unknown field '{field}' in request, session: {session_key}")
+                    continue  # Skip unknown fields
+                    
+                rules = field_rules[field]
+                
+                # Skip empty values but log them for monitoring
+                if value is None or value == "":
+                    logger.debug(f"Empty value for field '{field}', session: {session_key}")
+                    continue
+                
+                try:
+                    # Type conversion and validation
+                    if rules["type"] == str:
+                        value = str(value)
+                        
+                        # Enhanced sanitization
+                        if rules.get("sanitize"):
+                            # Remove potentially harmful characters and normalize whitespace
+                            value = re.sub(r'[<>"\']', '', value)  # Remove HTML/script chars
+                            value = re.sub(r'\s+', ' ', value)     # Normalize whitespace
+                            value = value.strip()
+                        
+                        if len(value) == 0:
+                            continue
+                            
+                        # Length validation with truncation
+                        if "max_length" in rules and len(value) > rules["max_length"]:
+                            logger.warning(f"Field '{field}' truncated from {len(value)} to {rules['max_length']} chars, session: {session_key}")
+                            value = value[:rules["max_length"]]
+                        
+                        # Enhanced email validation
+                        if rules.get("validate") == "email":
+                            email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                            if not re.match(email_pattern, value):
+                                logger.warning(f"Invalid email format: {value}, session: {session_key}")
+                                validation_errors.append(f"Invalid email format: {field}")
+                                continue
+                        
+                        # Phone number validation
+                        if rules.get("validate") == "phone":
+                            # Remove non-digit characters for validation
+                            phone_digits = re.sub(r'[^\d]', '', value)
+                            if len(phone_digits) < 10 or len(phone_digits) > 15:
+                                logger.warning(f"Invalid phone format: {value}, session: {session_key}")
+                                validation_errors.append(f"Invalid phone format: {field}")
+                                continue
+                    
+                    elif rules["type"] == int:
+                        try:
+                            value = int(float(value))  # Handle string numbers
+                        except (ValueError, TypeError):
+                            logger.warning(f"Invalid integer value for '{field}': {value}, session: {session_key}")
+                            validation_errors.append(f"Invalid number format: {field}")
+                            continue
+                            
+                        if "min" in rules and value < rules["min"]:
+                            logger.warning(f"Value too small for '{field}': {value}, session: {session_key}")
+                            validation_errors.append(f"Value too small: {field}")
+                            continue
+                        if "max" in rules and value > rules["max"]:
+                            logger.warning(f"Value too large for '{field}': {value}, session: {session_key}")
+                            validation_errors.append(f"Value too large: {field}")
+                            continue
+                    
+                    elif rules["type"] == bool:
+                        if isinstance(value, bool):
+                            pass  # Already boolean
+                        elif isinstance(value, str):
+                            value = value.lower() in ['true', '1', 'yes', 'on']
+                        else:
+                            value = bool(value)
+                    
+                    # Enhanced date validation
+                    if rules.get("validate") == "date":
+                        try:
+                            # Try multiple date formats
+                            date_formats = ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d']
+                            parsed_date = None
+                            
+                            for date_format in date_formats:
+                                try:
+                                    parsed_date = datetime.strptime(value, date_format).date()
+                                    break
+                                except ValueError:
+                                    continue
+                            
+                            if not parsed_date:
+                                raise ValueError("No valid date format found")
+                            
+                            # Validate date is reasonable (not in future, not too old)
+                            today = timezone.now().date()
+                            if parsed_date > today:
+                                logger.warning(f"Future date provided for '{field}': {value}, session: {session_key}")
+                                validation_errors.append(f"Future date not allowed: {field}")
+                                continue
+                            
+                            # Convert to standard format
+                            value = parsed_date.strftime('%Y-%m-%d')
+                            
+                        except ValueError as e:
+                            logger.warning(f"Invalid date format for '{field}': {value}, session: {session_key}")
+                            validation_errors.append(f"Invalid date format: {field}")
+                            continue
+                    
+                    validated_data[field] = value
+                    
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"Validation error for field '{field}': {str(e)}, session: {session_key}")
+                    validation_errors.append(f"Validation error: {field}")
+                    continue
+            
+            # Log validation results
+            if validation_errors:
+                logger.info(f"Validation errors for session {session_key}: {', '.join(validation_errors)}")
+            
+            # Use database transaction for data consistency
+            with transaction.atomic():
+                # Enhanced duplicate handling - look for existing leads by session or email
+                lead = None
+                
+                # First try to find by session key
+                if session_key:
+                    lead = InterestLead.objects.filter(session_key=session_key).first()
+                
+                # If no lead found by session and we have an email, check for existing email
+                if not lead and validated_data.get('email'):
+                    existing_email_lead = InterestLead.objects.filter(
+                        email=validated_data['email']
+                    ).first()
+                    
+                    if existing_email_lead:
+                        # Merge session tracking with existing email lead
+                        existing_email_lead.session_key = session_key
+                        existing_email_lead.save()
+                        lead = existing_email_lead
+                        logger.info(f"Merged session {session_key} with existing email lead {lead.id}")
+                
+                # Create new lead if none found
+                if not lead:
+                    lead = InterestLead.objects.create(session_key=session_key)
+                    logger.info(f"Created new lead {lead.id} with session_key: {session_key}")
+                else:
+                    logger.info(f"Updating existing lead {lead.id} with session_key: {session_key}")
+                
+                # Enhanced data merging - preserve existing data unless explicitly overwritten
+                updated_fields = []
+                for field, value in validated_data.items():
+                    current_value = getattr(lead, field, None)
+                    
+                    # Special handling for different field types
+                    if field == "date_of_birth":
+                        if value and value != "":
+                            try:
+                                # Convert string to date object for comparison
+                                new_date = datetime.strptime(value, '%Y-%m-%d').date()
+                                if current_value != new_date:
+                                    setattr(lead, field, new_date)
+                                    updated_fields.append(field)
+                            except ValueError:
+                                logger.error(f"Failed to parse date {value} for lead {lead.id}")
+                    
+                    elif field == "age":
+                        if value is not None and current_value != value:
+                            setattr(lead, field, value)
+                            updated_fields.append(field)
+                    
+                    else:
+                        # For other fields, only update if new value is different and not empty
+                        if value is not None and value != "" and current_value != value:
+                            setattr(lead, field, value)
+                            updated_fields.append(field)
+                
+                # Save the lead with updated timestamp
+                lead.save()
+                
+                # Enhanced logging for monitoring
+                if updated_fields:
+                    logger.info(f"Updated lead {lead.id} fields: {', '.join(updated_fields)}, completion: {lead.completion_percentage}%")
+                else:
+                    logger.info(f"No changes for lead {lead.id}, completion: {lead.completion_percentage}%")
+                
+                # Calculate completion metrics for response
+                completion_percentage = lead.completion_percentage
+                is_complete = lead.is_complete
+                
+                # Log completion milestones
+                if completion_percentage >= 50 and completion_percentage < 75:
+                    logger.info(f"Lead {lead.id} reached 50%+ completion")
+                elif completion_percentage >= 75 and completion_percentage < 100:
+                    logger.info(f"Lead {lead.id} reached 75%+ completion")
+                elif is_complete:
+                    logger.info(f"Lead {lead.id} is now complete and ready for conversion")
+                
+                # Return enhanced success response
+                response_data = {
+                    "success": True,
+                    "lead_id": str(lead.id),
+                    "session_key": session_key,
+                    "updated_fields": updated_fields,
+                    "completion_percentage": completion_percentage,
+                    "is_complete": is_complete,
+                    "validation_errors": validation_errors if validation_errors else None,
+                    "timestamp": timezone.now().isoformat()
+                }
+                
+                return JsonResponse(response_data)
+            
         except Exception as e:
+            # Comprehensive error logging with context
             import traceback
-            print(traceback.format_exc())
-            return JsonResponse({"success": False, "error": str(e)}, status=400)
-    return JsonResponse({"error": "Invalid method"}, status=405)
+            error_details = traceback.format_exc()
+            error_context = {
+                "session_key": session_key if 'session_key' in locals() else 'unknown',
+                "data_keys": list(data.keys()) if 'data' in locals() else 'unknown',
+                "error": str(e),
+                "traceback": error_details
+            }
+            
+            logger.error(f"Critical error in track_interest: {error_context}")
+            
+            # Return user-friendly error message
+            return JsonResponse({
+                "success": False, 
+                "error": "An error occurred while saving your information. Please try again.",
+                "timestamp": timezone.now().isoformat()
+            }, status=500)
+    
+    # Handle non-POST requests
+    logger.warning(f"Invalid method {request.method} for track_interest endpoint")
+    return JsonResponse({"error": "Only POST method is allowed"}, status=405)
 
 def terms_and_conditions_view(request):
     """Renders the terms and conditions page."""
@@ -1823,3 +2031,302 @@ def search_shortcuts(request):
         return JsonResponse({'shortcuts': shortcuts_data})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def leads_list(request):
+    """Display list of all leads with search and makeing patient capabilities"""
+    try:
+        from django.core.paginator import Paginator
+        from datetime import datetime
+        
+        # Get search and filter parameters
+        search_query = request.GET.get('search', '').strip()
+        date_from = request.GET.get('date_from', '').strip()
+        date_to = request.GET.get('date_to', '').strip()
+        conversion_status = request.GET.get('conversion_status', '').strip()
+        
+        # Start with all leads
+        leads = InterestLead.objects.all()
+        
+        # Apply search filter if provided
+        if search_query:
+            leads = leads.filter(
+                models.Q(first_name__icontains=search_query) |
+                models.Q(last_name__icontains=search_query) |
+                models.Q(email__icontains=search_query) |
+                models.Q(phone_number__icontains=search_query)
+            )
+        
+        # Apply date range filter if provided
+        if date_from:
+            try:
+                date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+                leads = leads.filter(created_at__date__gte=date_from_obj)
+            except ValueError:
+                messages.warning(request, 'Invalid "from" date format. Please use YYYY-MM-DD.')
+        
+        if date_to:
+            try:
+                date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+                leads = leads.filter(created_at__date__lte=date_to_obj)
+            except ValueError:
+                messages.warning(request, 'Invalid "to" date format. Please use YYYY-MM-DD.')
+        
+        # Apply conversion status filter if provided
+        if conversion_status == 'converted':
+            leads = leads.filter(is_converted=True)
+        elif conversion_status == 'not_converted':
+            leads = leads.filter(is_converted=False)
+        
+        # Order by creation date (newest first)
+        leads = leads.order_by('-created_at')
+        
+        # Add computed fields for each lead
+        leads_with_data = []
+        for lead in leads:
+            leads_with_data.append({
+                'lead': lead,
+                'completion_percentage': lead.completion_percentage,
+                'is_complete': lead.is_complete,
+                'converted_patient_name': lead.converted_patient.user.get_full_name() if lead.converted_patient else None,
+                'converted_by_name': lead.converted_by.get_full_name() if lead.converted_by else None
+            })
+        
+        # Implement pagination
+        paginator = Paginator(leads_with_data, 25)  # Show 25 leads per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        # Calculate statistics
+        total_leads = InterestLead.objects.count()
+        converted_leads = InterestLead.objects.filter(is_converted=True).count()
+        conversion_rate = round((converted_leads / total_leads * 100), 1) if total_leads > 0 else 0
+        
+        context = {
+            'page_obj': page_obj,
+            'paginator': paginator,
+            'is_paginated': page_obj.has_other_pages(),
+            'search_query': search_query,
+            'date_from': date_from,
+            'date_to': date_to,
+            'conversion_status': conversion_status,
+            'total_leads': total_leads,
+            'converted_leads': converted_leads,
+            'conversion_rate': conversion_rate,
+            'filtered_count': len(leads_with_data)
+        }
+        
+        return render(request, 'admin/leads_list.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading leads list: {str(e)}')
+        return redirect('admin_dashboard')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def lead_detail(request, lead_id):
+    """Display detailed information about a specific lead"""
+    try:
+        lead = get_object_or_404(InterestLead, id=lead_id)
+        
+        # Calculate completion status
+        completion_percentage = lead.completion_percentage
+        is_complete = lead.is_complete
+        
+        # Identify missing required fields for patient conversion
+        missing_fields = []
+        if not lead.first_name:
+            missing_fields.append('First Name')
+        if not lead.last_name:
+            missing_fields.append('Last Name')
+        if not lead.email:
+            missing_fields.append('Email')
+        if not lead.phone_number:
+            missing_fields.append('Phone Number')
+        if not lead.date_of_birth:
+            missing_fields.append('Date of Birth')
+        if not lead.insurance:
+            missing_fields.append('Insurance')
+        
+        # Get conversion history if applicable
+        conversion_history = None
+        if lead.is_converted:
+            conversion_history = {
+                'converted_at': lead.converted_at,
+                'converted_by': lead.converted_by,
+                'converted_patient': lead.converted_patient
+            }
+        
+        # Get all available fields and their values for display
+        lead_fields = [
+            {'label': 'First Name', 'value': lead.first_name, 'required': True},
+            {'label': 'Last Name', 'value': lead.last_name, 'required': True},
+            {'label': 'Email', 'value': lead.email, 'required': True},
+            {'label': 'Phone Number', 'value': lead.phone_number, 'required': True},
+            {'label': 'Date of Birth', 'value': lead.date_of_birth, 'required': True},
+            {'label': 'Age', 'value': lead.age, 'required': False},
+            {'label': 'Insurance', 'value': lead.insurance, 'required': True},
+            {'label': 'Service Interest', 'value': lead.service_interest, 'required': False},
+            {'label': 'Allergies', 'value': lead.allergies, 'required': False},
+            {'label': 'Additional Comments', 'value': lead.additional_comments, 'required': False},
+        ]
+        
+        context = {
+            'lead': lead,
+            'lead_fields': lead_fields,
+            'completion_percentage': completion_percentage,
+            'is_complete': is_complete,
+            'missing_fields': missing_fields,
+            'conversion_history': conversion_history,
+            'can_convert': not lead.is_converted and is_complete
+        }
+        
+        return render(request, 'admin/lead_detail.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading lead details: {str(e)}')
+        return redirect('leads_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def convert_lead_to_patient(request, lead_id):
+    """Convert a lead to a patient with pre-populated data"""
+    try:
+        from django.db import transaction
+        from django.utils import timezone
+        
+        lead = get_object_or_404(InterestLead, id=lead_id)
+        
+        # Check if lead is already converted
+        if lead.is_converted:
+            messages.warning(request, 'This lead has already been converted to a patient.')
+            return redirect('lead_detail', lead_id=lead_id)
+        
+        if request.method == 'POST':
+            # Use transaction to ensure data consistency
+            try:
+                with transaction.atomic():
+                    # Get form data with fallbacks to lead data
+                    username = request.POST.get('username') or lead.email
+                    email = request.POST.get('email') or lead.email
+                    first_name = request.POST.get('first_name') or lead.first_name
+                    last_name = request.POST.get('last_name') or lead.last_name
+                    phone_number = request.POST.get('phone_number') or lead.phone_number
+                    date_of_birth = request.POST.get('date_of_birth') or lead.date_of_birth
+                    insurance = request.POST.get('insurance') or lead.insurance
+                    allergies = request.POST.get('allergies') or lead.allergies
+                    
+                    # Additional patient-specific fields
+                    height = request.POST.get('height')
+                    weight = request.POST.get('weight')
+                    sex = request.POST.get('sex')
+                    monitoring_parameters = request.POST.get('monitoring_parameters')
+                    device_serial_number = request.POST.get('device_serial_number')
+                    pharmacy_info = request.POST.get('pharmacy_info')
+                    smoke = request.POST.get('smoke', 'NO')
+                    drink = request.POST.get('drink', 'NO')
+                    family_history = request.POST.get('family_history')
+                    medications = request.POST.get('medications')
+                    
+                    # Validate required fields
+                    if not all([username, email, first_name, last_name, phone_number, date_of_birth, insurance]):
+                        messages.error(request, 'Please fill in all required fields.')
+                        return redirect('convert_lead_to_patient', lead_id=lead_id)
+                    
+                    # Check if user with this email already exists
+                    if User.objects.filter(email=email).exists():
+                        messages.error(request, f'A user with email {email} already exists.')
+                        return redirect('convert_lead_to_patient', lead_id=lead_id)
+                    
+                    # Create User object
+                    user = User.objects.create(
+                        username=username,
+                        email=email,
+                        first_name=first_name,
+                        last_name=last_name
+                    )
+                    
+                    # Set a temporary password (admin should inform patient to reset)
+                    user.set_password('TempPassword123!')
+                    user.save()
+                    
+                    # Create Patient object
+                    patient_data = {
+                        'user': user,
+                        'date_of_birth': date_of_birth,
+                        'phone_number': phone_number,
+                        'insurance': insurance,
+                        'sex': sex,
+                        'monitoring_parameters': monitoring_parameters,
+                        'pharmacy_info': pharmacy_info,
+                        'allergies': allergies,
+                        'smoke': smoke,
+                        'drink': drink,
+                        'family_history': family_history,
+                        'medications': medications,
+                    }
+                    
+                    # Add optional numeric fields if provided
+                    if height:
+                        try:
+                            patient_data['height'] = float(height)
+                        except ValueError:
+                            pass
+                    
+                    if weight:
+                        try:
+                            patient_data['weight'] = float(weight)
+                        except ValueError:
+                            pass
+                    
+                    if device_serial_number:
+                        try:
+                            patient_data['device_serial_number'] = int(device_serial_number)
+                        except ValueError:
+                            pass
+                    
+                    patient = Patient.objects.create(**patient_data)
+                    
+                    # Update lead conversion status
+                    lead.is_converted = True
+                    lead.converted_patient = patient
+                    lead.converted_at = timezone.now()
+                    lead.converted_by = request.user
+                    lead.save()
+                    
+                    messages.success(request, f'Lead successfully converted to patient: {patient.user.get_full_name()}')
+                    return redirect('lead_detail', lead_id=lead_id)
+                    
+            except Exception as e:
+                messages.error(request, f'Error converting lead to patient: {str(e)}')
+                return redirect('convert_lead_to_patient', lead_id=lead_id)
+        
+        # GET request - display the conversion form
+        # Pre-populate form with lead data
+        form_data = {
+            'username': lead.email,
+            'email': lead.email,
+            'first_name': lead.first_name,
+            'last_name': lead.last_name,
+            'phone_number': lead.phone_number,
+            'date_of_birth': lead.date_of_birth,
+            'insurance': lead.insurance,
+            'allergies': lead.allergies,
+        }
+        
+        # Get choices for dropdowns
+        sex_choices = Patient.SEX_CHOICES
+        monitoring_choices = Patient.MONITORING_CHOICES
+        
+        context = {
+            'lead': lead,
+            'form_data': form_data,
+            'sex_choices': sex_choices,
+            'monitoring_choices': monitoring_choices,
+        }
+        
+        return render(request, 'admin/convert_lead_to_patient.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading conversion form: {str(e)}')
+        return redirect('leads_list')

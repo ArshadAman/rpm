@@ -19,13 +19,25 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4$7tarn#dic1f!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["strattonhealth.com", "www.strattonhealth.com","localhost","127.0.0.1", "*.ngrok-free.app", "*.loca.lt", "fuzzy-bugs-arrive.loca.lt"]
+ALLOWED_HOSTS = [
+    "strattonhealth.com",
+    ".strattonhealth.com",
+    "localhost","127.0.0.1", 
+    "*.ngrok-free.app",
+    "*.loca.lt", 
+    "fuzzy-bugs-arrive.loca.lt",
+    "https://750fc27bb95c.ngrok-free.app/",
+    "750fc27bb95c.ngrok-free.app",
+    "*.retellai.com"
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "https://strattonhealth.com",
     "https://www.strattonhealth.com",
-    "https://*.ngrok-free.app"
+    "https://*.ngrok-free.app",
+    "https://dev.strattonhealth.com",
+    "https://.strattonhealth.com",
 ]
 
 
@@ -42,7 +54,7 @@ INSTALLED_APPS = [
     # System apps
     'rpm_users',
     'reports',
-    'calling_agent',
+    'retell_calling',
     # Core apps
     'rest_framework',
     'corsheaders',
@@ -228,6 +240,13 @@ BASE_URL = os.environ.get('BASE_URL', 'https://fuzzy-bugs-arrive.loca.lt')
 # AI/OpenAI configuration for future use
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
+# Retell AI configuration
+RETELL_BEARER_TOKEN = os.environ.get('RETELL_BEARER_TOKEN')
+RETELL_FROM_NUMBER = os.environ.get('RETELL_FROM_NUMBER')
+
+# Gemini AI configuration
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+
 # Twilio-related settings
 if not TWILIO_ACCOUNT_SID:
     print("Warning: TWILIO_ACCOUNT_SID not set. Calling functionality will not work.")
@@ -235,6 +254,16 @@ if not TWILIO_AUTH_TOKEN:
     print("Warning: TWILIO_AUTH_TOKEN not set. Calling functionality will not work.")
 if not TWILIO_PHONE_NUMBER:
     print("Warning: TWILIO_PHONE_NUMBER not set. Calling functionality will not work.")
+
+# Retell AI-related settings
+if not RETELL_BEARER_TOKEN:
+    print("Warning: RETELL_BEARER_TOKEN not set. Retell calling functionality will not work.")
+if not RETELL_FROM_NUMBER:
+    print("Warning: RETELL_FROM_NUMBER not set. Retell calling functionality will not work.")
+
+# Gemini AI-related settings
+if not GEMINI_API_KEY:
+    print("Warning: GEMINI_API_KEY not set. AI transcript processing will not work.")
 
 # Logging configuration
 # Ensure logs directory exists
@@ -271,6 +300,16 @@ LOGGING = {
         'rpm_users.signals': {
             'handlers': ['file', 'console'],
             'level': 'INFO',
+            'propagate': True,
+        },
+        'retell_calling': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'retell_calling.services': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
             'propagate': True,
         },
         'django': {
