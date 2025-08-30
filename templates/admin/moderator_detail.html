@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ moderator.user.get_full_name }} - Moderator Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+            --warning: #FFA726;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
+        .header {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+        }
+
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .info-card h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card .icon {
+            font-size: 1.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: white;
+            font-weight: 400;
+            text-align: right;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-badge.escalated .stat-number {
+            color: var(--error);
+        }
+
+        .stat-badge.normal .stat-number {
+            color: var(--success);
+        }
+
+        .patients-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .patients-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .patients-table th {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 16px 15px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .patients-table td {
+            padding: 14px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        .patients-table tr {
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .patients-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(3px);
+        }
+
+        .patients-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-escalated {
+            background: rgba(255, 78, 78, 0.2);
+            color: var(--error);
+            border: 1px solid rgba(255, 78, 78, 0.3);
+        }
+
+        .status-normal {
+            background: rgba(0, 204, 136, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(0, 204, 136, 0.3);
+        }
+
+        .no-patients {
+            text-align: center;
+            padding: 60px 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .no-patients .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-patients h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .no-patients p {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #FF7043);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 167, 38, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            margin-top: 30px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 30px;
+        }
+
+        .patient-name {
+            font-weight: 600;
+            color: white;
+        }
+
+        .patient-email {
+            font-size: 12px;
+            opacity: 0.8;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .last-report {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .monitoring-param {
+            background: rgba(121, 40, 202, 0.2);
+            color: var(--primary);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .doctor-info {
+            text-align: left;
+        }
+
+        .doctor-name {
+            font-weight: 600;
+            color: white;
+            font-size: 13px;
+        }
+
+        .doctor-specialty {
+            font-size: 11px;
+            color: var(--warning);
+            margin-top: 2px;
+            font-style: italic;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: rgba(0, 204, 136, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(0, 204, 136, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(255, 78, 78, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(255, 78, 78, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                margin: 10px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 5px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .patients-table {
+                font-size: 12px;
+                overflow-x: auto;
+                display: block;
+                white-space: nowrap;
+            }
+
+            .patients-table th,
+            .patients-table td {
+                padding: 10px 8px;
+                min-width: 120px;
+            }
+
+            .btn {
+                display: block;
+                width: 100%;
+                margin-right: 0;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .info-card {
+                padding: 15px;
+            }
+
+            .patients-table {
+                font-size: 11px;
+            }
+
+            .patients-table th,
+            .patients-table td {
+                padding: 8px 6px;
+                min-width: 100px;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Accessibility improvements */
+        .btn:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --text: #ffffff;
+                --background: #000000;
+                --card-bg: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ moderator.user.get_full_name }}</h1>
+            <p>Moderator Details and Patient Management</p>
+        </div>
+
+        <div class="breadcrumb">
+            <a href="{% url 'admin_dashboard' %}">Admin Dashboard</a> > 
+            <a href="{% url 'moderator_list' %}">Moderator Management</a> > 
+            {{ moderator.user.get_full_name }}
+        </div>
+
+        <div class="content">
+            <!-- Messages -->
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Moderator Information -->
+            <div class="info-grid">
+                <!-- Personal Information -->
+                <div class="info-card">
+                    <h3><span class="icon">👤</span>Personal Information</h3>
+                    <div class="info-row">
+                        <span class="info-label">Full Name:</span>
+                        <span class="info-value">{{ moderator.user.first_name }} {{ moderator.user.last_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Username:</span>
+                        <span class="info-value">{{ moderator.user.username }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{ moderator.user.email }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Phone Number:</span>
+                        <span class="info-value">{{ moderator.phone_number|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Account Created:</span>
+                        <span class="info-value">{{ moderator.user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Last Login:</span>
+                        <span class="info-value">
+                            {% if moderator.user.last_login %}
+                                {{ moderator.user.last_login|date:"M d, Y H:i" }}
+                            {% else %}
+                                Never logged in
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Patient Statistics -->
+                <div class="info-card">
+                    <h3><span class="icon">📊</span>Patient Statistics</h3>
+                    <div class="stats-row">
+                        <div class="stat-badge">
+                            <span class="stat-number">{{ total_patients }}</span>
+                            <span class="stat-label">Total Patients</span>
+                        </div>
+                        <div class="stat-badge normal">
+                            <span class="stat-number">{{ normal_count }}</span>
+                            <span class="stat-label">Normal</span>
+                        </div>
+                        <div class="stat-badge escalated">
+                            <span class="stat-number">{{ escalated_count }}</span>
+                            <span class="stat-label">Escalated</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assigned Patients Section -->
+            <div class="patients-section">
+                <h2 class="section-title">
+                    <span class="icon">👥</span>
+                    Assigned Patients ({{ total_patients }})
+                </h2>
+                
+                {% if patients_with_info %}
+                    <table class="patients-table">
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Email</th>
+                                <th>Age</th>
+                                <th>Phone</th>
+                                <th>Monitoring Parameter</th>
+                                <th>Insurance</th>
+                                <th>Status</th>
+                                <th>Escalated Doctor</th>
+                                <th>Last Report</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in patients_with_info %}
+                                <tr>
+                                    <td>
+                                        <div class="patient-name">{{ item.patient.user.get_full_name }}</div>
+                                        <div class="patient-email">{{ item.patient.user.email }}</div>
+                                    </td>
+                                    <td>{{ item.patient.user.email }}</td>
+                                    <td>
+                                        {% if item.age %}
+                                            {{ item.age }} years
+                                        {% else %}
+                                            <em style="color: #6c757d;">Not provided</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.patient.phone_number|default:"Not provided" }}</td>
+                                    <td>
+                                        {% if item.patient.monitoring_parameters %}
+                                            <span class="monitoring-param">{{ item.patient.monitoring_parameters }}</span>
+                                        {% else %}
+                                            <em style="color: #6c757d;">Not specified</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.patient.insurance|default:"Not provided" }}</td>
+                                    <td>
+                                        {% if item.escalated %}
+                                            <span class="status-badge status-escalated">Escalated</span>
+                                        {% else %}
+                                            <span class="status-badge status-normal">Normal</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.escalated_doctor %}
+                                            <div class="doctor-info">
+                                                <div class="doctor-name">Dr. {{ item.escalated_doctor.user.get_full_name }}</div>
+                                                <div class="doctor-specialty">{{ item.escalated_doctor.specialization|default:"General" }}</div>
+                                            </div>
+                                        {% elif item.escalated %}
+                                            <em style="color: #FFA726;">Escalated (No doctor assigned)</em>
+                                        {% else %}
+                                            <em style="color: #6c757d;">Not escalated</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.latest_report %}
+                                            <div class="last-report">{{ item.latest_report.created_at|date:"M d, Y" }}</div>
+                                        {% else %}
+                                            <div class="last-report">No reports</div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="no-patients">
+                        <div class="icon">👤</div>
+                        <h3>No Patients Assigned</h3>
+                        <p>This moderator currently has no patients assigned to them.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{% url 'moderator_list' %}" class="btn btn-secondary">Back to Moderator List</a>
+                <a href="{% url 'moderator_edit' moderator.id %}" class="btn btn-warning">Edit Moderator</a>
+                <a href="{% url 'admin_patient_list' %}" class="btn btn-primary">Manage Patients</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

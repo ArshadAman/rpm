@@ -43,6 +43,7 @@ urlpatterns = [
     # Moderator management
     path('dashboard/moderators/', views.moderator_list, name='moderator_list'),
     path('dashboard/moderators/create/', views.moderator_create, name='moderator_create'),
+    path('dashboard/moderators/<int:moderator_id>/', views.moderator_detail, name='moderator_detail'),
     path('dashboard/moderators/<int:moderator_id>/edit/', views.moderator_edit, name='moderator_edit'),
     path('dashboard/moderators/<int:moderator_id>/delete/', views.moderator_delete, name='moderator_delete'),
     
