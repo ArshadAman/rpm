@@ -644,7 +644,10 @@
                     <div class="info-label">{% translate 'Email Address' %}</div>
                     <div class="info-value {% if not lead.email %}empty{% endif %}">
                         {% if lead.email %}
-                        <a href="mailto:{{ lead.email }}" class="email">{{ lead.email }}</a>
+                        <a href="mailto:{{ lead.email }}" class="email"
+                            style="color: #7a3cff; word-break: break-all; display: inline-block; max-width: 100%;">
+                             {{ lead.email }}
+                        </a>
                         {% else %}
                         Not provided
                         {% endif %}

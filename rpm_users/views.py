@@ -196,6 +196,56 @@ def moderator_create(request):
     return render(request, 'admin/moderator_form.html', context)
 
 @user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def moderator_detail(request, moderator_id):
+    """Display detailed information about a specific moderator including assigned patients"""
+    try:
+        moderator = get_object_or_404(Moderator, id=moderator_id)
+        
+        # Get all patients assigned to this moderator
+        assigned_patients = Patient.objects.filter(moderator_assigned=moderator).select_related('user').order_by('user__first_name')
+        
+        # Add additional info for each patient
+        patients_with_info = []
+        for patient in assigned_patients:
+            # Calculate age if date_of_birth exists
+            age = None
+            if patient.date_of_birth:
+                from datetime import date
+                today = date.today()
+                age = today.year - patient.date_of_birth.year - ((today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day))
+            
+            # Get latest report for this patient (if any)
+            from reports.models import Reports
+            latest_report = Reports.objects.filter(patient=patient).order_by('-created_at').first()
+            
+            # Get escalated doctor information if patient is escalated
+            escalated_doctor = None
+            if patient.is_escalated and patient.doctor_escalated:
+                escalated_doctor = patient.doctor_escalated
+            
+            patients_with_info.append({
+                'patient': patient,
+                'age': age,
+                'latest_report': latest_report,
+                'escalated': patient.is_escalated,
+                'escalated_doctor': escalated_doctor
+            })
+        
+        context = {
+            'moderator': moderator,
+            'patients_with_info': patients_with_info,
+            'total_patients': len(patients_with_info),
+            'escalated_count': len([p for p in patients_with_info if p['escalated']]),
+            'normal_count': len([p for p in patients_with_info if not p['escalated']])
+        }
+        
+        return render(request, 'admin/moderator_detail.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading moderator details: {str(e)}')
+        return redirect('moderator_list')
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def moderator_edit(request, moderator_id):
     """Edit an existing moderator with form handling and validation"""
     moderator = get_object_or_404(Moderator, id=moderator_id)
