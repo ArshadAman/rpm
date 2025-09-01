@@ -19,15 +19,16 @@ djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 ecdsa==0.19.1
 frozenlist==1.7.0
-google-ai-generativelanguage==0.6.15
+fuzzywuzzy==0.18.0
+google-ai-generativelanguage==0.4.0
 google-api-core==2.25.1
 google-api-python-client==2.179.0
 google-auth==2.40.3
 google-auth-httplib2==0.2.0
-google-generativeai==0.8.5
+google-generativeai==0.3.2
 googleapis-common-protos==1.70.0
 grpcio==1.74.0
-grpcio-status==1.71.2
+grpcio-status==1.62.3
 gunicorn==23.0.0
 h11==0.16.0
 httplib2==0.22.0
@@ -38,7 +39,7 @@ multidict==6.6.4
 packaging==25.0
 propcache==0.3.2
 proto-plus==1.26.1
-protobuf==5.29.5
+protobuf==4.25.8
 psycopg2-binary==2.9.10
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
@@ -50,7 +51,7 @@ pyparsing==3.2.3
 python-http-client==3.3.7
 requests==2.32.3
 rsa==4.9.1
-sendgrid
+sendgrid==6.12.2
 six==1.17.0
 sqlparse==0.5.1
 tqdm==4.67.1
@@ -62,5 +63,7 @@ tzdata==2024.1
 uritemplate==4.2.0
 urllib3==2.2.2
 uvicorn==0.35.0
-Werkzeug
+Werkzeug<3.0.0
 yarl==1.20.1
+python-dotenv==1.0.0
+python-Levenshtein==0.25.0
