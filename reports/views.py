@@ -376,8 +376,8 @@ def data_from_mio_connect(request):
             report = Reports.objects.create(patient=patient, **report_fields)
             # Send the email using sendgrid
             # Check the critical fields
-            if report_fields['systolic_blood_pressure'] > 170:
-                pass
+            if int(report_fields['systolic_blood_pressure']) > 170:
+                pass #send the email
 
         except Exception as e:
             print(f"Error creating report: {str(e)}")
