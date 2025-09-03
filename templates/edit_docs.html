@@ -1,0 +1,2016 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Quill Editor CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <!-- Quill Editor CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-y:auto;
+        }
+
+        .container {
+            max-width: 98%;
+            margin: auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            {% comment %} height: calc(100vh - 40px); {% endcomment %}
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .right-panel {
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .editor-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .editor-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .shortcut-button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .shortcut-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(121, 40, 202, 0.3);
+        }
+
+        .editor-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .title-selector {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Quill Editor Styling */
+        .quill-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+
+        .ql-toolbar {
+            background: rgba(255, 255, 255, 0.02) !important;
+            border: none !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            padding: 15px 20px !important;
+        }
+
+        .ql-toolbar .ql-formats {
+            margin-right: 15px;
+        }
+
+        .ql-toolbar button {
+            color: var(--text) !important;
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 6px !important;
+            margin-right: 4px !important;
+        }
+
+        .ql-toolbar button:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+
+        .ql-toolbar button.ql-active {
+            background: var(--primary) !important;
+            color: white !important;
+        }
+
+        .ql-editor {
+            background: rgba(255, 255, 255, 0.02) !important;
+            color: white !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+            padding: 20px !important;
+            border: none !important;
+            flex: 1 !important;
+            min-height: 300px !important;
+        }
+
+        .ql-editor.ql-blank::before {
+            color: var(--text) !important;
+            font-style: italic !important;
+        }
+
+        .ql-container {
+            border: none !important;
+            font-family: 'Poppins', sans-serif !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        /* Shortcut suggestion dropdown */
+        .shortcut-suggestions {
+            position: absolute;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            min-width: 250px;
+        }
+
+        .shortcut-suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .shortcut-suggestion-item:hover,
+        .shortcut-suggestion-item.selected {
+            background: var(--primary);
+            color: white;
+        }
+
+        .shortcut-suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .shortcut-key {
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .shortcut-description {
+            color: var(--text);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        /* Shortcut Management Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .shortcut-form {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-label {
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            padding: 12px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(121, 40, 202, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .shortcuts-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .shortcut-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .shortcut-info {
+            flex: 1;
+        }
+
+        .shortcut-item-key {
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .shortcut-item-description {
+            color: var(--text);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .shortcut-item-content {
+            color: white;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 6px;
+            max-height: 60px;
+            overflow-y: auto;
+        }
+
+        .shortcut-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff3333;
+        }
+
+        /* Quill Editor Styles */
+        .quill-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .quill-container .ql-toolbar {
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 16px;
+        }
+
+        .quill-container .ql-toolbar .ql-stroke {
+            stroke: var(--text);
+        }
+
+        .quill-container .ql-toolbar .ql-fill {
+            fill: var(--text);
+        }
+
+        .quill-container .ql-toolbar button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .quill-container .ql-toolbar button.ql-active {
+            background: var(--primary);
+        }
+
+        .quill-container .ql-editor {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            color: white;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            min-height: 300px;
+            padding: 20px;
+        }
+
+        .quill-container .ql-editor:focus {
+            outline: none;
+        }
+
+        .quill-container .ql-editor.ql-blank::before {
+            color: var(--text);
+            opacity: 0.6;
+            font-style: italic;
+        }
+
+        /* Shortcut Popup Styles */
+        .shortcut-popup {
+            position: absolute;
+            background: rgba(30, 30, 30, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            max-width: 400px;
+            display: none;
+        }
+
+        .shortcut-popup.show {
+            display: block;
+        }
+
+        .shortcut-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .shortcut-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.2s ease;
+        }
+
+        .shortcut-item:hover,
+        .shortcut-item.selected {
+            background: rgba(121, 40, 202, 0.2);
+        }
+
+        .shortcut-item:last-child {
+            border-bottom: none;
+        }
+
+        .shortcut-key {
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .shortcut-description {
+            color: var(--text);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        /* Shortcut Management Modal */
+        .shortcut-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .shortcut-modal.show {
+            display: flex;
+        }
+
+        .shortcut-modal-content {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .shortcut-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shortcut-modal-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-modal:hover {
+            color: white;
+        }
+
+        .shortcut-modal-body {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .shortcut-form {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text);
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .shortcut-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(121, 40, 202, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff3333;
+        }
+
+        .shortcuts-list {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .shortcut-list-item {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .shortcut-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .shortcut-info {
+            flex: 1;
+        }
+
+        .shortcut-info-key {
+            color: var(--secondary);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .shortcut-info-desc {
+            color: var(--text);
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .shortcut-info-content {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            max-height: 40px;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+
+        .shortcut-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .manage-shortcuts-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .manage-shortcuts-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+        }
+
+        .patient-info {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            {% comment %} overflow: hidden; {% endcomment %}
+        }
+
+        .patient-info::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        }
+
+        .patient-info h3 {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .patient-info p {
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .patient-info strong {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .info-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-section h4 {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .vital-compact {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .vital-compact:last-child {
+            border-bottom: none;
+        }
+
+        .vital-label {
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .vital-value {
+            color: white;
+            font-weight: 500;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .session-info {
+            background: linear-gradient(135deg, rgba(121, 40, 202, 0.1), rgba(255, 0, 128, 0.1));
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+        }
+
+        .session-info h4 {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .session-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .session-detail:last-child {
+            margin-bottom: 0;
+        }
+
+        .save-button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+        }
+
+        .medical-text {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 4px;
+        }
+
+        .no-data-text {
+            color: var(--text);
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: fit-content;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+
+        .header-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .header-section h2 {
+            margin: 0;
+            left: auto;
+            transform: none;
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .right-panel {
+                width: 100%;
+                max-height: 300px;
+                order: -1;
+            }
+            
+            .left-panel {
+                min-height: 500px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .header-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .header-section h2 {
+                text-align: left;
+                font-size: 18px;
+            }
+
+            .editor-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .right-panel {
+                max-height: 250px;
+            }
+            
+            .patient-info, .info-section, .session-info {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <a href="javascript:history.back()" class="back-button">← Back</a>
+            <h2>Edit Documentation</h2>
+            <div style="width: 80px;"></div> <!-- Spacer for centering -->
+        </div>
+        
+        <div class="main-content">
+            <!-- Left Panel - Documentation Editor -->
+            <div class="left-panel">
+                <div class="editor-container">
+                    <div class="editor-header">
+                        <div class="editor-title">Documentation Editor</div>
+                                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                <label for="inline_doc_report_date" style="color: var(--text); font-size: 14px; font-weight: 500;">Date of Service:</label>
+                                <input type="date" id="inline_doc_report_date" name="doc_report_date" value="{{ form.initial.doc_report_date|date:'Y-m-d' }}" style="background: var(--container); color: #fff; border: 1px solid var(--primary); border-radius: 8px; padding: 4px 8px; font-size: 14px;" required form="documentationForm">
+                            </div>
+
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <button type="button" class="manage-shortcuts-btn" onclick="openShortcutModal()">
+                                ⚡ Manage Shortcuts
+                            </button>
+                            <select class="title-selector" id="id_title" name="title" form="documentationForm">
+                                <option value="Progress Note">Progress Note</option>
+                                <option value="RPM Progress Note">RPM Progress Note</option>
+                                <option value="CCN-HTN Progress Note">CCN-HTN Progress Note</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="editor-content">
+                        <form id="documentationForm" action="{% url 'edit_documentation' doc_id %}" method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <!-- Quill Editor Container -->
+                            <div class="quill-container">
+                                <div id="quill-editor" data-placeholder="Start typing your documentation... Use shortcuts like .pe for quick text insertion"></div>
+                            </div>
+                            
+                            <!-- Hidden textarea for form submission -->
+                            <textarea id="id_full_documentation" name="full_documentation" style="display: none;">{{ form.initial.full_documentation|default_if_none:'' }}</textarea>
+                            
+                            <!-- Shortcut Popup -->
+                            <div class="shortcut-popup" id="shortcut-popup">
+                                <div class="shortcut-list" id="shortcut-list">
+                                    <!-- Shortcut suggestions will be populated here -->
+                                </div>
+                            </div>
+                            <!-- Hidden duplicate for compatibility, but only the inline one will be visible -->
+                            <input type="hidden" id="hidden_doc_report_date" name="doc_report_date" value="{{ form.initial.doc_report_date|date:'Y-m-d' }}" form="documentationForm">
+
+                            <button type="submit" class="save-button">Update Documentation</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Patient Information -->
+            <div class="right-panel">
+                <!-- Patient Basic Info -->
+                <div class="patient-info">
+                    <h3>Patient Information</h3>
+                    <p><strong>Name:</strong> {{ patient.user.first_name|default:"" }} {{ patient.user.last_name|default:"" }}</p>
+                    <p><strong>DOB:</strong> {% if patient.date_of_birth %}{{ patient.date_of_birth|date:"M d, Y" }}{% else %}N/A{% endif %}</p>
+                    <p><strong>Sex:</strong> {% if patient.sex %}{{ patient.get_sex_display }}{% else %}N/A{% endif %}</p>
+                    <p><strong>Age:</strong> {% if patient.date_of_birth %}{{ patient.age }} years{% else %}N/A{% endif %}</p>
+                    <p><strong>Phone:</strong> {{ patient.phone_number|default:"N/A" }}</p>
+                    <p><strong>Email:</strong> {{ patient.user.email|default:"N/A" }}</p>
+                    <p><strong>Insurance:</strong> {{ patient.insurance|default:"N/A" }}</p>
+                    {% if patient.insurance_number %}<p><strong>Insurance #:</strong> {{ patient.insurance_number }}</p>{% endif %}
+                    <p><strong>Device Serial:</strong> {{ patient.device_serial_number|default:"N/A" }}</p>
+                    {% if patient.height %}<p><strong>Height:</strong> {{ patient.height }} inches</p>{% endif %}
+                    {% if patient.weight %}<p><strong>Weight:</strong> {{ patient.weight }} pounds</p>{% endif %}
+                    {% if patient.bmi %}<p><strong>BMI:</strong> {{ patient.bmi }}</p>{% endif %}
+                </div>
+
+                                <!-- Recent Vitals -->
+                {% if reports %}
+                <div class="info-section">
+                    <h4>Recent Vitals (Last 5)</h4>
+                    {% for report in reports|slice:":5" %}
+                    <div style="background: rgba(255, 255, 255, 0.02); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                        <div style="color: var(--secondary); font-size: 12px; margin-bottom: 5px;">{{ report.created_at|date:"M d, Y H:i" }}</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            {% if report.systolic_blood_pressure and report.diastolic_blood_pressure %}
+                                <span class="vital-value">BP: {{ report.systolic_blood_pressure }}/{{ report.diastolic_blood_pressure }}</span>
+                            {% elif report.blood_pressure %}
+                                <span class="vital-value">BP: {{ report.blood_pressure }}</span>
+                            {% endif %}
+                            {% if report.pulse or report.heart_rate %}
+                                <span class="vital-value">HR: {{ report.pulse|default:report.heart_rate }}</span>
+                            {% endif %}
+                            {% if report.spo2 %}
+                                <span class="vital-value">SpO2: {{ report.spo2 }}%</span>
+                            {% endif %}
+                            {% if report.temperature %}
+                                <span class="vital-value">Temp: {{ report.temperature }}°F</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Clinical Information -->
+                <div class="info-section">
+                    <h4>Clinical Information</h4>
+                    <div class="vital-compact">
+                        <span class="vital-label">Monitoring Parameters:</span>
+                        <span class="vital-value">{{ patient.monitoring_parameters|default:"N/A" }}</span>
+                    </div>
+                    <div class="vital-compact">
+                        <span class="vital-label">Assigned Moderator:</span>
+                        <span class="vital-value">{% if patient.moderator_assigned %}{{ patient.moderator_assigned.user.get_full_name|default:patient.moderator_assigned.user.username }}{% else %}N/A{% endif %}</span>
+                    </div>
+                    {% if patient.doctor_escalated %}
+                    <div class="vital-compact">
+                        <span class="vital-label">Escalated Doctor:</span>
+                        <span class="vital-value">{{ patient.doctor_escalated.user.get_full_name|default:patient.doctor_escalated.user.username }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="vital-compact">
+                        <span class="vital-label">Escalation Status:</span>
+                        <span class="vital-value">{% if patient.is_escalated %}Escalated{% else %}Normal{% endif %}</span>
+                    </div>
+                    <div class="vital-compact">
+                        <span class="vital-label">Smoking:</span>
+                        <span class="vital-value">{{ patient.smoke|default:"N/A" }}</span>
+                    </div>
+                    <div class="vital-compact">
+                        <span class="vital-label">Drinking:</span>
+                        <span class="vital-value">{{ patient.drink|default:"N/A" }}</span>
+                    </div>
+                </div>
+
+                <!-- Allergies and Medications -->
+                {% if patient.allergies or patient.medications or patient.family_history or patient.pharmacy_info %}
+                <div class="info-section">
+                    <h4>Medical Information</h4>
+                    {% if patient.allergies %}
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: var(--secondary); font-size: 12px; margin-bottom: 4px; font-weight: 500;">Allergies:</div>
+                        <div class="medical-text">{{ patient.allergies }}</div>
+                    </div>
+                    {% endif %}
+                    {% if patient.medications %}
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: var(--secondary); font-size: 12px; margin-bottom: 4px; font-weight: 500;">Current Medications:</div>
+                        <div class="medical-text">{{ patient.medications|linebreaks }}</div>
+                    </div>
+                    {% endif %}
+                    {% if patient.family_history %}
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: var(--secondary); font-size: 12px; margin-bottom: 4px; font-weight: 500;">Family History:</div>
+                        <div class="medical-text">{{ patient.family_history|linebreaks }}</div>
+                    </div>
+                    {% endif %}
+                    {% if patient.pharmacy_info %}
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: var(--secondary); font-size: 12px; margin-bottom: 4px; font-weight: 500;">Pharmacy Information:</div>
+                        <div class="medical-text">{{ patient.pharmacy_info|linebreaks }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="info-section">
+                    <h4>Medical Information</h4>
+                    <div class="no-data-text">No additional medical information available</div>
+                </div>
+                {% endif %}
+
+
+
+                <!-- Medical History -->
+                {% if patient.medical_history.all %}
+                <div class="info-section">
+                    <h4>Past Medical History</h4>
+                    {% for history in patient.medical_history.all %}
+                    <div class="vital-compact">
+                        <span class="vital-value">{{ history.pmh }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Session Information -->
+                <div class="session-info">
+                    <h4>Session Information</h4>
+                    <div class="session-detail">
+                        <span class="vital-label">Current Moderator:</span>
+                        <span style="color: white; font-weight: 500;">
+                            {% if request.user.get_full_name %}
+                                {{ request.user.get_full_name }}
+                            {% else %}
+                                {{ request.user.username }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="session-detail">
+                        <span class="vital-label">User Role:</span>
+                        <span style="color: white; font-weight: 500;">
+                            {% if request.user.moderator %}
+                                Moderator
+                            {% elif request.user.doctor %}
+                                Doctor
+                            {% else %}
+                                Admin
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="session-detail">
+                        <span class="vital-label">Date:</span>
+                        <span style="color: white; font-weight: 500;">{% now "M d, Y" %}</span>
+                    </div>
+                    <div class="session-detail">
+                        <span class="vital-label">Time:</span>
+                        <span style="color: white; font-weight: 500;">{% now "H:i" %}</span>
+                    </div>
+                    <div class="session-detail">
+                        <span class="vital-label">Documentation Type:</span>
+                        <span style="color: white; font-weight: 500;" id="current-doc-type">Progress Note</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortcut Management Modal -->
+    <div class="shortcut-modal" id="shortcut-modal">
+        <div class="shortcut-modal-content">
+            <div class="shortcut-modal-header">
+                <div class="shortcut-modal-title">Manage Text Shortcuts</div>
+                <button class="close-modal" onclick="closeShortcutModal()">&times;</button>
+            </div>
+            <div class="shortcut-modal-body">
+                <!-- Add/Edit Shortcut Form -->
+                <div class="shortcut-form">
+                    <form id="shortcut-form">
+                        <div class="form-group">
+                            <label class="form-label">Shortcut Key (e.g., .pe)</label>
+                            <input type="text" id="shortcut-key" class="form-input" placeholder="Enter shortcut key" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <input type="text" id="shortcut-description" class="form-input" placeholder="Brief description" maxlength="255">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Content</label>
+                            <textarea id="shortcut-content" class="form-textarea" placeholder="Full text content" rows="4"></textarea>
+                        </div>
+                        <div class="shortcut-buttons">
+                            <button type="button" class="btn btn-primary" onclick="saveShortcut()">Save Shortcut</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Existing Shortcuts List -->
+                <div class="shortcuts-list" id="shortcuts-list">
+                    <!-- Shortcuts will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quill Editor JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+    <!-- Quill Editor JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+    
+    <script>
+                document.addEventListener('DOMContentLoaded', function() {
+            var inlineDateInput = document.getElementById('inline_doc_report_date');
+            var hiddenDateInput = document.getElementById('hidden_doc_report_date');
+            if (inlineDateInput && hiddenDateInput) {
+                inlineDateInput.addEventListener('change', function() {
+                    hiddenDateInput.value = inlineDateInput.value;
+                });
+            }
+            // On form submit, ensure hidden input matches inline
+            var docForm = document.getElementById('documentationForm');
+            if (docForm) {
+                docForm.addEventListener('submit', function() {
+                    if (inlineDateInput && hiddenDateInput) {
+                        hiddenDateInput.value = inlineDateInput.value;
+                    }
+                });
+            }
+        });
+        // Global variables
+        let quill;
+        let shortcuts = [];
+        let currentEditingShortcut = null;
+        let shortcutPopupVisible = false;
+        let selectedShortcutIndex = -1;
+        let storedRange = null; // Store the range when popup is shown
+        let storedShortcutText = ''; // Store the shortcut text being typed
+
+        function generatePatientInfoSection() {
+    const patientName = "{{ patient.user.first_name|default:'' }} {{ patient.user.last_name|default:'' }}".trim();
+    const patientDOB = "{% if patient.date_of_birth %}{{ patient.date_of_birth|date:'M d, Y' }}{% else %}N/A{% endif %}";
+    const patientSex = "{% if patient.sex %}{{ patient.get_sex_display }}{% else %}N/A{% endif %}";
+    const patientAge = "{% if patient.date_of_birth %}{{ patient.age }} years{% else %}N/A{% endif %}";
+    const patientPhone = "{{ patient.phone_number|default:'N/A' }}";
+    const patientHeight = "{% if patient.height %}{{ patient.height }} inches{% else %}N/A{% endif %}";
+    const patientWeight = "{% if patient.weight %}{{ patient.weight }} pounds{% else %}N/A{% endif %}";
+    const patientBMI = "{% if patient.bmi %}{{ patient.bmi }}{% else %}N/A{% endif %}";
+
+    return `<div style=" padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #7928CA;">
+        <h3 style="color: #FF0080; margin-bottom: 10px;">Patient Information</h3>
+        <p><strong>Name:</strong> ${patientName || 'N/A'}</p>
+        <p><strong>DOB:</strong> ${patientDOB}</p>
+        <p><strong>Sex:</strong> ${patientSex}</p>
+        <p><strong>Age:</strong> ${patientAge}</p>
+        <p><strong>Phone:</strong> ${patientPhone}</p>
+        <p><strong>Height:</strong> ${patientHeight}</p>
+        <p><strong>Weight:</strong> ${patientWeight}</p>
+        <p><strong>BMI:</strong> ${patientBMI}</p>
+    </div>`;
+}
+
+
+const vitalsData = [
+    {% if reports %}
+        {% for report in reports|slice:":5" %}
+        {
+            "date": "{{ report.created_at|date:'M d, Y H:i'|escapejs }}",
+            "bp": "{% if report.systolic_blood_pressure and report.diastolic_blood_pressure %}{{ report.systolic_blood_pressure|escapejs }}/{{ report.diastolic_blood_pressure|escapejs }}{% elif report.blood_pressure %}{{ report.blood_pressure|escapejs }}{% else %}N/A{% endif %}",
+            "hr": "{% if report.pulse %}{{ report.pulse|escapejs }}{% elif report.heart_rate %}{{ report.heart_rate|escapejs }}{% else %}N/A{% endif %}",
+            "spo2": "{% if report.spo2 %}{{ report.spo2|escapejs }}%{% else %}N/A{% endif %}",
+            "temp": "{% if report.temperature %}{{ report.temperature|escapejs }}°F{% else %}N/A{% endif %}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    {% endif %}
+];
+console.log("fud",vitalsData)
+
+
+// Function to generate vitals section
+function generateVitalsSection() {
+
+    if (vitalsData.length === 0) {
+        return `<div style=" padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #FF0080;">
+            <h3 style="color: #7928CA; margin-bottom: 10px;">Recent Vitals</h3>
+            <p><em>No recent vitals available</em></p>
+        </div>`;
+    }
+
+    let vitalsHTML = `<div style=" padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #FF0080;">
+        <h3 style="color: #7928CA; margin-bottom: 10px;">Recent Vitals (Last 5)</h3>`;
+
+    vitalsData.forEach(vital => {
+        vitalsHTML += `<div style=" padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+            <div style="color: #FF0080; font-size: 12px; margin-bottom: 4px;">${vital.date}</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
+
+        if (vital.bp !== 'N/A') vitalsHTML += `<span style=" padding: 2px 6px; border-radius: 3px; font-size: 12px;">BP: ${vital.bp}</span>`;
+        if (vital.hr !== 'N/A') vitalsHTML += `<span style="padding: 2px 6px; border-radius: 3px; font-size: 12px;">HR: ${vital.hr}</span>`;
+        if (vital.spo2 !== 'N/A') vitalsHTML += `<span style=" padding: 2px 6px; border-radius: 3px; font-size: 12px;">SpO2: ${vital.spo2}</span>`;
+        if (vital.temp !== 'N/A') vitalsHTML += `<span style=" padding: 2px 6px; border-radius: 3px; font-size: 12px;">Temp: ${vital.temp}</span>`;
+
+        vitalsHTML += `</div></div>`;
+    });
+
+    vitalsHTML += `</div>`;
+    return vitalsHTML;
+}
+
+
+
+        // Function to extract only documentation content, excluding patient info and vitals
+        function extractDocumentationContent(fullContent) {
+            if (!fullContent) return '';
+            
+            // Create a temporary div to parse HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = fullContent;
+            
+            // Look for divs with patient info styling (left border color #7928CA or #FF0080)
+            const patientInfoDivs = tempDiv.querySelectorAll('div[style*="border-left: 4px solid #7928CA"], div[style*="border-left: 4px solid #FF0080"]');
+            
+            // Remove patient info and vitals divs
+            patientInfoDivs.forEach(div => {
+                div.remove();
+            });
+            
+            // Get the remaining content
+            let documentationContent = tempDiv.innerHTML.trim();
+            
+            // If no content remains, try to extract from the last meaningful paragraph
+            if (!documentationContent) {
+                const tempDiv2 = document.createElement('div');
+                tempDiv2.innerHTML = fullContent;
+                const allParagraphs = tempDiv2.querySelectorAll('p');
+                
+                // Find paragraphs that are not inside patient info divs
+                for (let i = allParagraphs.length - 1; i >= 0; i--) {
+                    const p = allParagraphs[i];
+                    const parentDiv = p.closest('div[style*="border-left: 4px solid"]');
+                    if (!parentDiv && p.textContent.trim()) {
+                        documentationContent = p.outerHTML;
+                        break;
+                    }
+                }
+            }
+            
+            return documentationContent;
+        }
+
+        // Initialize Quill Editor
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Quill with custom toolbar
+            quill = new Quill('#quill-editor', {
+                theme: 'snow',
+                placeholder: 'Start typing your documentation... Use shortcuts like .pe for quick text insertion',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'indent': '-1'}, { 'indent': '+1' }],
+                        ['link'],
+                
+                    ]
+                }
+            });
+            // Wait for Quill to be fully initialized and visible before injecting HTML
+            setTimeout(function() {
+                var hiddenTextarea = document.getElementById('id_full_documentation');
+                if (hiddenTextarea) {
+                    const initialContent = hiddenTextarea.value;
+                    console.log('Initial content:', initialContent);
+                    
+                    if (initialContent) {
+                        // Extract only the actual documentation content, excluding patient info and vitals
+                        const extractedContent = extractDocumentationContent(initialContent);
+                        console.log('Extracted documentation content:', extractedContent);
+                        
+                        if (extractedContent && extractedContent.trim()) {
+                            quill.clipboard.dangerouslyPasteHTML(extractedContent);
+                        }
+                    }
+                }
+            }, 100);
+
+            // Listen for text changes to detect shortcuts
+            quill.on('text-change', function(delta, oldDelta, source) {
+                if (source === 'user') {
+                    handleShortcutDetection();
+                    // Update hidden textarea with only the documentation content (no patient info/vitals)
+                    const hiddenTextarea = document.getElementById('id_full_documentation');
+                    if (hiddenTextarea) {
+                        hiddenTextarea.value = quill.root.innerHTML;
+                    }
+                }
+            });
+
+            // Handle keyboard navigation in shortcut popup
+            quill.keyboard.addBinding({
+                key: 'ArrowDown'
+            }, function(range, context) {
+                if (shortcutPopupVisible) {
+                    navigateShortcuts(1);
+                    return false;
+                }
+                return true;
+            });
+
+            quill.keyboard.addBinding({
+                key: 'ArrowUp'
+            }, function(range, context) {
+                if (shortcutPopupVisible) {
+                    navigateShortcuts(-1);
+                    return false;
+                }
+                return true;
+            });
+
+            quill.keyboard.addBinding({
+                key: 'Enter'
+            }, function(range, context) {
+                if (shortcutPopupVisible && selectedShortcutIndex >= 0) {
+                    console.log('Enter pressed, applying shortcut at index:', selectedShortcutIndex);
+                    applyShortcut(selectedShortcutIndex);
+                    return false;
+                }
+                return true;
+            });
+
+            quill.keyboard.addBinding({
+                key: 'Escape'
+            }, function(range, context) {
+                if (shortcutPopupVisible) {
+                    hideShortcutPopup();
+                    return false;
+                }
+                return true;
+            });
+
+            // Load shortcuts
+            loadShortcuts();
+
+            // Initialize other elements
+            const titleSelect = document.getElementById('id_title');
+            
+            const rpmTemplate = `<h3>1. Reason for RPM Enrollment</h3><p>Patient is enrolled in RPM for hypertension (I10) to manage and monitor blood pressure remotely with the goal of preventing hypertensive crises, medication noncompliance, and end-organ damage. With additional goals of reducing hospital time and clinic visits for this chronic condition</p><p>Occasional spikes noted in the evening; patient reports periods of stress and dietary types of food intake as possible factors.</p><h3>2. Patient Communication</h3><p><strong>Mode of Communication:</strong> Telephonic (20-minute clinical review)</p><p>Reviewed data and chart prior to call, spent 12 minutes</p><p><strong>Summary of Discussion:</strong></p><ul><li>Reviewed BP data and discussed variability</li><li>Patient adherent to medications</li><li>Denies side effects, no dizziness, cough, or palpitations</li><li>Reinforced low-sodium diet and importance of daily readings</li><li>Recommended evening mindfulness and reduced caffeine</li><li>Advised to maintain BP log and alert team for systolic >160 or diastolic >100</li><li>Advised to go to an ER or urgent care if persistently above systolic 180 or hypotensive and systolic blood pressure below 90</li><li>doing enjoyable activities to reduce stress</li><li>acknowledging and managing stressors</li></ul><h3>3. Clinical Assessment and Plan</h3><ol><li>Hypertension</li><li>chest pain</li></ol><p>Blood pressure control improving</p><p>Continue current meds; consider dose titration depending on next month's readings and whether there is further improvement.</p><p>Continue RPM for next 30-day cycle.</p><p>Follow-up appointment scheduling</p><p>Patient encouraged to continue consistent daily monitoring.</p>`;
+
+            const ccnTemplate = `<h3>Diagnosis(es):</h3><p>I10 – Essential (primary) hypertension</p><p>[Include any other chronic conditions to support CCM eligibility — e.g., E11.9 for Diabetes, E78.5 for Hyperlipidemia]</p><h3>⏱️ Time Spent This Month on CCM Services</h3><p><strong>Total Time:</strong> ___ minutes</p><p><strong>Time Logged by:</strong> [Clinical Staff or Physician Name]</p><h3>📋 CCM Summary This Month</h3><p><strong>Review of Medical Record:</strong></p><p>Reviewed patient's recent BP logs submitted via RPM. Average BP over past 30 days: 144/92.</p><p>Last in-person visit: [Date]; last telehealth/RPM check-in: [Date].</p><p><strong>Medication Review:</strong></p><p>Patient is currently on Lisinopril 20 mg daily.</p><p>No side effects reported.</p><p>Compliance confirmed via RPM data and monthly call.</p><p><strong>Care Coordination Activities:</strong></p><p>Discussed medication adjustment options with supervising physician due to persistent blood pressure variability</p><p>Updated care plan based on pharmacist review and patient-reported side effects.</p><p><strong>Patient Communication:</strong></p><p>Contacted patient for monthly check-in.</p><p>Discussed BP trends and importance of diet and exercise.</p><p>Patient expressed mild dizziness when standing — advised hydration and scheduled follow-up.</p><p><strong>Preventive Services:</strong></p><p>Verified any new issues, vaccines</p><p>Patient overdue for any exam — referral sent.</p><h3>🧠 Care Plan Update</h3><p><strong>Goals:</strong></p><ul><li>Achieve and maintain BP &lt;130/80 within 3 months.</li><li>Reduce sodium intake to &lt;1.5g/day.</li><li>Walk 30 mins 5x/week.</li></ul><p><strong>Planned Interventions:</strong></p><ul><li>Continue meds</li><li>Pay attention to dietary intake</li><li>Reinforce adherence to home BP monitoring (RPM).</li><li>Follow-up labs</li></ul><table><thead><tr><th>CPT Code</th><th>Description</th><th>Who Can Bill</th></tr></thead><tbody><tr><td>99490</td><td>20+ min/month CCM by clinical staff under general supervision</td><td>MD, NP, PA</td></tr><tr><td>99439</td><td>additional 20 minutes of CCM by clinical staff</td><td>MD, NP, PA</td></tr><tr><td>99439</td><td>additional 20 minutes of CCM by clinical staff</td><td>MD, NP, PA</td></tr><tr><td>99491</td><td>30+ min/month CCM personally by physician or NPP</td><td>MD, NP, PA only</td></tr><tr><td>99437</td><td>Each additional 30 min personally by physician/NPP</td><td>MD, NP, PA only</td></tr><tr><td>99437</td><td>Each additional 30 min personally by physician/NPP</td><td>MD, NP, PA only</td></tr></tbody></table><h3>✅ Attestation</h3><p>Spent over 60 minutes of non-face-to-face chronic care management services were provided this month, addressing hypertension and other ongoing chronic conditions. These services were documented, medically necessary, and performed per Medicare guidelines.</p><p><strong>Signed:</strong> [Name, Title]<br><strong>Date:</strong> [MM/DD/YYYY]</p>`;
+
+            // Set default value to Progress Note
+            if (titleSelect.value === '') {
+                titleSelect.value = 'Progress Note';
+            }
+
+            titleSelect.addEventListener('change', function() {
+                // Update documentation type display
+                const docTypeDisplay = document.getElementById('current-doc-type');
+                if (docTypeDisplay) {
+                    docTypeDisplay.textContent = this.value;
+                }
+
+                // Load templates
+                if (this.value === 'RPM Progress Note') {
+                    quill.root.innerHTML = rpmTemplate;
+                } else if (this.value === 'CCN-HTN Progress Note') {
+                    quill.root.innerHTML = ccnTemplate;
+                } else {
+                    quill.root.innerHTML = '';
+                }
+                
+                // Update hidden textarea
+                hiddenTextarea.value = quill.root.innerHTML;
+            });
+
+            // Update time every minute
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', { 
+                    hour12: false, 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                const sessionTime = document.querySelector('.session-info .session-detail:last-child span:last-child');
+                if (sessionTime) {
+                    sessionTime.textContent = timeString;
+                }
+            }
+
+            // Update time immediately and then every minute
+            updateTime();
+            setInterval(updateTime, 60000);
+
+            // Trigger change event on page load
+            titleSelect.dispatchEvent(new Event('change'));
+
+            // Before form submission, update hidden textarea
+            document.getElementById('documentationForm').addEventListener('submit', function(e) {
+                // hiddenTextarea.value = quill.root.innerHTML;
+                const patientInfo = generatePatientInfoSection();
+                const vitalsInfo = generateVitalsSection(); 
+                const hiddenTextarea = document.getElementById('id_full_documentation');
+    
+                // Get current documentation content
+                const currentContent = quill.root.innerHTML;
+    
+                // Combine patient info + vitals + documentation content
+                const finalContent = patientInfo + vitalsInfo + currentContent;
+
+                console.log("Fuck", hiddenTextarea.value,finalContent);
+                // Update hidden textarea with combined content
+                hiddenTextarea.value = finalContent;
+
+
+            });
+        });
+
+        // Shortcut detection and management
+        function handleShortcutDetection() {
+            const range = quill.getSelection();
+            if (!range) return;
+
+            const text = quill.getText(0, range.index);
+            const words = text.split(/\s+/);
+            const lastWord = words[words.length - 1];
+
+            console.log('Detecting shortcut, last word:', lastWord);
+
+            if (lastWord.startsWith('.') && lastWord.length > 1) {
+                console.log('Potential shortcut detected:', lastWord);
+                // Store the current range and shortcut text
+                storedRange = range;
+                storedShortcutText = lastWord;
+                searchShortcuts(lastWord);
+            } else {
+                hideShortcutPopup();
+            }
+        }
+
+        function searchShortcuts(query) {
+            const matchingShortcuts = shortcuts.filter(shortcut => 
+                shortcut.shortcut_key.toLowerCase().includes(query.toLowerCase())
+            );
+
+            if (matchingShortcuts.length > 0) {
+                showShortcutPopup(matchingShortcuts);
+            } else {
+                hideShortcutPopup();
+            }
+        }
+
+        function showShortcutPopup(matchingShortcuts) {
+            console.log('Showing shortcut popup with shortcuts:', matchingShortcuts);
+            
+            const popup = document.getElementById('shortcut-popup');
+            const list = document.getElementById('shortcut-list');
+            
+            list.innerHTML = '';
+            matchingShortcuts.forEach((shortcut, index) => {
+                const item = document.createElement('div');
+                item.className = 'shortcut-item';
+                item.innerHTML = `
+                    <div class="shortcut-key">${shortcut.shortcut_key}</div>
+                    <div class="shortcut-description">${shortcut.description}</div>
+                `;
+                
+                // Store the shortcut data and index for easy access
+                item.dataset.shortcutIndex = index;
+                item.dataset.shortcutKey = shortcut.shortcut_key;
+                
+                item.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent focus loss
+                    e.stopPropagation(); // Stop event bubbling
+                    console.log('Clicked on shortcut item:', index, shortcut);
+                    applyShortcut(index);
+                });
+                
+                // Also handle mousedown to prevent focus issues
+                item.addEventListener('mousedown', (e) => {
+                    e.preventDefault(); // Prevent focus from leaving the editor
+                });
+                list.appendChild(item);
+            });
+
+            // Position popup near cursor
+            const range = quill.getSelection();
+            if (range) {
+                const bounds = quill.getBounds(range.index);
+                const editorContainer = document.querySelector('#quill-editor');
+                const editorRect = editorContainer.getBoundingClientRect();
+                
+                // Position popup to the right of the shortcut text, not below
+                popup.style.left = (editorRect.left + bounds.left + bounds.width + 5) + 'px';
+                popup.style.top = (editorRect.top + bounds.top) + 'px';
+                
+                // Make sure popup doesn't go off-screen
+                const popupRect = popup.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                
+                // If popup goes off the right edge, position it to the left of the text
+                if (popup.offsetLeft + popup.offsetWidth > viewportWidth - 10) {
+                    popup.style.left = (editorRect.left + bounds.left - popup.offsetWidth - 5) + 'px';
+                }
+                
+                // If popup goes off the bottom, adjust to fit
+                if (popup.offsetTop + popup.offsetHeight > viewportHeight - 10) {
+                    popup.style.top = (viewportHeight - popup.offsetHeight - 10) + 'px';
+                }
+            }
+            
+            popup.classList.add('show');
+            shortcutPopupVisible = true;
+            selectedShortcutIndex = 0;
+            
+            // Store matching shortcuts for reference in applyShortcut
+            popup._matchingShortcuts = matchingShortcuts;
+            
+            updateSelectedShortcut();
+        }
+
+        function hideShortcutPopup() {
+            const popup = document.getElementById('shortcut-popup');
+            popup.classList.remove('show');
+            shortcutPopupVisible = false;
+            selectedShortcutIndex = -1;
+            // Clear stored data
+            storedRange = null;
+            storedShortcutText = '';
+        }
+
+        function navigateShortcuts(direction) {
+            const items = document.querySelectorAll('.shortcut-item');
+            if (items.length === 0) return;
+
+            selectedShortcutIndex += direction;
+            if (selectedShortcutIndex < 0) selectedShortcutIndex = items.length - 1;
+            if (selectedShortcutIndex >= items.length) selectedShortcutIndex = 0;
+
+            updateSelectedShortcut();
+        }
+
+        function updateSelectedShortcut() {
+            const items = document.querySelectorAll('.shortcut-item');
+            items.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedShortcutIndex);
+            });
+        }
+
+        function applyShortcut(index) {
+            console.log('applyShortcut called with index:', index);
+            
+            // Use stored range if current selection is not available
+            let range = quill.getSelection() || storedRange;
+            
+            if (!range) {
+                console.log('No selection range available');
+                // Try to restore focus to the editor
+                quill.focus();
+                range = quill.getSelection();
+                if (!range) {
+                    console.log('Still no range after focusing, aborting');
+                    return;
+                }
+            }
+
+            console.log('Current/Stored selection range:', range);
+
+            // Get the matching shortcut from the stored matching shortcuts
+            const popup = document.getElementById('shortcut-popup');
+            const matchingShortcuts = popup._matchingShortcuts || [];
+            
+            console.log('Available matching shortcuts:', matchingShortcuts);
+            console.log('Requested index:', index, 'Available shortcuts count:', matchingShortcuts.length);
+            
+            if (index < matchingShortcuts.length) {
+                const matchingShortcut = matchingShortcuts[index];
+                console.log('Selected shortcut:', matchingShortcut);
+
+                if (matchingShortcut && matchingShortcut.content) {
+                    console.log('Applying shortcut:', matchingShortcut.shortcut_key);
+                    console.log('Shortcut content:', matchingShortcut.content);
+                    
+                    // If we have stored shortcut text, use it to find the exact position
+                    if (storedShortcutText) {
+                        const text = quill.getText(0, range.index);
+                        const shortcutStart = text.lastIndexOf(storedShortcutText);
+                        
+                        if (shortcutStart !== -1) {
+                            console.log('Found shortcut at position:', shortcutStart, 'length:', storedShortcutText.length);
+                            
+                            // Delete the shortcut text
+                            quill.deleteText(shortcutStart, storedShortcutText.length);
+                            
+                            // Insert the shortcut content
+                            quill.insertText(shortcutStart, matchingShortcut.content);
+                            
+                            // Set cursor position after the inserted content
+                            const newCursorPosition = shortcutStart + matchingShortcut.content.length;
+                            quill.setSelection(newCursorPosition);
+                            console.log('Set cursor to position:', newCursorPosition);
+                            
+                            // Update the hidden textarea
+                            const hiddenTextarea = document.getElementById('id_full_documentation');
+                            hiddenTextarea.value = quill.root.innerHTML;
+                            console.log('Updated hidden textarea');
+                            
+                            console.log('Shortcut applied successfully!');
+                        } else {
+                            console.log('Could not find shortcut text in editor');
+                        }
+                    } else {
+                        console.log('No stored shortcut text available');
+                    }
+                } else {
+                    console.log('No content in selected shortcut');
+                }
+            } else {
+                console.log('Index out of bounds:', index, 'vs', matchingShortcuts.length);
+            }
+
+            hideShortcutPopup();
+        }
+
+        // Shortcut CRUD operations
+        async function loadShortcuts() {
+            try {
+                console.log('Loading shortcuts...');
+                const response = await fetch('/api/shortcuts/', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    shortcuts = data.shortcuts;
+                    console.log('Loaded shortcuts:', shortcuts);
+                    updateShortcutsList();
+                } else {
+                    console.error('Failed to load shortcuts:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Error loading shortcuts:', error);
+            }
+        }
+
+        async function saveShortcut() {
+            const key = document.getElementById('shortcut-key').value.trim();
+            const description = document.getElementById('shortcut-description').value.trim();
+            const content = document.getElementById('shortcut-content').value.trim();
+
+            if (!key || !description || !content) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const url = currentEditingShortcut 
+                    ? `/api/shortcuts/${currentEditingShortcut.id}/update/`
+                    : '/api/shortcuts/create/';
+                
+                const method = currentEditingShortcut ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                    },
+                    body: JSON.stringify({
+                        shortcut_key: key,
+                        description: description,
+                        content: content
+                    })
+                });
+
+                if (response.ok) {
+                    await loadShortcuts();
+                    clearShortcutForm();
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to save shortcut');
+                }
+            } catch (error) {
+                console.error('Error saving shortcut:', error);
+                alert('Failed to save shortcut');
+            }
+        }
+
+        async function editShortcut(shortcut) {
+            currentEditingShortcut = shortcut;
+            document.getElementById('shortcut-key').value = shortcut.shortcut_key;
+            document.getElementById('shortcut-description').value = shortcut.description;
+            document.getElementById('shortcut-content').value = shortcut.content;
+        }
+
+        async function deleteShortcut(shortcutId) {
+            if (!confirm('Are you sure you want to delete this shortcut?')) return;
+
+            try {
+                const response = await fetch(`/api/shortcuts/${shortcutId}/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCsrfToken(),
+                    }
+                });
+
+                if (response.ok) {
+                    await loadShortcuts();
+                } else {
+                    alert('Failed to delete shortcut');
+                }
+            } catch (error) {
+                console.error('Error deleting shortcut:', error);
+                alert('Failed to delete shortcut');
+            }
+        }
+
+        function clearShortcutForm() {
+            currentEditingShortcut = null;
+            document.getElementById('shortcut-key').value = '';
+            document.getElementById('shortcut-description').value = '';
+            document.getElementById('shortcut-content').value = '';
+        }
+
+        function cancelEdit() {
+            clearShortcutForm();
+        }
+
+        function updateShortcutsList() {
+            const list = document.getElementById('shortcuts-list');
+            
+            if (shortcuts.length === 0) {
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text);">No shortcuts created yet</div>';
+                return;
+            }
+
+            list.innerHTML = shortcuts.map(shortcut => `
+                <div class="shortcut-list-item">
+                    <div class="shortcut-info">
+                        <div class="shortcut-info-key">${shortcut.shortcut_key}</div>
+                        <div class="shortcut-info-desc">${shortcut.description}</div>
+                        <div class="shortcut-info-content">${shortcut.content.substring(0, 100)}${shortcut.content.length > 100 ? '...' : ''}</div>
+                    </div>
+                    <div class="shortcut-actions">
+                        <button class="btn btn-secondary btn-small" onclick="editShortcut(${JSON.stringify(shortcut).replace(/"/g, '&quot;')})">Edit</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteShortcut(${shortcut.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Modal management
+        function openShortcutModal() {
+            document.getElementById('shortcut-modal').classList.add('show');
+            loadShortcuts();
+        }
+
+        function closeShortcutModal() {
+            document.getElementById('shortcut-modal').classList.remove('show');
+            clearShortcutForm();
+        }
+
+        // Utility functions
+        function getAuthToken() {
+            // For now, we'll use session-based auth instead of token auth
+            return '';
+        }
+
+        function getCsrfToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('shortcut-modal');
+            if (e.target === modal) {
+                closeShortcutModal();
+            }
+        });
+    </script>
+</body>
+</html>
