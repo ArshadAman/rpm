@@ -526,7 +526,6 @@ def edit_documentation(request, doc_id):
         form = DocumentationForm(request.POST, request.FILES, instance=documentation)
         if form.is_valid():
             documentation = form.save(commit=False)
-            
             # Update patient snapshot fields
             documentation.doc_patient_name = request.POST.get('doc_patient_name', f"{patient.user.first_name} {patient.user.last_name}")
             documentation.doc_dob = request.POST.get('doc_dob', patient.date_of_birth)
@@ -534,9 +533,14 @@ def edit_documentation(request, doc_id):
             documentation.doc_monitoring_params = request.POST.get('doc_monitoring_params', patient.monitoring_parameters)
             documentation.doc_clinical_staff = request.POST.get('doc_clinical_staff', str(patient.moderator_assigned) if patient.moderator_assigned else "N/A")
             documentation.doc_moderator = request.POST.get('doc_moderator', str(patient.moderator_assigned) if patient.moderator_assigned else "N/A")
-            documentation.doc_report_date = request.POST.get('doc_report_date', timezone.now().date())
-            
+            # Date of Service editable field
+            doc_report_date = request.POST.get('doc_report_date')
+            if doc_report_date:
+                documentation.doc_report_date = doc_report_date
+            else:
+                documentation.doc_report_date = timezone.now().date()
             # Update the history_of_present_illness with the full_documentation value
+            print("fuck",request.POST.get('full_documentation'))
             documentation.history_of_present_illness = request.POST.get('full_documentation', '')
             documentation.save()
             messages.success(request, 'Documentation updated successfully.')
@@ -551,6 +555,7 @@ def edit_documentation(request, doc_id):
             'doc_monitoring_params': documentation.doc_monitoring_params or patient.monitoring_parameters,
             'doc_clinical_staff': documentation.doc_clinical_staff or (str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"),
             'doc_moderator': documentation.doc_moderator or (str(patient.moderator_assigned) if patient.moderator_assigned else "N/A"),
+            # Date of Service field
             'doc_report_date': documentation.doc_report_date or timezone.now().date(),
             'full_documentation': documentation.history_of_present_illness
         }
@@ -563,7 +568,8 @@ def edit_documentation(request, doc_id):
         'doc_id': documentation.id,  # <-- Add this line
         'patient': patient,
         # 'reports': reports,
-        'now': timezone.now()
+        'now': timezone.now(),
+        'full_documentation': documentation.history_of_present_illness
     }
     
     return render(request, 'reports/edit_docs.html', context)
