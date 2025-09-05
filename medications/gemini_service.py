@@ -12,16 +12,18 @@ from .models import (
     CachedMedicineResult, MedicineInteraction, PatientMedicineHistory
 )
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+import os
 
 logger = logging.getLogger(__name__)
 
 class GeminiMedicineService:
     def __init__(self):
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        # Updated to use Gemini 1.5 Flash model (latest)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.api_key = os.getenv("GEMINI_API_KEY")  # Or use settings.GEMINI_API_KEY if in Django
+        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+        self.headers = {
+            "Content-Type": "application/json",
+            "X-goog-api-key": self.api_key
+        }
         
         # Configure generation settings for better reliability
         self.generation_config = {
@@ -30,22 +32,25 @@ class GeminiMedicineService:
             "top_k": 40,
             "max_output_tokens": 8192,
         }
-        
-        # Setup retry strategy for network errors
-        self.setup_retry_session()
     
-    def setup_retry_session(self):
-        """Setup requests session with retry strategy"""
-        self.session = requests.Session()
-        retry_strategy = Retry(
-            total=3,
-            status_forcelist=[429, 500, 502, 503, 504],
-            method_whitelist=["HEAD", "GET", "OPTIONS", "POST"],
-            backoff_factor=1
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        self.session.mount("http://", adapter)
-        self.session.mount("https://", adapter)
+    def generate_content(self, prompt):
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt}
+                    ]
+                }
+            ]
+        }
+        response = requests.post(self.base_url, headers=self.headers, json=payload)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {
+                "success": False,
+                "error": f"Status {response.status_code}: {response.text}"
+            }
     
     def search_medicines_for_disease(self, disease_query: str, force_refresh: bool = False) -> Dict[str, Any]:
         """
@@ -144,15 +149,14 @@ class GeminiMedicineService:
                 start_time = time.time()
                 
                 # Use the configured generation settings
-                response = self.model.generate_content(
-                    prompt,
-                    generation_config=self.generation_config
+                response = self.generate_content(
+                    prompt
                 )
                 
                 processing_time = time.time() - start_time
                 
                 # Check if response is blocked
-                if response.candidates and response.candidates[0].finish_reason.name == "SAFETY":
+                if response.get('candidates') and response['candidates'][0].get('finish_reason') == "SAFETY":
                     logger.warning(f"Response blocked by safety filters for disease: {disease}")
                     return {
                         'success': False,
@@ -161,7 +165,7 @@ class GeminiMedicineService:
                     }
                 
                 # Clean up the response text
-                response_text = response.text.strip()
+                response_text = response.get('text', '').strip()
                 
                 # Remove markdown formatting if present
                 if response_text.startswith('```json'):
@@ -180,7 +184,7 @@ class GeminiMedicineService:
                     'success': True,
                     'data': medicine_data,
                     'processing_time': processing_time,
-                    'raw_response': response.text,
+                    'raw_response': response.get('text'),
                     'attempt': attempt + 1,
                     'model_used': 'gemini-1.5-flash'
                 }
@@ -191,7 +195,7 @@ class GeminiMedicineService:
                     return {
                         'success': False,
                         'error': 'Failed to parse medicine information after multiple attempts',
-                        'raw_response': response.text if 'response' in locals() else None,
+                        'raw_response': response.get('text') if 'response' in locals() else None,
                         'attempts': max_retries
                     }
                 time.sleep(2 ** attempt)  # Exponential backoff
@@ -257,12 +261,11 @@ class GeminiMedicineService:
         """
         
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config=self.generation_config
+            response = self.generate_content(
+                prompt
             )
             
-            response_text = response.text.strip()
+            response_text = response.get('text', '').strip()
             
             # Clean up response
             if response_text.startswith('```json'):
@@ -305,7 +308,6 @@ class GeminiMedicineService:
                 'source': 'fallback'
             }
     
-    # ... (keep all your existing methods unchanged)
     def _get_cached_result(self, normalized_query: str) -> Dict[str, Any]:
         """Get cached search result if available and fresh"""
         try:
