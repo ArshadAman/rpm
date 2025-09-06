@@ -636,17 +636,17 @@
             </div>
 
             <div class="form-group">
-                <label for="height">Height (inches)</label>
+                <label for="height">Height (inches) <span style="color: var(--secondary);">*</span></label>
                 <input type="number" id="height" name="height" step="0.01" 
                        value="{{ form_data.height|default:'' }}"
-                       placeholder="Enter height">
+                       placeholder="Enter height" required>
             </div>
 
             <div class="form-group">
-                <label for="weight">Weight (pounds)</label>
+                <label for="weight">Weight (pounds) <span style="color: var(--secondary);">*</span></label>
                 <input type="number" id="weight" name="weight" step="0.01" 
                        value="{{ form_data.weight|default:'' }}"
-                       placeholder="Enter weight">
+                       placeholder="Enter weight" required>
         </div>
 
                 <div class="form-group">
@@ -817,11 +817,119 @@
         
         document.addEventListener('DOMContentLoaded', initializePMH);
 
-        // Form submission with loading state
-        document.querySelector('form').addEventListener('submit', function() {
+        // Form validation and submission with loading state
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Clear any previous error messages
+            clearErrorMessages();
+            
+            // Check required fields
+            const requiredFields = [
+                { id: 'height', name: 'Height' },
+                { id: 'weight', name: 'Weight' }
+            ];
+            
+            const missingFields = [];
+            let hasValidationErrors = false;
+            
+            for (let field of requiredFields) {
+                const input = document.getElementById(field.id);
+                const value = input.value.trim();
+                
+                if (!value) {
+                    missingFields.push(field.name);
+                    showFieldError(input, `${field.name} is required`);
+                    hasValidationErrors = true;
+                } else {
+                    // Validate positive numbers
+                    const numValue = parseFloat(value);
+                    if (isNaN(numValue) || numValue <= 0) {
+                        showFieldError(input, `${field.name} must be a positive number`);
+                        hasValidationErrors = true;
+                    } else {
+                        clearFieldError(input);
+                    }
+                }
+            }
+            
+            if (hasValidationErrors) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Show alert for missing fields
+                if (missingFields.length > 0) {
+                    alert('Please fill in all required fields: ' + missingFields.join(', '));
+                }
+                
+                // Focus on first error field
+                const firstErrorInput = document.querySelector('.form-group input[style*="border-color"]');
+                if (firstErrorInput) {
+                    firstErrorInput.focus();
+                    firstErrorInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                return false;
+            }
+            
+            // If validation passes, show loading state
             const submitBtn = document.querySelector('.submit-btn');
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
+        });
+
+        // Helper functions for error display
+        function showFieldError(input, message) {
+            input.style.borderColor = 'var(--error, #ff4757)';
+            
+            // Remove existing error message
+            const existingError = input.parentNode.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Add new error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.style.cssText = 'color: var(--error, #ff4757); font-size: 12px; margin-top: 5px;';
+            errorDiv.textContent = message;
+            input.parentNode.appendChild(errorDiv);
+        }
+
+        function clearFieldError(input) {
+            input.style.borderColor = '';
+            const errorMessage = input.parentNode.querySelector('.error-message');
+            if (errorMessage) {
+                errorMessage.remove();
+            }
+        }
+
+        function clearErrorMessages() {
+            document.querySelectorAll('.error-message').forEach(error => error.remove());
+            document.querySelectorAll('input').forEach(input => input.style.borderColor = '');
+        }
+
+        // Real-time validation
+        ['height', 'weight'].forEach(fieldId => {
+            const input = document.getElementById(fieldId);
+            if (input) {
+                input.addEventListener('input', function() {
+                    if (this.style.borderColor) {
+                        clearFieldError(this);
+                    }
+                });
+                
+                input.addEventListener('blur', function() {
+                    const value = this.value.trim();
+                    if (value) {
+                        const numValue = parseFloat(value);
+                        if (isNaN(numValue) || numValue <= 0) {
+                            const fieldName = this.id === 'height' ? 'Height' : 'Weight';
+                            showFieldError(this, `${fieldName} must be a positive number`);
+                        } else {
+                            clearFieldError(this);
+                        }
+                    }
+                });
+            }
         });
     </script>
 </body>
