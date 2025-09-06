@@ -1039,47 +1039,48 @@ def register_patient(request):
             messages.error(request, 'Patient with this email already exists')
             return render(request, 'register_patient.html')
 
-        # Create local user and patient
+        # Create local user and patient atomically
         try:
-            user = User.objects.create(
-                username=data['email'],
-                email=data['email'],
-                first_name=data['first_name'],
-                last_name=data['last_name'],
-            )
-            user.set_password(data['password'])  # Properly hash the password
-            user.save()
-            
-            patient = Patient.objects.create(
-                user=user,
-                date_of_birth=data['date_of_birth'],
-                height=data['height'],
-                weight=data['weight'],
-                insurance=data['insurance'],
-                insurance_number=data['insurance_number'],
-                sex=data['sex'],
-                phone_number=data['phone_number'],
-                monitoring_parameters=data['monitoring_parameters'],
-                device_serial_number=data['device_serial_number'] if data['device_serial_number'] else None,
-                pharmacy_info=data['pharmacy_info'] if data['pharmacy_info'] else None,
-                allergies=data['allergies'] if data['allergies'] else None,
-                drink=data['drink'],
-                smoke=data['smoke'],
-                family_history=data['family_history'] if data['family_history'] else None,
-                medications=data['medications'] if data['medications'] else None
-            )
+            with transaction.atomic():
+                user = User.objects.create(
+                    username=data['email'],
+                    email=data['email'],
+                    first_name=data['first_name'],
+                    last_name=data['last_name'],
+                )
+                user.set_password(data['password'])  # Properly hash the password
+                user.save()
 
-            # Create past medical history records
-            for pmh in data['past_medical_history']:
-                PastMedicalHistory.objects.create(
-                    patient=patient,
-                    pmh=pmh
+                patient = Patient.objects.create(
+                    user=user,
+                    date_of_birth=data['date_of_birth'],
+                    height=data['height'],
+                    weight=data['weight'],
+                    insurance=data['insurance'],
+                    insurance_number=data['insurance_number'],
+                    sex=data['sex'],
+                    phone_number=data['phone_number'],
+                    monitoring_parameters=data['monitoring_parameters'],
+                    device_serial_number=data['device_serial_number'] if data['device_serial_number'] else None,
+                    pharmacy_info=data['pharmacy_info'] if data['pharmacy_info'] else None,
+                    allergies=data['allergies'] if data['allergies'] else None,
+                    drink=data['drink'],
+                    smoke=data['smoke'],
+                    family_history=data['family_history'] if data['family_history'] else None,
+                    medications=data['medications'] if data['medications'] else None
                 )
 
-            # Assign the current moderator
-            moderator = Moderator.objects.get(user=request.user)
-            patient.moderator_assigned = moderator
-            patient.save()
+                # Create past medical history records
+                for pmh in data['past_medical_history']:
+                    PastMedicalHistory.objects.create(
+                        patient=patient,
+                        pmh=pmh
+                    )
+
+                # Assign the current moderator
+                moderator = Moderator.objects.get(user=request.user)
+                patient.moderator_assigned = moderator
+                patient.save()
 
             messages.success(request, 'Patient registered successfully')
             return redirect('view_all_assigned_patient')
