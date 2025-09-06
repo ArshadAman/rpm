@@ -1909,8 +1909,7 @@
             >
               {% for doctor in doctors %}
               <option value="{{ doctor.id }}" class="text-black">
-                {{ doctor.user.username }} - {{ doctor.user.first_name }} {{
-                doctor.user.last_name }} {% if doctor.specialization %} ({{ doctor.specialization }}){% endif %}
+                {{ doctor.user.username }} - {{ doctor.user.first_name }} {{ doctor.user.last_name }} {% if doctor.specialization %} ({{ doctor.specialization }}){% endif %}
               </option>
               {% endfor %}
             </select>
