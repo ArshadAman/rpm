@@ -1031,7 +1031,11 @@ def register_patient(request):
             'smoke': request.POST.get('smoke', 'NO'),
             'family_history': request.POST.get('family_history'),
             'medications': request.POST.get('medications'),
-            'past_medical_history': request.POST.getlist('past_medical_history', [])
+            'past_medical_history': request.POST.getlist('past_medical_history', []),
+            'home_address': request.POST.get('home_address'),
+            'emergency_contact_name': request.POST.get('emergency_contact_name'),
+            'emergency_contact_phone': request.POST.get('emergency_contact_phone'),
+            'emergency_contact_relationship': request.POST.get('emergency_contact_relationship')
         }
 
         # Check if patient already exists
@@ -1075,7 +1079,11 @@ def register_patient(request):
                     drink=data['drink'],
                     smoke=data['smoke'],
                     family_history=data['family_history'] if data['family_history'] else None,
-                    medications=data['medications'] if data['medications'] else None
+                    medications=data['medications'] if data['medications'] else None,
+                    home_address=data['home_address'] if data['home_address'] else None,
+                    emergency_contact_name=data['emergency_contact_name'] if data['emergency_contact_name'] else None,
+                    emergency_contact_phone=data['emergency_contact_phone'] if data['emergency_contact_phone'] else None,
+                    emergency_contact_relationship=data['emergency_contact_relationship'] if data['emergency_contact_relationship'] else None
                 )
 
                 # Create past medical history records
@@ -1132,7 +1140,11 @@ def patient_self_registration(request):
             'smoke': request.POST.get('smoke', 'NO'),
             'family_history': request.POST.get('family_history'),
             'medications': request.POST.get('medications'),
-            'past_medical_history': request.POST.getlist('past_medical_history', [])
+            'past_medical_history': request.POST.getlist('past_medical_history', []),
+            'home_address': request.POST.get('home_address'),
+            'emergency_contact_name': request.POST.get('emergency_contact_name'),
+            'emergency_contact_phone': request.POST.get('emergency_contact_phone'),
+            'emergency_contact_relationship': request.POST.get('emergency_contact_relationship')
         }
 
         # Check if patient already exists
@@ -1175,7 +1187,11 @@ def patient_self_registration(request):
                     drink=data['drink'],
                     smoke=data['smoke'],
                     family_history=data['family_history'] if data['family_history'] else None,
-                    medications=data['medications'] if data['medications'] else None
+                    medications=data['medications'] if data['medications'] else None,
+                    home_address=data['home_address'] if data['home_address'] else None,
+                    emergency_contact_name=data['emergency_contact_name'] if data['emergency_contact_name'] else None,
+                    emergency_contact_phone=data['emergency_contact_phone'] if data['emergency_contact_phone'] else None,
+                    emergency_contact_relationship=data['emergency_contact_relationship'] if data['emergency_contact_relationship'] else None
                 )
 
                 # Create past medical history records
