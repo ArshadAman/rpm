@@ -471,6 +471,12 @@ def edit_patient(request, patient_id):
             patient.family_history = request.POST.get('family_history')
             patient.medications = request.POST.get('medications')
             
+            # Update address and emergency contact information
+            patient.home_address = request.POST.get('home_address')
+            patient.emergency_contact_name = request.POST.get('emergency_contact_name')
+            patient.emergency_contact_phone = request.POST.get('emergency_contact_phone')
+            patient.emergency_contact_relationship = request.POST.get('emergency_contact_relationship')
+            
             # Handle Past Medical History
             selected_pmh = request.POST.getlist('past_medical_history', [])
             

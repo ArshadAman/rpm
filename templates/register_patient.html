@@ -672,6 +672,36 @@
                            placeholder="Enter insurance number">
                 </div>
 
+                <!-- Home Address Section -->
+                <div class="form-group">
+                    <label for="home_address">Home Address <span style="color: var(--secondary);">*</span></label>
+                    <textarea id="home_address" name="home_address" required
+                              placeholder="Enter complete home address for machine delivery"
+                              rows="3">{{ form_data.home_address|default:'' }}</textarea>
+                </div>
+
+                <!-- Emergency Contact Section -->
+                <div class="form-group">
+                    <label for="emergency_contact_name">Emergency Contact Name <span style="color: var(--secondary);">*</span></label>
+                    <input type="text" id="emergency_contact_name" name="emergency_contact_name" required
+                           value="{{ form_data.emergency_contact_name|default:'' }}"
+                           placeholder="Enter emergency contact person name">
+                </div>
+
+                <div class="form-group">
+                    <label for="emergency_contact_phone">Emergency Contact Phone <span style="color: var(--secondary);">*</span></label>
+                    <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" required
+                           value="{{ form_data.emergency_contact_phone|default:'' }}"
+                           placeholder="Enter emergency contact phone number">
+                </div>
+
+                <div class="form-group">
+                    <label for="emergency_contact_relationship">Relationship to Patient</label>
+                    <input type="text" id="emergency_contact_relationship" name="emergency_contact_relationship"
+                           value="{{ form_data.emergency_contact_relationship|default:'' }}"
+                           placeholder="e.g., Spouse, Parent, Sibling, Friend">
+                </div>
+
                 <div class="form-group">
                     <label for="monitoring_parameters">Monitoring Parameters</label>
                     <select id="monitoring_parameters" name="monitoring_parameters">
