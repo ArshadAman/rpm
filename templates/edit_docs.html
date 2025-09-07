@@ -1149,7 +1149,7 @@
                 <div class="info-section">
                     <h4>Recent Vitals (Last 5)</h4>
                     {% for report in reports|slice:":5" %}
-                    <div style="background: rgba(255, 255, 255, 0.02); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                    <div style="padding: 10px; margin-bottom: 8px;">
                         <div style="color: var(--secondary); font-size: 12px; margin-bottom: 5px;">{{ report.created_at|date:"M d, Y H:i" }}</div>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                             {% if report.systolic_blood_pressure and report.diastolic_blood_pressure %}
@@ -1412,24 +1412,24 @@ console.log("fud",vitalsData)
 function generateVitalsSection() {
 
     if (vitalsData.length === 0) {
-        return `<div style=" padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #FF0080;">
-            <h3 style="color: #7928CA; margin-bottom: 10px;">Recent Vitals</h3>
+        return `<div class="info-section">
+            <h4>Recent Vitals</h4>
             <p><em>No recent vitals available</em></p>
         </div>`;
     }
 
-    let vitalsHTML = `<div style=" padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #FF0080;">
-        <h3 style="color: #7928CA; margin-bottom: 10px;">Recent Vitals (Last 5)</h3>`;
+    let vitalsHTML = `<div class="info-section">
+        <h4>Recent Vitals (Last 5)</h4>`;
 
     vitalsData.forEach(vital => {
-        vitalsHTML += `<div style=" padding: 8px; border-radius: 4px; margin-bottom: 8px;">
-            <div style="color: #FF0080; font-size: 12px; margin-bottom: 4px;">${vital.date}</div>
+        vitalsHTML += `<div style="padding: 10px; margin-bottom: 8px;">
+            <div style="color: var(--secondary); font-size: 12px; margin-bottom: 4px;">${vital.date}</div>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
 
-        if (vital.bp !== 'N/A') vitalsHTML += `<span style=" padding: 2px 6px; border-radius: 3px; font-size: 12px;">BP: ${vital.bp}</span>`;
-        if (vital.hr !== 'N/A') vitalsHTML += `<span style="padding: 2px 6px; border-radius: 3px; font-size: 12px;">HR: ${vital.hr}</span>`;
-        if (vital.spo2 !== 'N/A') vitalsHTML += `<span style=" padding: 2px 6px; border-radius: 3px; font-size: 12px;">SpO2: ${vital.spo2}</span>`;
-        if (vital.temp !== 'N/A') vitalsHTML += `<span style=" padding: 2px 6px; border-radius: 3px; font-size: 12px;">Temp: ${vital.temp}</span>`;
+        if (vital.bp !== 'N/A') vitalsHTML += `<span class="vital-value">BP: ${vital.bp}</span>`;
+        if (vital.hr !== 'N/A') vitalsHTML += `<span class="vital-value">HR: ${vital.hr}</span>`;
+        if (vital.spo2 !== 'N/A') vitalsHTML += `<span class="vital-value">SpO2: ${vital.spo2}</span>`;
+        if (vital.temp !== 'N/A') vitalsHTML += `<span class="vital-value">Temp: ${vital.temp}</span>`;
 
         vitalsHTML += `</div></div>`;
     });
