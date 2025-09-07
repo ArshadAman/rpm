@@ -95,6 +95,8 @@ class Patient(models.Model):
                 <li><strong>Sex:</strong> {self.sex}</li>
                 <li><strong>Insurance:</strong> {self.insurance}</li>
                 <li><strong>Monitoring Parameters:</strong> {self.monitoring_parameters}</li>
+                <li><strong>Home Address:</strong> {self.home_address}</li>
+                <li><strong>Emergency Contact:</strong> {self.emergency_contact_name} - {self.emergency_contact_phone} ({self.emergency_contact_relationship})</li>
             </ul>
             """,
         )        

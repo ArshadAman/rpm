@@ -855,7 +855,10 @@
             // Check required fields
             const requiredFields = [
                 { id: 'height', name: 'Height' },
-                { id: 'weight', name: 'Weight' }
+                { id: 'weight', name: 'Weight' },
+                { id: 'home_address', name: 'Home Address' },
+                { id: 'emergency_contact_name', name: 'Emergency Contact Name' },
+                { id: 'emergency_contact_phone', name: 'Emergency Contact Phone' }
             ];
             
             const missingFields = [];
@@ -870,11 +873,15 @@
                     showFieldError(input, `${field.name} is required`);
                     hasValidationErrors = true;
                 } else {
-                    // Validate positive numbers
-                    const numValue = parseFloat(value);
-                    if (isNaN(numValue) || numValue <= 0) {
-                        showFieldError(input, `${field.name} must be a positive number`);
-                        hasValidationErrors = true;
+                    // Only validate positive numbers for height and weight
+                    if (field.id === 'height' || field.id === 'weight') {
+                        const numValue = parseFloat(value);
+                        if (isNaN(numValue) || numValue <= 0) {
+                            showFieldError(input, `${field.name} must be a positive number`);
+                            hasValidationErrors = true;
+                        } else {
+                            clearFieldError(input);
+                        }
                     } else {
                         clearFieldError(input);
                     }
