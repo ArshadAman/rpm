@@ -1035,9 +1035,9 @@ def register_patient(request):
         }
 
         # Check if patient already exists
-        if User.objects.filter(username=data['email']).exists():
-            messages.error(request, 'Patient with this email already exists')
-            return render(request, 'register_patient.html')
+        # if User.objects.filter(username=data['email']).exists():
+        #     messages.error(request, 'Patient with this email already exists')
+        #     return render(request, 'register_patient.html')
 
         # Create local user and patient atomically
         try:
@@ -1130,9 +1130,9 @@ def patient_self_registration(request):
         }
 
         # Check if patient already exists
-        if User.objects.filter(username=data['email']).exists():
-            messages.error(request, 'Patient with this email already exists')
-            return render(request, 'patient_self_register.html')
+        # if User.objects.filter(username=data['email']).exists():
+        #     messages.error(request, 'Patient with this email already exists')
+        #     return render(request, 'patient_self_register.html')
 
         # Create local user and patient atomically
         try:
