@@ -1042,11 +1042,13 @@ def register_patient(request):
         # Create local user and patient atomically
         try:
             with transaction.atomic():
-                user = User.objects.create(
+                user = User.objects.get_or_create(
                     username=data['email'],
-                    email=data['email'],
-                    first_name=data['first_name'],
-                    last_name=data['last_name'],
+                    defaults={
+                        'email': data['email'],
+                        'first_name': data['first_name'],
+                        'last_name': data['last_name'],
+                    }
                 )
                 user.set_password(data['password'])  # Properly hash the password
                 user.save()
@@ -1135,14 +1137,17 @@ def patient_self_registration(request):
         # Create local user and patient atomically
         try:
             with transaction.atomic():
-                user = User.objects.create(
+                user, created = User.objects.get_or_create(
                     username=data['email'],
-                    email=data['email'],
-                    first_name=data['first_name'],
-                    last_name=data['last_name'],
+                    defaults={
+                        'email': data['email'],
+                        'first_name': data['first_name'],
+                        'last_name': data['last_name'],
+                    }
                 )
-                user.set_password(data['password'])  # Properly hash the password
-                user.save()
+                if created:
+                    user.set_password(data['password'])  # Properly hash the password
+                    user.save()
 
                 patient = Patient.objects.create(
                     user=user,
