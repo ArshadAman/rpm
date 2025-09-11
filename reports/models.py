@@ -120,9 +120,29 @@ class Reports(models.Model):
     
 class Documentation(models.Model):
     TITLE_CHOICES = (
-        ('RPM Progress Note', 'RPM Progress Note'),
-        ('CCN-HTN Progress Note', 'CCN-HTN Progress Note'),
+        ('CCM Initial Note', 'CCM Initial Note'),
+        ('CCM Note Clinical Staff', 'CCM Note Clinical Staff'),
+        ('CCM Note, MD', 'CCM Note, MD'),
+        ('CCM Note NP/PA', 'CCM Note NP/PA'),
+        ('E-Visit Followup Note MD', 'E-Visit Followup Note MD'),
+        ('E-Visit Followup Note NP/PA', 'E-Visit Followup Note NP/PA'),
+        ('Inpatient Hospital Note', 'Inpatient Hospital Note'),
+        ('Occupation Therapy Note', 'Occupation Therapy Note'),
+        ('Office Visit Note MD', 'Office Visit Note MD'),
+        ('Office Visit Note NP/PA', 'Office Visit Note NP/PA'),
+        ('Physical Therapy Note', 'Physical Therapy Note'),
         ('Progress Note', 'Progress Note'),
+        ('Rehabilitation MD Note', 'Rehabilitation MD Note'),
+        ('RPM Note, Clinical Staff', 'RPM Note, Clinical Staff'),
+        ('RPM Progress Note', 'RPM Progress Note'),
+        ('Skilled Nursing Note MD', 'Skilled Nursing Note MD'),
+        ('Skilled Nursing Note NP/PA', 'Skilled Nursing Note NP/PA'),
+        ('Speech Therapy Note', 'Speech Therapy Note'),
+        ('Telehealth Visit MD', 'Telehealth Visit MD'),
+        ('Telehealth Visit NP/PA', 'Telehealth Visit NP/PA'),
+        ('Telephone Visit Initiated By Patient', 'Telephone Visit Initiated By Patient'),
+        ('Transitional Care Note MD', 'Transitional Care Note MD'),
+        ('Transitional Care Note NP/PA', 'Transitional Care Note NP/PA'),
     )
     patient = models.ForeignKey('rpm_users.Patient', on_delete=models.CASCADE, related_name='documentations', blank=True, null=True)
     title = models.CharField(max_length=255, choices=TITLE_CHOICES, default="Progress Note")
