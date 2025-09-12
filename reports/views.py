@@ -282,6 +282,7 @@ def add_documentation(request, patient_id):
             # Update the history_of_present_illness with the full_documentation value
             documentation.history_of_present_illness = request.POST.get('full_documentation', '')
             documentation.written_by = request.user.username
+            documentation.doc_report_date = request.POST.get('doc_report_date', '')
             documentation.save()
             messages.success(request, 'Documentation added successfully.')
             return redirect('moderator_actions', patient_id=str(patient.id))
@@ -546,7 +547,6 @@ def edit_documentation(request, doc_id):
             else:
                 documentation.doc_report_date = timezone.now().date()
             # Update the history_of_present_illness with the full_documentation value
-            print("fuck",request.POST.get('full_documentation'))
             documentation.history_of_present_illness = request.POST.get('full_documentation', '')
             documentation.save()
             messages.success(request, 'Documentation updated successfully.')
