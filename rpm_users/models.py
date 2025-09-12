@@ -27,6 +27,11 @@ class Patient(models.Model):
     drink = models.CharField(choices=(('YES', 'YES'), ('NO', 'NO'),), default='NO', max_length=3)
     family_history = models.TextField(null=True, blank=True)
     medications = models.TextField(null=True, blank=True)
+    # Address and emergency contact information for machine delivery
+    home_address = models.TextField(blank=True, null=True, help_text="Complete home address for machine delivery")
+    emergency_contact_name = models.CharField(max_length=255, blank=True, null=True, help_text="Emergency contact person name")
+    emergency_contact_phone = models.CharField(max_length=15, blank=True, null=True, help_text="Emergency contact phone number")
+    emergency_contact_relationship = models.CharField(max_length=100, blank=True, null=True, help_text="Relationship to patient")
     
     # Kuch kuch information
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
@@ -89,6 +94,9 @@ class Patient(models.Model):
                 <li><strong>Sex:</strong> {self.sex}</li>
                 <li><strong>Insurance:</strong> {self.insurance}</li>
                 <li><strong>Monitoring Parameters:</strong> {self.monitoring_parameters}</li>
+                <li><strong>Home Address:</strong> {self.home_address}</li>
+                <li><strong>Emergency Contact:</strong> {self.emergency_contact_name} - {self.emergency_contact_phone} ({self.emergency_contact_relationship})</li>
+
             </ul>
             """,
         )        
