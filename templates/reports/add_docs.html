@@ -10,6 +10,9 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <!-- Quill Editor CSS -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    {% load static %}
+<script src="{% static 'static/reports/doc_templates.js' %}"></script>
+
     <style>
         * {
             margin: 0;
@@ -1082,15 +1085,41 @@
                 <div class="editor-container">
                     <div class="editor-header">
                         <div class="editor-title">Documentation Editor</div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label for="inline_doc_report_date" style="color: var(--text); font-size: 14px; font-weight: 500;">Date of Service:</label>
+                                <input type="date" id="inline_doc_report_date" name="doc_report_date" value="{{ form.initial.doc_report_date|date:'Y-m-d' }}" style="background: var(--container); color: #fff; border: 1px solid var(--primary); border-radius: 8px; padding: 4px 8px; font-size: 14px;" required form="documentationForm">
+                            </div>
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <button type="button" class="manage-shortcuts-btn" onclick="openShortcutModal()">
                                 ⚡ Manage Shortcuts
                             </button>
-                            <select class="title-selector" id="id_title" name="title" form="documentationForm">
+                                <select class="title-selector" id="id_title" name="title" form="documentationForm">
                                 <option value="Progress Note">Progress Note</option>
                                 <option value="RPM Progress Note">RPM Progress Note</option>
                                 <option value="CCN-HTN Progress Note">CCN-HTN Progress Note</option>
-                            </select>
+                                <option value="CCM Initial Note">CCM Initial Note</option>
+                                <option value="CCM Note Physician">CCM Note, Physician</option>
+                                <option value="CCM Note NP/PA">CCM Note NP/PA</option>
+                                <option value="CCM Note Clinical Staff">CCM Note Clinical Staff</option>
+                                <option value="RPM Note Clinical Staff">RPM Note, Clinical Staff</option>
+                                <option value="Telehealth Initial Visit Physician">Telehealth Initial Visit Physician</option>
+                                <option value="Telehealth Visit Physician">Telehealth Visit Physician</option>
+                                <option value="Telehealth Visit NP/PA">Telehealth Visit NP/PA</option>
+                                <option value="Transitional Care Note NP/PA">Transitional Care Note NP/PA</option>
+                                <option value="Transitional Care Note Physician">Transitional Care Note Physician</option>
+                                <option value="Skilled Nursing Consult">Skilled Nursing Consult</option>
+                                <option value="Skilled Nursing H&P">Skilled Nursing H&amp;P</option>
+                                <option value="Skilled Nursing Note">Skilled Nursing Note</option>
+                                <option value="Telephone Visit Initiated By Patient">Telephone Visit Initiated By Patient</option>
+                                <option value="E-Visit Followup Note MD">E-Visit Followup Note MD</option>
+                                <option value="E-Visit Followup Note MD NP/PA">E-Visit Followup Note MD NP/PA</option>
+                                <option value="Office Visit Note MD">Office Visit Note MD</option>
+                                <option value="Office Visit Note NP/PA">Office Visit Note NP/PA</option>
+                                <option value="Rehabilitation MD Note">Rehabilitation MD Note</option>
+                                <option value="Physical Therapy Note">Physical Therapy Note</option>
+                                <option value="Occupation Therapy Note">Occupation Therapy Note</option>
+                                <option value="Speech Therapy Note">Speech Therapy Note</option>
+                                <option value="Inpatient Hospital H&P Physician">Inpatient Hospital H&amp;P Physician</option>                             </select>
                         </div>
                     </div>
                     <div class="editor-content">
@@ -1327,13 +1356,32 @@
     </div>
 
     <!-- Quill Editor JS -->
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
     <!-- Quill Editor JS -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-
+    <!-- Documentation Templates JS (must be before main script) -->
     
     <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var inlineDateInput = document.getElementById('inline_doc_report_date');
+            var hiddenDateInput = document.getElementById('hidden_doc_report_date');
+            if (inlineDateInput && hiddenDateInput) {
+                inlineDateInput.addEventListener('change', function() {
+                    hiddenDateInput.value = inlineDateInput.value;
+                });
+            }
+            // On form submit, ensure hidden input matches inline
+            var docForm = document.getElementById('documentationForm');
+            if (docForm) {
+                docForm.addEventListener('submit', function() {
+                    if (inlineDateInput && hiddenDateInput) {
+                        hiddenDateInput.value = inlineDateInput.value;
+                    }
+                });
+            }
+        });
+
         // Global variables
         let quill;
         let shortcuts = [];
@@ -1495,9 +1543,11 @@ function generateVitalsSection() {
             // Initialize other elements
             const titleSelect = document.getElementById('id_title');
             
-            const rpmTemplate = `<h3>1. Reason for RPM Enrollment</h3><p>Patient is enrolled in RPM for hypertension (I10) to manage and monitor blood pressure remotely with the goal of preventing hypertensive crises, medication noncompliance, and end-organ damage. With additional goals of reducing hospital time and clinic visits for this chronic condition</p><p>Occasional spikes noted in the evening; patient reports periods of stress and dietary types of food intake as possible factors.</p><h3>2. Patient Communication</h3><p><strong>Mode of Communication:</strong> Telephonic (20-minute clinical review)</p><p>Reviewed data and chart prior to call, spent 12 minutes</p><p><strong>Summary of Discussion:</strong></p><ul><li>Reviewed BP data and discussed variability</li><li>Patient adherent to medications</li><li>Denies side effects, no dizziness, cough, or palpitations</li><li>Reinforced low-sodium diet and importance of daily readings</li><li>Recommended evening mindfulness and reduced caffeine</li><li>Advised to maintain BP log and alert team for systolic >160 or diastolic >100</li><li>Advised to go to an ER or urgent care if persistently above systolic 180 or hypotensive and systolic blood pressure below 90</li><li>doing enjoyable activities to reduce stress</li><li>acknowledging and managing stressors</li></ul><h3>3. Clinical Assessment and Plan</h3><ol><li>Hypertension</li><li>chest pain</li></ol><p>Blood pressure control improving</p><p>Continue current meds; consider dose titration depending on next month's readings and whether there is further improvement.</p><p>Continue RPM for next 30-day cycle.</p><p>Follow-up appointment scheduling</p><p>Patient encouraged to continue consistent daily monitoring.</p>`;
-
-            const ccnTemplate = `<h3>Diagnosis(es):</h3><p>I10 – Essential (primary) hypertension</p><p>[Include any other chronic conditions to support CCM eligibility — e.g., E11.9 for Diabetes, E78.5 for Hyperlipidemia]</p><h3>⏱️ Time Spent This Month on CCM Services</h3><p><strong>Total Time:</strong> ___ minutes</p><p><strong>Time Logged by:</strong> [Clinical Staff or Physician Name]</p><h3>📋 CCM Summary This Month</h3><p><strong>Review of Medical Record:</strong></p><p>Reviewed patient's recent BP logs submitted via RPM. Average BP over past 30 days: 144/92.</p><p>Last in-person visit: [Date]; last telehealth/RPM check-in: [Date].</p><p><strong>Medication Review:</strong></p><p>Patient is currently on Lisinopril 20 mg daily.</p><p>No side effects reported.</p><p>Compliance confirmed via RPM data and monthly call.</p><p><strong>Care Coordination Activities:</strong></p><p>Discussed medication adjustment options with supervising physician due to persistent blood pressure variability</p><p>Updated care plan based on pharmacist review and patient-reported side effects.</p><p><strong>Patient Communication:</strong></p><p>Contacted patient for monthly check-in.</p><p>Discussed BP trends and importance of diet and exercise.</p><p>Patient expressed mild dizziness when standing — advised hydration and scheduled follow-up.</p><p><strong>Preventive Services:</strong></p><p>Verified any new issues, vaccines</p><p>Patient overdue for any exam — referral sent.</p><h3>🧠 Care Plan Update</h3><p><strong>Goals:</strong></p><ul><li>Achieve and maintain BP &lt;130/80 within 3 months.</li><li>Reduce sodium intake to &lt;1.5g/day.</li><li>Walk 30 mins 5x/week.</li></ul><p><strong>Planned Interventions:</strong></p><ul><li>Continue meds</li><li>Pay attention to dietary intake</li><li>Reinforce adherence to home BP monitoring (RPM).</li><li>Follow-up labs</li></ul><table><thead><tr><th>CPT Code</th><th>Description</th><th>Who Can Bill</th></tr></thead><tbody><tr><td>99490</td><td>20+ min/month CCM by clinical staff under general supervision</td><td>MD, NP, PA</td></tr><tr><td>99439</td><td>additional 20 minutes of CCM by clinical staff</td><td>MD, NP, PA</td></tr><tr><td>99439</td><td>additional 20 minutes of CCM by clinical staff</td><td>MD, NP, PA</td></tr><tr><td>99491</td><td>30+ min/month CCM personally by physician or NPP</td><td>MD, NP, PA only</td></tr><tr><td>99437</td><td>Each additional 30 min personally by physician/NPP</td><td>MD, NP, PA only</td></tr><tr><td>99437</td><td>Each additional 30 min personally by physician/NPP</td><td>MD, NP, PA only</td></tr></tbody></table><h3>✅ Attestation</h3><p>Spent over 60 minutes of non-face-to-face chronic care management services were provided this month, addressing hypertension and other ongoing chronic conditions. These services were documented, medically necessary, and performed per Medicare guidelines.</p><p><strong>Signed:</strong> [Name, Title]<br><strong>Date:</strong> [MM/DD/YYYY]</p>`;
+            // Load templates from doc_templates.js (attached to window)
+            const rpmTemplate = window.rpmTemplate;
+            const ccnTemplate = window.ccnTemplate;
+            const ccmInitialNoteTemplate = window.ccmInitialNoteTemplate;
+            const ccmPhysicianNoteTemplate = window.ccmPhysicianNoteTemplate;
 
             // Set default value to Progress Note
             if (titleSelect.value === '') {
