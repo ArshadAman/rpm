@@ -120,7 +120,7 @@ class PastMedicalHistory(models.Model):
         ('TCa', 'Thyroid Cancer'),
         ('SCa', 'Skin Cancer'),
         ('GCa', 'Gastric Cancer'),
-        ('PCa', 'Prostate Cancer'),
+        ('PrCa', 'Prostate Cancer'),
         ('TeCa', 'Testicular Cancer'),
         ('BrCa', 'Breast Cancer'),
         ('OvCa', 'Ovarian Cancer'),
