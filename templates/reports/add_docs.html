@@ -1096,7 +1096,7 @@
                                 <select class="title-selector" id="id_title" name="title" form="documentationForm">
                                 <option value="Progress Note">Progress Note</option>
                                 <option value="RPM Progress Note">RPM Progress Note</option>
-                                <option value="CCN-HTN Progress Note">CCN-HTN Progress Note</option>
+                                <option value="CCM-HTN Progress Note">CCM-HTN Progress Note</option>
                                 <option value="CCM Initial Note">CCM Initial Note</option>
                                 <option value="CCM Note Physician">CCM Note, Physician</option>
                                 <option value="CCM Note NP/PA">CCM Note NP/PA</option>
@@ -1545,7 +1545,7 @@ function generateVitalsSection() {
             
             // Load templates from doc_templates.js (attached to window)
             const rpmTemplate = window.rpmTemplate;
-            const ccnTemplate = window.ccnTemplate;
+            const ccmTemplate = window.ccmTemplate;
             const ccmInitialNoteTemplate = window.ccmInitialNoteTemplate;
             const ccmPhysicianNoteTemplate = window.ccmPhysicianNoteTemplate;
 
@@ -1564,8 +1564,8 @@ function generateVitalsSection() {
                 // Load templates
                 if (this.value === 'RPM Progress Note') {
                     quill.root.innerHTML = rpmTemplate;
-                } else if (this.value === 'CCN-HTN Progress Note') {
-                    quill.root.innerHTML = ccnTemplate;
+                } else if (this.value === 'CCM-HTN Progress Note') {
+                    quill.root.innerHTML = ccmTemplate;
                 } else {
                     quill.root.innerHTML = '';
                 }
