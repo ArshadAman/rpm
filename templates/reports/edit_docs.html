@@ -1092,9 +1092,29 @@
                                 ⚡ Manage Shortcuts
                             </button>
                             <select class="title-selector" id="id_title" name="title" form="documentationForm">
-                                <option value="Progress Note">Progress Note</option>
-                                <option value="RPM Progress Note">RPM Progress Note</option>
-                                <option value="CCM-HTN Progress Note">CCM-HTN Progress Note</option>
+                                <option value="CCM Initial Note" {% if form.initial.title == "CCM Initial Note" %}selected{% endif %}>CCM Initial Note</option>
+                                <option value="CCM Note Clinical Staff" {% if form.initial.title == "CCM Note Clinical Staff" %}selected{% endif %}>CCM Note Clinical Staff</option>
+                                <option value="CCM Note, MD" {% if form.initial.title == "CCM Note, MD" %}selected{% endif %}>CCM Note, MD</option>
+                                <option value="CCM Note NP/PA" {% if form.initial.title == "CCM Note NP/PA" %}selected{% endif %}>CCM Note NP/PA</option>
+                                <option value="E-Visit Followup Note MD" {% if form.initial.title == "E-Visit Followup Note MD" %}selected{% endif %}>E-Visit Followup Note MD</option>
+                                <option value="E-Visit Followup Note NP/PA" {% if form.initial.title == "E-Visit Followup Note NP/PA" %}selected{% endif %}>E-Visit Followup Note NP/PA</option>
+                                <option value="Inpatient Hospital Note" {% if form.initial.title == "Inpatient Hospital Note" %}selected{% endif %}>Inpatient Hospital Note</option>
+                                <option value="Occupation Therapy Note" {% if form.initial.title == "Occupation Therapy Note" %}selected{% endif %}>Occupation Therapy Note</option>
+                                <option value="Office Visit Note MD" {% if form.initial.title == "Office Visit Note MD" %}selected{% endif %}>Office Visit Note MD</option>
+                                <option value="Office Visit Note NP/PA" {% if form.initial.title == "Office Visit Note NP/PA" %}selected{% endif %}>Office Visit Note NP/PA</option>
+                                <option value="Physical Therapy Note" {% if form.initial.title == "Physical Therapy Note" %}selected{% endif %}>Physical Therapy Note</option>
+                                <option value="Progress Note" {% if form.initial.title == "Progress Note" %}selected{% endif %}>Progress Note</option>
+                                <option value="Rehabilitation MD Note" {% if form.initial.title == "Rehabilitation MD Note" %}selected{% endif %}>Rehabilitation MD Note</option>
+                                <option value="RPM Note, Clinical Staff" {% if form.initial.title == "RPM Note, Clinical Staff" %}selected{% endif %}>RPM Note, Clinical Staff</option>
+                                <option value="RPM Progress Note" {% if form.initial.title == "RPM Progress Note" %}selected{% endif %}>RPM Progress Note</option>
+                                <option value="Skilled Nursing Note MD" {% if form.initial.title == "Skilled Nursing Note MD" %}selected{% endif %}>Skilled Nursing Note MD</option>
+                                <option value="Skilled Nursing Note NP/PA" {% if form.initial.title == "Skilled Nursing Note NP/PA" %}selected{% endif %}>Skilled Nursing Note NP/PA</option>
+                                <option value="Speech Therapy Note" {% if form.initial.title == "Speech Therapy Note" %}selected{% endif %}>Speech Therapy Note</option>
+                                <option value="Telehealth Visit MD" {% if form.initial.title == "Telehealth Visit MD" %}selected{% endif %}>Telehealth Visit MD</option>
+                                <option value="Telehealth Visit NP/PA" {% if form.initial.title == "Telehealth Visit NP/PA" %}selected{% endif %}>Telehealth Visit NP/PA</option>
+                                <option value="Telephone Visit Initiated By Patient" {% if form.initial.title == "Telephone Visit Initiated By Patient" %}selected{% endif %}>Telephone Visit Initiated By Patient</option>
+                                <option value="Transitional Care Note MD" {% if form.initial.title == "Transitional Care Note MD" %}selected{% endif %}>Transitional Care Note MD</option>
+                                <option value="Transitional Care Note NP/PA" {% if form.initial.title == "Transitional Care Note NP/PA" %}selected{% endif %}>Transitional Care Note NP/PA</option>
                             </select>
                         </div>
                     </div>
@@ -1341,7 +1361,7 @@
 
     
     <script>
-                document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function() {
             var inlineDateInput = document.getElementById('inline_doc_report_date');
             var hiddenDateInput = document.getElementById('hidden_doc_report_date');
             if (inlineDateInput && hiddenDateInput) {
@@ -1584,26 +1604,6 @@ function generateVitalsSection() {
                 titleSelect.value = 'Progress Note';
             }
 
-            titleSelect.addEventListener('change', function() {
-                // Update documentation type display
-                const docTypeDisplay = document.getElementById('current-doc-type');
-                if (docTypeDisplay) {
-                    docTypeDisplay.textContent = this.value;
-                }
-
-                // Load templates
-                if (this.value === 'RPM Progress Note') {
-                    quill.root.innerHTML = rpmTemplate;
-                } else if (this.value === 'CCM-HTN Progress Note') {
-                    quill.root.innerHTML = ccmTemplate;
-                } else {
-                    quill.root.innerHTML = '';
-                }
-                
-                // Update hidden textarea
-                hiddenTextarea.value = quill.root.innerHTML;
-            });
-
             // Update time every minute
             function updateTime() {
                 const now = new Date();
@@ -1636,9 +1636,7 @@ function generateVitalsSection() {
                 const currentContent = quill.root.innerHTML;
     
                 // Combine patient info + vitals + documentation content
-                const finalContent = patientInfo + vitalsInfo + currentContent;
-
-                console.log("Fuck", hiddenTextarea.value,finalContent);
+                const finalContent = patientInfo  + currentContent;
                 // Update hidden textarea with combined content
                 hiddenTextarea.value = finalContent;
 
