@@ -1314,6 +1314,11 @@
         <strong>Emergency Contact Relationship:</strong>
         <span>{{patient.emergency_contact_relationship}}</span>
       </div>
+      {% comment %} Copy delivery info {% endcomment %}
+      <div>
+        <strong>Copy Delivery Info:</strong>
+          <button id="copy-deliver-info" type="button">📋 Copy Delivery Info</button>
+      </div>
     </div>
 
     <div class="container">
@@ -2446,6 +2451,30 @@
           }
         }
       }
+
+
+      {% comment %} Copy Delivery Details {% endcomment %}
+      function copyToClipboard() {
+        const name = (`{{ patient.user.first_name|default_if_none:''|escapejs }} {{ patient.user.last_name|default_if_none:''|escapejs }}`).trim();
+        const phone = `{{ patient.phone_number|default_if_none:''|escapejs }}`;
+        const address = `{{ patient.home_address|default_if_none:''|escapejs }}`;
+
+        const text = `Name: ${name || 'N/A'}\nPhone Number: ${phone || 'N/A'}\nAddress: ${address || 'N/A'}`;
+
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text)
+            .then(() => showNotification('Delivery info copied'))
+            .catch(() => fallbackCopyToClipboard(text));
+        } else {
+          fallbackCopyToClipboard(text);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const copyBtn = document.getElementById("copy-deliver-info");
+        if (copyBtn) copyBtn.addEventListener("click", copyToClipboard);
+      });
+
 
       function fetchDocumentation() {
         const docListContainer = document.getElementById("documentation-list");
