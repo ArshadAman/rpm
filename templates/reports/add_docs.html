@@ -1163,7 +1163,7 @@
                     <p><strong>Device Serial:</strong> {{ patient.device_serial_number|default:"N/A" }}</p>
                     {% if patient.height %}<p><strong>Height:</strong> {{ patient.height }} inches</p>{% endif %}
                     {% if patient.weight %}<p><strong>Weight:</strong> {{ patient.weight }} pounds</p>{% endif %}
-                    {% if patient.bmi %}<p><strong>BMI:</strong> {{ patient.bmi }}</p>{% endif %}
+                    {% comment %} {% if patient.bmi %}<p><strong>BMI:</strong> {{ patient.bmi }}</p>{% endif %} {% endcomment %}
                 </div>
 
                                 <!-- Recent Vitals -->
@@ -1399,7 +1399,7 @@
     const patientPhone = "{{ patient.phone_number|default:'N/A' }}";
     const patientHeight = "{% if patient.height %}{{ patient.height }} inches{% else %}N/A{% endif %}";
     const patientWeight = "{% if patient.weight %}{{ patient.weight }} pounds{% else %}N/A{% endif %}";
-    const patientBMI = "{% if patient.bmi %}{{ patient.bmi }}{% else %}N/A{% endif %}";
+    //const patientBMI = "{% if patient.bmi %}{{ patient.bmi }}{% else %}N/A{% endif %}";
 
     return `<div style=" padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #7928CA;">
         <h3 style="color: #FF0080; margin-bottom: 10px;">Patient Information</h3>
@@ -1410,7 +1410,6 @@
         <p><strong>Phone:</strong> ${patientPhone}</p>
         <p><strong>Height:</strong> ${patientHeight}</p>
         <p><strong>Weight:</strong> ${patientWeight}</p>
-        <p><strong>BMI:</strong> ${patientBMI}</p>
     </div>`;
 }
 
