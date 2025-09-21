@@ -194,13 +194,13 @@
         <p class="tagline">Remote Patient Monitoring System - Connecting patients with healthcare experts</p>
     </div>
 
-    {% if messages %}
+    {% comment %} {% if messages %}
     <ul class="messages">
         {% for message in messages %}
         <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
         {% endfor %}
     </ul>
-{% endif %}
+{% endif %} {% endcomment %}
 
     <div class="options-container">
         <div class="option-card">
