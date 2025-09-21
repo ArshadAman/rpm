@@ -58,7 +58,7 @@ class GeminiMedicineService:
         """
         # Normalize query
         normalized_query = disease_query.lower().strip()
-        
+        print("Searching for disease:", normalized_query)
         # Check cache first (unless force refresh)
         if not force_refresh:
             cached_result = self._get_cached_result(normalized_query)
@@ -71,7 +71,7 @@ class GeminiMedicineService:
         
         # Get existing medicines for this disease
         existing_medicines = self._get_existing_medicines_for_disease(disease_obj)
-        
+        print("Existing medicines count:", (existing_medicines))
         # If we have recent, comprehensive data, return it
         if existing_medicines and not force_refresh:
             recent_medicines = [m for m in existing_medicines if not m.is_stale()]
@@ -80,7 +80,7 @@ class GeminiMedicineService:
                 return self._format_cached_medicines(disease_obj, recent_medicines)
         
         # Fetch from Gemini AI with retry logic
-        logger.info(f"Fetching from Gemini AI for: {disease_query}")
+        print(f"Fetching from Gemini AI for: {disease_query}")
         ai_result = self._fetch_from_gemini_with_retry(disease_query)
         
         if ai_result['success']:
@@ -152,7 +152,7 @@ class GeminiMedicineService:
                 response = self.generate_content(
                     prompt
                 )
-                
+                print("Gemini response:", response)
                 processing_time = time.time() - start_time
                 
                 # Check if response is blocked
@@ -164,9 +164,30 @@ class GeminiMedicineService:
                         'attempt': attempt + 1
                     }
                 
-                # Clean up the response text
-                response_text = response.get('text', '').strip()
-                
+
+                # Extract response text from Gemini response structure
+                response_text = None
+                if 'text' in response and response['text']:
+                    response_text = response['text']
+                elif 'candidates' in response and response['candidates']:
+                    # Gemini API: text is usually in candidates[0]['content']['parts'][0]['text']
+                    try:
+                        candidate = response['candidates'][0]
+                        parts = candidate.get('content', {}).get('parts', [])
+                        if parts and isinstance(parts[0], dict) and 'text' in parts[0]:
+                            response_text = parts[0]['text']
+                    except Exception as e:
+                        logger.error(f"Error extracting text from Gemini candidates: {e}")
+                if not response_text:
+                    logger.error(f"No valid text found in Gemini response: {response}")
+                    return {
+                        'success': False,
+                        'error': 'No valid text found in Gemini response',
+                        'raw_response': str(response),
+                        'attempt': attempt + 1
+                    }
+                response_text = response_text.strip()
+                print("Response text:", response_text)
                 # Remove markdown formatting if present
                 if response_text.startswith('```json'):
                     response_text = response_text[7:]
@@ -174,17 +195,17 @@ class GeminiMedicineService:
                     response_text = response_text[:-3]
                 if response_text.startswith('```'):
                     response_text = response_text[3:]
-                
+
                 # Parse JSON response
                 medicine_data = json.loads(response_text.strip())
-                
+                print("Parsed medicine data:", medicine_data)
                 logger.info(f"Successfully fetched data for {disease} on attempt {attempt + 1}")
-                
+
                 return {
                     'success': True,
                     'data': medicine_data,
                     'processing_time': processing_time,
-                    'raw_response': response.get('text'),
+                    'raw_response': response_text,
                     'attempt': attempt + 1,
                     'model_used': 'gemini-1.5-flash'
                 }

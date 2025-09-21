@@ -11,8 +11,6 @@
     <!-- Quill Editor CSS -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     {% load static %}
-<script src="{% static 'static/reports/doc_templates.js' %}"></script>
-
     <style>
         * {
             margin: 0;
@@ -1141,7 +1139,7 @@
                                 </div>
                             </div>
                             
-                            <button type="submit" class="save-button">{% if edit_mode %}Update Documentation{% else %}Save Documentation{% endif %}</button>
+                            <button type="submit" class="save-button">Save Documentation</button>
                         </form>
                     </div>
                 </div>
@@ -1538,7 +1536,7 @@ function generateVitalsSection() {
 
             // Load shortcuts
             loadShortcuts();
-
+/*
             // Initialize other elements
             const titleSelect = document.getElementById('id_title');
             
@@ -1572,7 +1570,7 @@ function generateVitalsSection() {
                 // Update hidden textarea
                 hiddenTextarea.value = quill.root.innerHTML;
             });
-
+*/
             // Update time every minute
             function updateTime() {
                 const now = new Date();
@@ -1592,7 +1590,7 @@ function generateVitalsSection() {
             setInterval(updateTime, 60000);
 
             // Trigger change event on page load
-            titleSelect.dispatchEvent(new Event('change'));
+            //titleSelect.dispatchEvent(new Event('change'));
 
             // Before form submission, update hidden textarea
             document.getElementById('documentationForm').addEventListener('submit', function(e) {
