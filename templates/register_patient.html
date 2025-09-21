@@ -587,7 +587,9 @@
         {% if messages %}
         <div class="messages">
             {% for message in messages %}
+                {% if 'admin' not in message.extra_tags %}
                 <div class="{{ message.tags }}">{{ message }}</div>
+                {% endif %}
             {% endfor %}
         </div>
         {% endif %}
