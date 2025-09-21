@@ -1174,8 +1174,8 @@ def patient_self_registration(request):
                 patient = Patient.objects.create(
                     user=user,
                     date_of_birth=data['date_of_birth'],
-                    height=data['height'],
-                    weight=data['weight'],
+                    height=data['height'] if data['height'] else 0.0,
+                    weight=data['weight'] if data['weight'] else 0.0,
                     insurance=data['insurance'],
                     insurance_number=data['insurance_number'],
                     sex=data['sex'],
