@@ -10,5 +10,6 @@ urlpatterns = [
     path('reports/', include('reports.urls')),
     path('documentation/<int:doc_id>/view/', documentation_share_view, name='documentation_share_view_global'),
     path('retell_calling/', include('retell_calling.urls')),
-    path('grappelli/', include('grappelli.urls')),  # Grappelli URLS
+    path('grappelli/', include('grappelli.urls')),  
+    path("medications/", include("medications.urls")),  # Grappelli URLS
 ]

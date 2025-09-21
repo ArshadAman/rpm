@@ -447,66 +447,94 @@ def edit_patient(request, patient_id):
     
     if request.method == "POST":
         try:
-            # Update user information
-            patient.user.first_name = request.POST.get('first_name')
-            patient.user.last_name = request.POST.get('last_name')
+            # Update user information with defaults
+            patient.user.first_name = request.POST.get('first_name', '') or ''
+            patient.user.last_name = request.POST.get('last_name', '') or ''
             patient.user.save()
-            
-            # Update patient information
-            date_of_birth_str = request.POST.get('date_of_birth')
-            if date_of_birth_str:
-                # Convert string to date object
-                from datetime import datetime
-                patient.date_of_birth = datetime.strptime(date_of_birth_str, '%Y-%m-%d').date()
-            
-            patient.sex = request.POST.get('sex')
-            patient.weight = request.POST.get('weight')
-            patient.height = request.POST.get('height')
-            patient.insurance = request.POST.get('insurance')
-            patient.insurance_number = request.POST.get('insurance_number')
-            patient.monitoring_parameters = request.POST.get('monitoring_parameters')
-            patient.device_serial_number = request.POST.get('device_serial_number')
-            patient.drink = request.POST.get('drink')
-            patient.smoke = request.POST.get('smoke')
-            patient.allergies = request.POST.get('allergies')
-            patient.family_history = request.POST.get('family_history')
-            patient.medications = request.POST.get('medications')
-            # Update address and emergency contact information
-            patient.home_address = request.POST.get('home_address')
-            patient.emergency_contact_name = request.POST.get('emergency_contact_name')
-            patient.emergency_contact_phone = request.POST.get('emergency_contact_phone')
-            patient.emergency_contact_relationship = request.POST.get('emergency_contact_relationship')
 
-            
+            # Update patient information with safe defaults
+            from datetime import datetime
+            date_of_birth_str = request.POST.get('date_of_birth', '')
+            if date_of_birth_str:
+                try:
+                    patient.date_of_birth = datetime.strptime(date_of_birth_str, '%Y-%m-%d').date()
+                except Exception:
+                    patient.date_of_birth = None
+            else:
+                patient.date_of_birth = None
+
+            patient.sex = request.POST.get('sex', patient.sex or 'Others') or 'Others'
+
+            try:
+                patient.weight = float(request.POST.get('weight', patient.weight or 0.0) or 0.0)
+            except Exception:
+                patient.weight = 0.0
+
+            try:
+                patient.height = float(request.POST.get('height', patient.height or 0.0) or 0.0)
+            except Exception:
+                patient.height = 0.0
+
+            patient.insurance = request.POST.get('insurance', patient.insurance or '') or ''
+            patient.insurance_number = request.POST.get('insurance_number', patient.insurance_number or '') or ''
+            patient.monitoring_parameters = request.POST.get('monitoring_parameters', patient.monitoring_parameters or '') or ''
+
+            device_serial_number = request.POST.get('device_serial_number', '')
+            try:
+                patient.device_serial_number = int(device_serial_number) if device_serial_number else None
+            except Exception:
+                patient.device_serial_number = None
+
+            patient.drink = request.POST.get('drink', patient.drink or 'NO') or 'NO'
+            patient.smoke = request.POST.get('smoke', patient.smoke or 'NO') or 'NO'
+            patient.allergies = request.POST.get('allergies', patient.allergies or '') or ''
+            patient.family_history = request.POST.get('family_history', patient.family_history or '') or ''
+            patient.medications = request.POST.get('medications', patient.medications or '') or ''
+            patient.home_address = request.POST.get('home_address', patient.home_address or '') or ''
+            patient.emergency_contact_name = request.POST.get('emergency_contact_name', patient.emergency_contact_name or '') or ''
+            patient.emergency_contact_phone = request.POST.get('emergency_contact_phone', patient.emergency_contact_phone or '') or ''
+            patient.emergency_contact_relationship = request.POST.get('emergency_contact_relationship', patient.emergency_contact_relationship or '') or ''
+
             # Handle Past Medical History
             selected_pmh = request.POST.getlist('past_medical_history', [])
-            
             # Delete existing past medical history
             patient.medical_history.all().delete()
-            
-            # Create new past medical history records
-            for pmh in selected_pmh:
-                from rpm_users.models import PastMedicalHistory
+            from rpm_users.models import PastMedicalHistory
+            if selected_pmh:
+                for pmh in selected_pmh:
+                    PastMedicalHistory.objects.create(
+                        patient=patient,
+                        pmh=pmh
+                    )
+            else:
+                # If nothing selected, add N/A
                 PastMedicalHistory.objects.create(
                     patient=patient,
-                    pmh=pmh
+                    pmh='N/A'
                 )
-            
+
             # Recalculate BMI
             if patient.weight and patient.height:
-                height_in_meters = float(patient.height) / 100
-                patient.bmi = round(float(patient.weight) / (height_in_meters ** 2), 2)
-            
-            # No need to manually calculate age - it's handled by the property in the model
-            
+                try:
+                    height_in_meters = float(patient.height) / 100
+                    if height_in_meters > 0:
+                        patient.bmi = round(float(patient.weight) / (height_in_meters ** 2), 2)
+                    else:
+                        patient.bmi = 0.0
+                except Exception:
+                    patient.bmi = 0.0
+            else:
+                patient.bmi = 0.0
+
             patient.save()
-            
+
             return JsonResponse({
                 'success': True,
                 'patient_id': patient.id
             })
-            
+
         except Exception as e:
+            # Log the error if needed, but always return a default error
             return JsonResponse({
                 'success': False,
                 'error': str(e)
