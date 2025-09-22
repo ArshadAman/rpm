@@ -127,6 +127,7 @@ class Documentation(models.Model):
         ('CCM-HTN Progress Note', 'CCM-HTN Progress Note'),
         ('E-Visit Followup Note MD', 'E-Visit Followup Note MD'),
         ('E-Visit Followup Note MD NP/PA', 'E-Visit Followup Note MD NP/PA'),
+        ('E-Visit Followup Note NP/PA', 'E-Visit Followup Note NP/PA'), 
         ('Inpatient Hospital H&P Physician', 'Inpatient Hospital H&P Physician'),
         ('Occupation Therapy Note', 'Occupation Therapy Note'),
         ('Office Visit Note MD', 'Office Visit Note MD'),
