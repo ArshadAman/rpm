@@ -1066,8 +1066,8 @@ def register_patient(request):
                 patient = Patient.objects.create(
                     user=user,
                     date_of_birth=data['date_of_birth'],
-                    height=data['height'],
-                    weight=data['weight'],
+                    height=data['height'] if data['height'] else 0.0,
+                    weight=data['weight'] if data['weight'] else 0.0,
                     insurance=data['insurance'],
                     insurance_number=data['insurance_number'],
                     sex=data['sex'],
@@ -1146,13 +1146,6 @@ def patient_self_registration(request):
             'emergency_contact_phone': request.POST.get('emergency_contact_phone'),
             'emergency_contact_relationship': request.POST.get('emergency_contact_relationship')
         }
-
-        # Check if patient already exists
-        # if User.objects.filter(username=data['email']).exists():
-        #     messages.error(request, 'Patient with this email already exists')
-        #     return render(request, 'patient_self_register.html')
-
-        # Create local user and patient atomically
         try:
             with transaction.atomic():
                 user, created = User.objects.get_or_create(
