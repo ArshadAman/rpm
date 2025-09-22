@@ -1091,33 +1091,35 @@
                             <button type="button" class="manage-shortcuts-btn" onclick="openShortcutModal()">
                                 ⚡ Manage Shortcuts
                             </button>
-                                <select class="title-selector" id="id_title" name="title" form="documentationForm">
-                                <option value="Progress Note">Progress Note</option>
-                                <option value="RPM Progress Note">RPM Progress Note</option>
-                                <option value="CCM-HTN Progress Note">CCM-HTN Progress Note</option>
+                            <select class="title-selector" id="id_title" name="title" form="documentationForm">
                                 <option value="CCM Initial Note">CCM Initial Note</option>
-                                <option value="CCM Note Physician">CCM Note, Physician</option>
-                                <option value="CCM Note NP/PA">CCM Note NP/PA</option>
                                 <option value="CCM Note Clinical Staff">CCM Note Clinical Staff</option>
-                                <option value="RPM Note Clinical Staff">RPM Note, Clinical Staff</option>
-                                <option value="Telehealth Initial Visit Physician">Telehealth Initial Visit Physician</option>
-                                <option value="Telehealth Visit Physician">Telehealth Visit Physician</option>
-                                <option value="Telehealth Visit NP/PA">Telehealth Visit NP/PA</option>
-                                <option value="Transitional Care Note NP/PA">Transitional Care Note NP/PA</option>
-                                <option value="Transitional Care Note Physician">Transitional Care Note Physician</option>
-                                <option value="Skilled Nursing Consult">Skilled Nursing Consult</option>
-                                <option value="Skilled Nursing H&P">Skilled Nursing H&amp;P</option>
-                                <option value="Skilled Nursing Note">Skilled Nursing Note</option>
-                                <option value="Telephone Visit Initiated By Patient">Telephone Visit Initiated By Patient</option>
+                                <option value="CCM Note NP/PA">CCM Note NP/PA</option>
+                                <option value="CCM Note Physician">CCM Note Physician</option>
+                                <option value="CCM-HTN Progress Note">CCM-HTN Progress Note</option>
                                 <option value="E-Visit Followup Note MD">E-Visit Followup Note MD</option>
                                 <option value="E-Visit Followup Note MD NP/PA">E-Visit Followup Note MD NP/PA</option>
+                                <option value="E-Visit Followup Note NP/PA">E-Visit Followup Note NP/PA</option>
+                                <option value="Inpatient Hospital H&P Physician">Inpatient Hospital H&P Physician</option>
+                                <option value="Occupation Therapy Note">Occupation Therapy Note</option>
                                 <option value="Office Visit Note MD">Office Visit Note MD</option>
                                 <option value="Office Visit Note NP/PA">Office Visit Note NP/PA</option>
-                                <option value="Rehabilitation MD Note">Rehabilitation MD Note</option>
                                 <option value="Physical Therapy Note">Physical Therapy Note</option>
-                                <option value="Occupation Therapy Note">Occupation Therapy Note</option>
+                                <option value="Progress Note">Progress Note</option>
+                                <option value="Rehabilitation MD Note">Rehabilitation MD Note</option>
+                                <option value="RPM Note Clinical Staff">RPM Note Clinical Staff</option>
+                                <option value="RPM Progress Note">RPM Progress Note</option>
+                                <option value="Skilled Nursing Consult">Skilled Nursing Consult</option>
+                                <option value="Skilled Nursing H&P">Skilled Nursing H&P</option>
+                                <option value="Skilled Nursing Note">Skilled Nursing Note</option>
                                 <option value="Speech Therapy Note">Speech Therapy Note</option>
-                                <option value="Inpatient Hospital H&P Physician">Inpatient Hospital H&amp;P Physician</option>                             </select>
+                                <option value="Telehealth Initial Visit Physician">Telehealth Initial Visit Physician</option>
+                                <option value="Telehealth Visit NP/PA">Telehealth Visit NP/PA</option>
+                                <option value="Telehealth Visit Physician">Telehealth Visit Physician</option>
+                                <option value="Telephone Visit Initiated By Patient">Telephone Visit Initiated By Patient</option>
+                                <option value="Transitional Care Note NP/PA">Transitional Care Note NP/PA</option>
+                                <option value="Transitional Care Note Physician">Transitional Care Note Physician</option>
+                            </select>
                         </div>
                     </div>
                     <div class="editor-content">
@@ -1422,7 +1424,23 @@ const vitalsData = [
             "spo2": "{% if report.spo2 %}{{ report.spo2|escapejs }}%{% else %}N/A{% endif %}",
             "temp": "{% if report.temperature %}{{ report.temperature|escapejs }}°F{% else %}N/A{% endif %}"
         }{% if not forloop.last %},{% endif %}
-        {% endfor %}
+        {% endfor %}        keyboard: {
+            bindings: {
+                // Disable automatic list creation
+                'list autofill': {
+                    key: ' ',
+                    collapsed: true,
+                    format: {
+                        'list': false
+                    },
+                    prefix: /^(1\.|-)$/,
+                    handler: function(range, context) {
+                        // Do nothing - prevents auto list creation
+                        return true;
+                    }
+                }
+            }
+        }
     {% endif %}
 ];
 console.log("fud",vitalsData)
@@ -1474,7 +1492,24 @@ function generateVitalsSection() {
                         [{ 'indent': '-1'}, { 'indent': '+1' }],
                         ['link'],
                 
-                    ]
+                    ],
+                    keyboard: {
+                        bindings: {
+                            // Disable automatic list creation
+                            'list autofill': {
+                                key: ' ',
+                                collapsed: true,
+                                format: {
+                                    'list': false
+                                },
+                                prefix: /^(1\.|-)$/,
+                                handler: function(range, context) {
+                                    // Do nothing - prevents auto list creation
+                                    return true;
+                                }
+                            }
+                        }
+                }
                 }
             });
             // Set initial content if editing

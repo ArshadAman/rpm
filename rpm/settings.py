@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'rpm_users',
     'reports',
     'retell_calling',
+    'medications',
     # Core apps
     'rest_framework',
     'corsheaders',
