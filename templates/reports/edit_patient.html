@@ -709,6 +709,41 @@
                         </div>
                     </div>
                 </div>
+                
+                <h3 class="section-title">Contact Information</h3>
+                <div class="form-section">
+                    <div class="form-grid">
+                        <div class="form-group input-icon">
+                            <label for="home_address">Home Address</label>
+                            <textarea id="home_address" name="home_address" rows="3" placeholder="Enter complete home address">{{ patient.home_address }}</textarea>
+                        </div>
+                        
+                        <div class="form-group input-icon">
+                            <label for="emergency_contact_name">Emergency Contact Name</label>
+                            <input type="text" id="emergency_contact_name" name="emergency_contact_name" value="{{ patient.emergency_contact_name }}" placeholder="Enter emergency contact name">
+                        </div>
+                        
+                        <div class="form-group input-icon">
+                            <label for="emergency_contact_phone">Emergency Contact Phone</label>
+                            <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" value="{{ patient.emergency_contact_phone }}" placeholder="Enter emergency contact phone">
+                        </div>
+                        
+                        <div class="form-group input-icon">
+                            <label for="emergency_contact_relationship">Emergency Contact Relationship</label>
+                            <input type="text" id="emergency_contact_relationship" name="emergency_contact_relationship" value="{{ patient.emergency_contact_relationship }}" placeholder="e.g., Spouse, Parent">
+                        </div>
+                        
+                        <div class="form-group input-icon">
+                            <label for="primary_care_physician">Primary Care Physician</label>
+                            <input type="text" id="primary_care_physician" name="primary_care_physician" value="{{ patient.primary_care_physician }}" placeholder="Enter primary care physician name">
+                        </div>
+                        
+                        <div class="form-group input-icon">
+                            <label for="primary_care_physician_phone">Primary Care Physician Phone</label>
+                            <input type="tel" id="primary_care_physician_phone" name="primary_care_physician_phone" value="{{ patient.primary_care_physician_phone }}" placeholder="Enter primary care physician phone">
+                        </div>
+                    </div>
+                </div>
                                 <div id="alert" class="alert"></div>
 
                  <div class="loading">

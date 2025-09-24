@@ -721,6 +721,21 @@
                            placeholder="e.g., Spouse, Parent, Sibling, Friend">
                 </div>
 
+                <!-- Primary Care Physician Section -->
+                <div class="form-group">
+                    <label for="primary_care_physician">Primary Care Physician</label>
+                    <input type="text" id="primary_care_physician" name="primary_care_physician"
+                           value="{{ form_data.primary_care_physician|default:'' }}"
+                           placeholder="Enter primary care physician name">
+                </div>
+
+                <div class="form-group">
+                    <label for="primary_care_physician_phone">Primary Care Physician Phone</label>
+                    <input type="tel" id="primary_care_physician_phone" name="primary_care_physician_phone"
+                           value="{{ form_data.primary_care_physician_phone|default:'' }}"
+                           placeholder="Enter primary care physician phone number">
+                </div>
+
                 <div class="form-group">
                     <label for="pharmacy_info">Pharmacy Information</label>
                     <textarea id="pharmacy_info" name="pharmacy_info" 

@@ -19,7 +19,9 @@ class PatientForm(forms.ModelForm):
             'drink',
             'smoke',
             'family_history',
-            'medications'
+            'medications',
+            'primary_care_physician',
+            'primary_care_physician_phone'
         ]
 
 class ModeratorForm(forms.Form):
