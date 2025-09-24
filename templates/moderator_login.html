@@ -222,7 +222,9 @@
         {% if messages %}
         <div class="messages">
             {% for message in messages %}
+                {% if 'admin' not in message.extra_tags %}
                 <li>{{ message }}</li>
+                {% endif %}
             {% endfor %}
         </div>
         {% endif %}
