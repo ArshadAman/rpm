@@ -1035,7 +1035,9 @@ def register_patient(request):
             'home_address': request.POST.get('home_address'),
             'emergency_contact_name': request.POST.get('emergency_contact_name'),
             'emergency_contact_phone': request.POST.get('emergency_contact_phone'),
-            'emergency_contact_relationship': request.POST.get('emergency_contact_relationship')
+            'emergency_contact_relationship': request.POST.get('emergency_contact_relationship'),
+            'primary_care_physician': request.POST.get('primary_care_physician'),
+            'primary_care_physician_phone': request.POST.get('primary_care_physician_phone')
         }
 
         # Check if patient already exists
@@ -1083,7 +1085,9 @@ def register_patient(request):
                     home_address=data['home_address'] if data['home_address'] else None,
                     emergency_contact_name=data['emergency_contact_name'] if data['emergency_contact_name'] else None,
                     emergency_contact_phone=data['emergency_contact_phone'] if data['emergency_contact_phone'] else None,
-                    emergency_contact_relationship=data['emergency_contact_relationship'] if data['emergency_contact_relationship'] else None
+                    emergency_contact_relationship=data['emergency_contact_relationship'] if data['emergency_contact_relationship'] else None,
+                    primary_care_physician=data['primary_care_physician'] if data['primary_care_physician'] else None,
+                    primary_care_physician_phone=data['primary_care_physician_phone'] if data['primary_care_physician_phone'] else None
                 )
 
                 # Create past medical history records
@@ -1144,7 +1148,9 @@ def patient_self_registration(request):
             'home_address': request.POST.get('home_address'),
             'emergency_contact_name': request.POST.get('emergency_contact_name'),
             'emergency_contact_phone': request.POST.get('emergency_contact_phone'),
-            'emergency_contact_relationship': request.POST.get('emergency_contact_relationship')
+            'emergency_contact_relationship': request.POST.get('emergency_contact_relationship'),
+            'primary_care_physician': request.POST.get('primary_care_physician'),
+            'primary_care_physician_phone': request.POST.get('primary_care_physician_phone')
         }
         try:
             with transaction.atomic():
@@ -1184,7 +1190,9 @@ def patient_self_registration(request):
                     home_address=data['home_address'] if data['home_address'] else None,
                     emergency_contact_name=data['emergency_contact_name'] if data['emergency_contact_name'] else None,
                     emergency_contact_phone=data['emergency_contact_phone'] if data['emergency_contact_phone'] else None,
-                    emergency_contact_relationship=data['emergency_contact_relationship'] if data['emergency_contact_relationship'] else None
+                    emergency_contact_relationship=data['emergency_contact_relationship'] if data['emergency_contact_relationship'] else None,
+                    primary_care_physician=data['primary_care_physician'] if data['primary_care_physician'] else None,
+                    primary_care_physician_phone=data['primary_care_physician_phone'] if data['primary_care_physician_phone'] else None
                 )
 
                 # Create past medical history records
