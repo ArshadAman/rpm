@@ -494,6 +494,8 @@ def edit_patient(request, patient_id):
             patient.emergency_contact_name = request.POST.get('emergency_contact_name', patient.emergency_contact_name or '') or ''
             patient.emergency_contact_phone = request.POST.get('emergency_contact_phone', patient.emergency_contact_phone or '') or ''
             patient.emergency_contact_relationship = request.POST.get('emergency_contact_relationship', patient.emergency_contact_relationship or '') or ''
+            patient.primary_care_physician = request.POST.get('primary_care_physician', patient.primary_care_physician or '') or ''
+            patient.primary_care_physician_phone = request.POST.get('primary_care_physician_phone', patient.primary_care_physician_phone or '') or ''
 
             # Handle Past Medical History
             selected_pmh = request.POST.getlist('past_medical_history', [])

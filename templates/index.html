@@ -791,6 +791,104 @@
         transform: translateX(5px);
       }
 
+      /* Patient Info Tab Specific Styles */
+      .patient-info-category {
+        margin-bottom: 25px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .patient-info-category:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(121, 40, 202, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(121, 40, 202, 0.1);
+      }
+
+      .category-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--secondary);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .category-title svg {
+        color: var(--secondary);
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 12px;
+      }
+
+      .info-grid .info-item {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+        min-height: 60px;
+      }
+
+      .info-grid .info-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(121, 40, 202, 0.3);
+        transform: translateX(3px);
+      }
+
+      .info-grid .info-item.full-width {
+        grid-column: 1 / -1;
+      }
+
+      .info-grid .info-item .item-icon {
+        font-size: 18px;
+        min-width: 24px;
+        text-align: center;
+      }
+
+      .info-grid .info-item span {
+        flex: 1;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .info-grid .info-item strong {
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      /* Mobile responsiveness for patient info */
+      @media (max-width: 768px) {
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        .patient-info-category {
+          padding: 15px;
+        }
+        
+        .info-grid .info-item {
+          padding: 12px;
+          min-height: 50px;
+        }
+        
+        .category-title {
+          font-size: 14px;
+        }
+      }
+
       .item-icon {
         font-size: 20px;
         opacity: 0.9;
@@ -1328,6 +1426,7 @@
           <div class="active" onclick="showTab('results')">Results</div>
           <div onclick="showTab('orders')">Orders</div>
           <div onclick="showTab('documentation')">Documentation</div>
+          <div onclick="showTab('patient_info')">Patient Info</div>
           <div onclick="showTab('allergies')">Allergies</div>
           <div onclick="showTab('family_history')">Family History</div>
           <div onclick="showTab('medications')">Medications</div>
@@ -1570,6 +1669,231 @@
                   <p style="font-size: 12px">
                     Select a document to view details
                   </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Patient Info Tab -->
+          <div id="patient_info" class="table-container" style="display: none">
+            <h3>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              Patient Information
+            </h3>
+            <div class="info-card">
+              <div class="info-section">
+                <!-- Personal Information -->
+                <div class="patient-info-category">
+                  <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Personal Details
+                  </h4>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <div class="item-icon">👤</div>
+                      <span><strong>Full Name:</strong> {{ patient.user.first_name }} {{ patient.user.last_name }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">📧</div>
+                      <span><strong>Email:</strong> {{ patient.user.email }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">📱</div>
+                      <span><strong>Phone:</strong> {{ patient.phone_number|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">🎂</div>
+                      <span><strong>Date of Birth:</strong> {{ patient.date_of_birth|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">⚧</div>
+                      <span><strong>Sex:</strong> {{ patient.sex|default:"Not specified" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">🎯</div>
+                      <span><strong>Age:</strong> {{ patient.age|default:"Not calculated" }} years</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Physical Information -->
+                <div class="patient-info-category">
+                  <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                      <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    </svg>
+                    Physical Details
+                  </h4>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <div class="item-icon">📏</div>
+                      <span><strong>Height:</strong> {{ patient.height|default:"Not provided" }}{% if patient.height %} inches{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">⚖️</div>
+                      <span><strong>Weight:</strong> {{ patient.weight|default:"Not provided" }}{% if patient.weight %} lbs{% endif %}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Medical Information -->
+                <div class="patient-info-category">
+                  <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7z"></path>
+                    </svg>
+                    Medical Details
+                  </h4>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <div class="item-icon">🏥</div>
+                      <span><strong>Insurance Provider:</strong> {{ patient.insurance|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">🔢</div>
+                      <span><strong>Insurance Number:</strong> {{ patient.insurance_number|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">📈</div>
+                      <span><strong>Monitoring Parameters:</strong> {{ patient.monitoring_parameters|default:"Not specified" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">📱</div>
+                      <span><strong>Device Serial:</strong> {{ patient.device_serial_number|default:"Not assigned" }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Lifestyle Information -->
+                <div class="patient-info-category">
+                  <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"></path>
+                      <polyline points="12,6 12,12 16,14"></polyline>
+                    </svg>
+                    Lifestyle
+                  </h4>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <div class="item-icon">🚬</div>
+                      <span><strong>Smoking:</strong> {{ patient.smoke|default:"Not specified" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">🍺</div>
+                      <span><strong>Drinking:</strong> {{ patient.drink|default:"Not specified" }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="patient-info-category">
+                  <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    Contact & Address
+                  </h4>
+                  <div class="info-grid">
+                    <div class="info-item full-width">
+                      <div class="item-icon">🏠</div>
+                      <span><strong>Home Address:</strong> {{ patient.home_address|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">🚨</div>
+                      <span><strong>Emergency Contact:</strong> {{ patient.emergency_contact_name|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">📞</div>
+                      <span><strong>Emergency Phone:</strong> {{ patient.emergency_contact_phone|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">👥</div>
+                      <span><strong>Relationship:</strong> {{ patient.emergency_contact_relationship|default:"Not specified" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">👨‍⚕️</div>
+                      <span><strong>Primary Care Physician:</strong> {{ patient.primary_care_physician|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">☎️</div>
+                      <span><strong>PCP Phone:</strong> {{ patient.primary_care_physician_phone|default:"Not provided" }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Healthcare Team -->
+                <div class="patient-info-category">
+                  <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Healthcare Team
+                  </h4>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <div class="item-icon">👨‍💼</div>
+                      <span><strong>Assigned Moderator:</strong> {{ patient.moderator_assigned.user.first_name|default:"Not assigned" }} {{ patient.moderator_assigned.user.last_name|default:"" }}</span>
+                    </div>
+                    {% if patient.is_escalated %}
+                    <div class="info-item">
+                      <div class="item-icon">👨‍⚕️</div>
+                      <span><strong>Escalated to Doctor:</strong> {{ patient.doctor_escalated.user.first_name }} {{ patient.doctor_escalated.user.last_name }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">🏥</div>
+                      <span><strong>Specialization:</strong> {{ patient.doctor_escalated.specialization|default:"General Medicine" }}</span>
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Account Information -->
+                <div class="patient-info-category">
+                  <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    Account Details
+                  </h4>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <div class="item-icon">📅</div>
+                      <span><strong>Registered:</strong> {{ patient.created_at|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">🔄</div>
+                      <span><strong>Last Updated:</strong> {{ patient.updated_at|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">🆔</div>
+                      <span><strong>Patient ID:</strong> {{ patient.id }}</span>
+                    </div>
+                    <div class="info-item">
+                      <div class="item-icon">{% if patient.is_escalated %}🔴{% else %}🟢{% endif %}</div>
+                      <span><strong>Status:</strong> {% if patient.is_escalated %}Escalated to Doctor{% else %}Active{% endif %}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
