@@ -1070,6 +1070,7 @@
     </style>
 </head>
 <body>
+    {% comment %} Add docs section {% endcomment %}
     <div class="container">
         <div class="header-section">
             <a href="javascript:history.back()" class="back-button">← Back</a>
@@ -1424,25 +1425,10 @@ const vitalsData = [
             "spo2": "{% if report.spo2 %}{{ report.spo2|escapejs }}%{% else %}N/A{% endif %}",
             "temp": "{% if report.temperature %}{{ report.temperature|escapejs }}°F{% else %}N/A{% endif %}"
         }{% if not forloop.last %},{% endif %}
-        {% endfor %}        keyboard: {
-            bindings: {
-                // Disable automatic list creation
-                'list autofill': {
-                    key: ' ',
-                    collapsed: true,
-                    format: {
-                        'list': false
-                    },
-                    prefix: /^(1\.|-)$/,
-                    handler: function(range, context) {
-                        // Do nothing - prevents auto list creation
-                        return true;
-                    }
-                }
-            }
-        }
+        {% endfor %}
     {% endif %}
 ];
+
 console.log("fud",vitalsData)
 
 
