@@ -146,7 +146,7 @@ def moderator_list(request):
         return render(request, 'admin/moderator_list.html', context)
         
     except Exception as e:
-        messages.error(request, f'Error loading moderator list: {str(e)}')
+        messages.error(request, f'Error loading moderator list: {str(e)}', extra_tags="admin")
         return redirect('admin_dashboard')
 
 @user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
@@ -174,16 +174,16 @@ def moderator_create(request):
                     phone_number=form.cleaned_data['phone_number']
                 )
                 
-                messages.success(request, f'Moderator "{user.get_full_name()}" created successfully.')
+                messages.success(request, f'Moderator "{user.get_full_name()}" created successfully.', extra_tags="admin")
                 return redirect('moderator_list')
                 
             except Exception as e:
-                messages.error(request, f'Error creating moderator: {str(e)}')
+                messages.error(request, f'Error creating moderator: {str(e)}', extra_tags="admin")
                 # Clean up user if moderator creation failed
                 if 'user' in locals():
                     user.delete()
         else:
-            messages.error(request, 'Please correct the errors below.')
+            messages.error(request, 'Please correct the errors below.', extra_tags="admin")
     else:
         from .forms import ModeratorForm
         form = ModeratorForm()
@@ -243,7 +243,7 @@ def moderator_detail(request, moderator_id):
         return render(request, 'admin/moderator_detail.html', context)
         
     except Exception as e:
-        messages.error(request, f'Error loading moderator details: {str(e)}')
+        messages.error(request, f'Error loading moderator details: {str(e)}', extra_tags="admin")
         return redirect('moderator_list')
 
 @user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
@@ -274,13 +274,13 @@ def moderator_edit(request, moderator_id):
                 moderator.phone_number = form.cleaned_data['phone_number']
                 moderator.save()
                 
-                messages.success(request, f'Moderator "{user.get_full_name()}" updated successfully.')
+                messages.success(request, f'Moderator "{user.get_full_name()}" updated successfully.', extra_tags="admin")
                 return redirect('moderator_list')
                 
             except Exception as e:
-                messages.error(request, f'Error updating moderator: {str(e)}')
+                messages.error(request, f'Error updating moderator: {str(e)}', extra_tags="admin")
         else:
-            messages.error(request, 'Please correct the errors below.')
+            messages.error(request, 'Please correct the errors below.', extra_tags="admin")
     else:
         from .forms import ModeratorForm
         form = ModeratorForm(instance=moderator)
@@ -305,7 +305,7 @@ def moderator_delete(request, moderator_id):
     if request.method == 'POST':
         if assigned_patients_count > 0:
             messages.error(request, 
-                f'Cannot delete moderator "{moderator.user.get_full_name()}" because they have {assigned_patients_count} assigned patients. Please reassign these patients first.')
+                f'Cannot delete moderator "{moderator.user.get_full_name()}" because they have {assigned_patients_count} assigned patients. Please reassign these patients first.', extra_tags="admin")
             return redirect('moderator_list')
         
         try:
@@ -316,11 +316,11 @@ def moderator_delete(request, moderator_id):
             moderator.delete()
             user.delete()
             
-            messages.success(request, f'Moderator "{moderator_name}" deleted successfully.')
+            messages.success(request, f'Moderator "{moderator_name}" deleted successfully.', extra_tags="admin")
             return redirect('moderator_list')
             
         except Exception as e:
-            messages.error(request, f'Error deleting moderator: {str(e)}')
+            messages.error(request, f'Error deleting moderator: {str(e)}', extra_tags="admin")
             return redirect('moderator_list')
     
     context = {
@@ -373,7 +373,7 @@ def doctor_list(request):
         return render(request, 'admin/doctor_list.html', context)
         
     except Exception as e:
-        messages.error(request, f'Error loading doctor list: {str(e)}')
+        messages.error(request, f'Error loading doctor list: {str(e)}', extra_tags="admin")
         return redirect('admin_dashboard')
 
 @user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
@@ -402,16 +402,16 @@ def doctor_create(request):
                     specialization=form.cleaned_data['specialization']
                 )
                 
-                messages.success(request, f'Doctor "{user.get_full_name()}" created successfully.')
+                messages.success(request, f'Doctor "{user.get_full_name()}" created successfully.', extra_tags="admin")
                 return redirect('doctor_list')
                 
             except Exception as e:
-                messages.error(request, f'Error creating doctor: {str(e)}')
+                messages.error(request, f'Error creating doctor: {str(e)}', extra_tags="admin")
                 # Clean up user if doctor creation failed
                 if 'user' in locals():
                     user.delete()
         else:
-            messages.error(request, 'Please correct the errors below.')
+            messages.error(request, 'Please correct the errors below.', extra_tags="admin")
     else:
         from .forms import DoctorForm
         form = DoctorForm()
@@ -451,7 +451,7 @@ def doctor_detail(request, doctor_id):
         return render(request, 'admin/doctor_detail.html', context)
         
     except Exception as e:
-        messages.error(request, f'Error loading doctor details: {str(e)}')
+        messages.error(request, f'Error loading doctor details: {str(e)}', extra_tags="admin")
         return redirect('doctor_list')
 
 @user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
@@ -483,13 +483,13 @@ def doctor_edit(request, doctor_id):
                 doctor.specialization = form.cleaned_data['specialization']
                 doctor.save()
                 
-                messages.success(request, f'Doctor "{user.get_full_name()}" updated successfully.')
+                messages.success(request, f'Doctor "{user.get_full_name()}" updated successfully.', extra_tags="admin")
                 return redirect('doctor_list')
                 
             except Exception as e:
-                messages.error(request, f'Error updating doctor: {str(e)}')
+                messages.error(request, f'Error updating doctor: {str(e)}', extra_tags="admin")
         else:
-            messages.error(request, 'Please correct the errors below.')
+            messages.error(request, 'Please correct the errors below.', extra_tags="admin")
     else:
         from .forms import DoctorForm
         form = DoctorForm(instance=doctor)
@@ -514,7 +514,7 @@ def doctor_delete(request, doctor_id):
     if request.method == 'POST':
         if escalated_patients_count > 0:
             messages.error(request, 
-                f'Cannot delete doctor "{doctor.user.get_full_name()}" because they have {escalated_patients_count} escalated patients. Please reassign these patients first.')
+                f'Cannot delete doctor "{doctor.user.get_full_name()}" because they have {escalated_patients_count} escalated patients. Please reassign these patients first.', extra_tags="admin")
             return redirect('doctor_list')
         
         try:
@@ -525,11 +525,11 @@ def doctor_delete(request, doctor_id):
             doctor.delete()
             user.delete()
             
-            messages.success(request, f'Doctor "{doctor_name}" deleted successfully.')
+            messages.success(request, f'Doctor "{doctor_name}" deleted successfully.', extra_tags="admin")
             return redirect('doctor_list')
             
         except Exception as e:
-            messages.error(request, f'Error deleting doctor: {str(e)}')
+            messages.error(request, f'Error deleting doctor: {str(e)}', extra_tags="admin")
             return redirect('doctor_list')
     
     context = {

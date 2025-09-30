@@ -487,8 +487,10 @@ def edit_patient(request, patient_id):
 
             patient.drink = request.POST.get('drink', patient.drink or 'NO') or 'NO'
             patient.smoke = request.POST.get('smoke', patient.smoke or 'NO') or 'NO'
+            patient.phone_number = request.POST.get('phone_number', patient.phone_number or '') or ''
             patient.allergies = request.POST.get('allergies', patient.allergies or '') or ''
             patient.family_history = request.POST.get('family_history', patient.family_history or '') or ''
+            patient.pharmacy_info = request.POST.get('pharmacy_info', patient.pharmacy_info or '') or ''
             patient.medications = request.POST.get('medications', patient.medications or '') or ''
             patient.home_address = request.POST.get('home_address', patient.home_address or '') or ''
             patient.emergency_contact_name = request.POST.get('emergency_contact_name', patient.emergency_contact_name or '') or ''
