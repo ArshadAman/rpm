@@ -804,7 +804,7 @@
                         </svg>
                         Save Changes
                     </button>
-                    <a href="javascript:history.back()" class="cancel-btn">
+                    <a href="/view-patient/{{ patient.id }}/?action=access&_refresh={% now 'U' %}" class="cancel-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             width="20" height="20">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
