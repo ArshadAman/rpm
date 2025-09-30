@@ -3246,8 +3246,12 @@
             h2 { color: #FF0080; border-bottom: 1px solid #eee; padding-bottom: 10px; }
             .date { color: #666; font-size: 14px; }
             @media print { 
-              body { margin: 20px; } 
+              body { margin: 20px; color: #000 !important; } 
               .no-print { display: none; }
+              h1, h2, p, div, strong { color: #000 !important; }
+              .header { border-bottom: 2px solid #000; }
+              .patient-info { background: #f8f9fa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              .signature-line { border-bottom: 2px solid #000; }
             }
           </style>
         </head>
@@ -3461,6 +3465,26 @@
             .btn:hover { background: #6A0DAD; }
             .btn.secondary { background: #666; }
             .btn.secondary:hover { background: #555; }
+            @media print {
+              body { background: white; margin: 0; padding: 0; }
+              .toolbar { display: none; }
+              .preview-container { box-shadow: none; max-width: 100%; }
+              .content { padding: 20px; color: #000 !important; }
+              h1, h2, h3, p, div, strong { color: #000 !important; }
+              .header { border-bottom: 2px solid #000; }
+              .patient-info { 
+                background: #f8f9fa !important; 
+                border-left: 3px solid #000 !important;
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+              }
+              .doc-content { 
+                background: #fafafa !important;
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+              }
+              .signature-section { border-top: 2px solid #000; }
+            }
           </style>
         </head>
         <body>
