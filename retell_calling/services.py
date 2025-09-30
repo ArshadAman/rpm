@@ -89,7 +89,7 @@ class RetellCallService:
         logger.debug(f"Phone number validated and formatted: {phone_number} -> {formatted_number}")
         return formatted_number
     
-    def create_phone_call(self, patient: Patient, agent_id: str = None) -> Dict[str, Any]:
+    def create_phone_call(self, patient: Patient, agent_id: str = None, dynamic_variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Create a phone call using Retell API.
         
@@ -131,8 +131,10 @@ class RetellCallService:
         if agent_id:
             payload["agent_id"] = agent_id
         
-        # Add patient context for dynamic variables
-        if patient.user.first_name:
+        # Add provided dynamic variables, merging with basic patient name if available
+        if dynamic_variables is not None:
+            payload["retell_llm_dynamic_variables"] = dynamic_variables
+        elif patient.user.first_name:
             payload["retell_llm_dynamic_variables"] = {
                 "patient_name": patient.user.first_name
             }

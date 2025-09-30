@@ -12,7 +12,12 @@ import json
 import logging
 
 from rpm_users.models import Patient
+from reports.models import Reports
+from rpm_users.models import  PastMedicalHistory
+from django.utils import timezone
+from datetime import timedelta
 from .services import RetellCallService, GeminiSummaryService
+from reports.models import Documentation
 from .models import RetellCallSession, CallSummary
 
 logger = logging.getLogger('retell_calling.views')
@@ -57,9 +62,63 @@ def trigger_call(request):
         # Initialize the call service
         call_service = RetellCallService()
         
+        # Build dynamic variables for the agent flow
+        one_month_ago = timezone.now() - timedelta(days=30)
+        recent_reports = Reports.objects.filter(patient=patient).order_by('-created_at')[:20]
+
+        # Compute vitals aggregates
+        systolic_values = []
+        diastolic_values = []
+        reading_count = 0
+        for r in recent_reports:
+            try:
+                if r.systolic_blood_pressure:
+                    systolic_values.append(int(r.systolic_blood_pressure))
+                if r.diastolic_blood_pressure:
+                    diastolic_values.append(int(r.diastolic_blood_pressure))
+            except Exception:
+                pass
+            reading_count += 1
+
+        avg_systolic = round(sum(systolic_values) / len(systolic_values)) if systolic_values else None
+        avg_diastolic = round(sum(diastolic_values) / len(diastolic_values)) if diastolic_values else None
+
+        # Past medical history list
+        pmh_list = list(PastMedicalHistory.objects.filter(patient=patient).values_list('pmh', flat=True))
+
+        # Patient demographics/context (ensure all values are strings per Retell requirements)
+        raw_dynamic_variables = {
+            'patient_id': str(patient.id),
+            'patient_name': f"{patient.user.first_name} {patient.user.last_name}".strip(),
+            'patient_first_name': patient.user.first_name or '',
+            'patient_last_name': patient.user.last_name or '',
+            'patient_email': patient.user.email or '',
+            'patient_phone': patient.phone_number or '',
+            'dob': str(patient.date_of_birth) if patient.date_of_birth else '',
+            'sex': patient.sex or '',
+            'age': patient.age if hasattr(patient, 'age') else None,
+            'monitoring_parameters': patient.monitoring_parameters or '',
+            'allergies': patient.allergies or '',
+            'medications': patient.medications or '',
+            'pmh': pmh_list,
+            # Recent BP summary for flow
+            'systolic': avg_systolic,
+            'diastolic': avg_diastolic,
+            'readings': reading_count,
+        }
+
+        def _stringify(value):
+            if isinstance(value, (list, tuple)):
+                return ", ".join([str(v) for v in value if v is not None])
+            if value is None:
+                return ""
+            return str(value)
+
+        dynamic_variables = {k: _stringify(v) for k, v in raw_dynamic_variables.items()}
+
         # Create the call
         try:
-            result = call_service.create_phone_call(patient, agent_id)
+            result = call_service.create_phone_call(patient, agent_id, dynamic_variables)
             
             return Response({
                 'success': True,
@@ -293,6 +352,19 @@ def retell_webhook(request):
                         call_summary.ai_confidence_score = summary_data.get('confidence_score')
                         call_summary.save()
                     
+                    # Also create a Documentation record with the summary text
+                    try:
+                        Documentation.objects.create(
+                            patient=call_session.patient,
+                            title='AI Note',
+                            history_of_present_illness=summary_data.get('summary', ''),
+                            written_by='AI Note',
+                            doc_report_date=timezone.now().date(),
+                        )
+                        logger.info(f"Documentation created from AI summary for call: {call_id}")
+                    except Exception as doc_err:
+                        logger.error(f"Failed to create Documentation from AI summary for call {call_id}: {str(doc_err)}")
+                    
                     action = "created" if created else "updated"
                     logger.info(f"CallSummary {action} for call: {call_id}")
                     logger.info(f"AI summary generated and stored for call: {call_id}")
@@ -465,6 +537,19 @@ def process_transcript(request, call_session_id):
             call_summary.health_metrics = summary_data.get('health_metrics', {})
             call_summary.ai_confidence_score = summary_data.get('confidence_score')
             call_summary.save()
+        
+        # Also create a Documentation record with the summary text
+        try:
+            Documentation.objects.create(
+                patient=call_session.patient,
+                title='AI Note',
+                history_of_present_illness=summary_data.get('summary', ''),
+                written_by='AI - Gemini',
+                date_of_service=timezone.now().date(),
+            )
+            logger.info(f"Documentation created from AI summary for call session: {call_session_id}")
+        except Exception as doc_err:
+            logger.error(f"Failed to create Documentation from AI summary for call session {call_session_id}: {str(doc_err)}")
         
         action = "created" if created else "updated"
         logger.info(f"CallSummary {action} for call session: {call_session_id}")
