@@ -1353,32 +1353,12 @@
         <span>{{patient.weight}} pounds</span>
       </div>
       <div>
-        <strong>Height:</strong>
-        <span>{{patient.height}} inches</span>
-      </div>
-      {% comment %} <div>
-        <strong>BMI:</strong>
-        <span>{{patient.bmi}}</span>
-      </div> {% endcomment %}
-      <div>
-        <strong>Insurance:</strong>
-        <span>{{patient.insurance}}</span>
-      </div>
-      <div>
         <strong>Monitoring:</strong>
         <span>{{patient.monitoring_parameters}}</span>
       </div>
       <div>
         <strong>Device ID:</strong>
         <span>{{patient.device_serial_number}}</span>
-      </div>
-      <div>
-        <strong>Drink:</strong>
-        <span>{{patient.drink}}</span>
-      </div>
-      <div>
-        <strong>Smoke:</strong>
-        <span>{{patient.smoke}}</span>
       </div>
       <div>
         <strong>Allergies:</strong>
@@ -1401,18 +1381,9 @@
         <span>{{patient.home_address}}</span>
       </div>
       <div>
-        <strong>Emergency Contact Name:</strong>
-        <span>{{patient.emergency_contact_name}}</span>
+        <strong>Phone:</strong>
+        <span>{{patient.phone_number}}</span>
       </div>
-      <div>
-        <strong>Emergency Contact Phone:</strong>
-        <span>{{patient.emergency_contact_phone}}</span>
-      </div>
-      <div>
-        <strong>Emergency Contact Relationship:</strong>
-        <span>{{patient.emergency_contact_relationship}}</span>
-      </div>
-      {% comment %} Copy delivery info {% endcomment %}
       <div>
         <strong>Copy Delivery Info:</strong>
           <button id="copy-deliver-info" type="button">📋 Copy Delivery Info</button>
@@ -2043,7 +2014,7 @@
             </div>
 
             <!-- Medicine Search Section -->
-            <div class="medicine-search-section" style="margin-top: 30px">
+            {% comment %} <div class="medicine-search-section" style="margin-top: 30px">
               <div
                 class="section-header"
                 style="
@@ -2166,6 +2137,55 @@
                 ></div>
                 <div>Searching medicines with AI...</div>
               </div>
+            </div> {% endcomment %}
+          </div>
+          <div id="pharmacy" class="table-container" style="display: none">
+            <h3>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+                />
+              </svg>
+              Pharmacy Information
+            </h3>
+
+            <!-- Current Medications Section -->
+            <div class="info-card">
+              {% if patient.pharmacy_info %}
+              <div class="info-section">
+                <div class="info-item">
+                  <div class="item-icon"></div>
+                  <div class="medication-details">
+                    <span style="white-space: pre-line"
+                      >{{ patient.pharmacy_info }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <div class="info-empty">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M9 3v18m0 0l3-3m-3 3l-3-3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span>No medications recorded</span>
+              </div>
+              {% endif %}
             </div>
           </div>
         </div>

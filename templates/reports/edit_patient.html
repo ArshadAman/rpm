@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Patient Information</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --primary: #7928CA;
@@ -106,7 +108,9 @@
             font-weight: 500;
         }
 
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 12px 15px;
             background: rgba(255, 255, 255, 0.03);
@@ -117,13 +121,17 @@
             transition: all 0.3s ease;
         }
 
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(121, 40, 202, 0.2);
         }
 
-        .form-group input:hover, .form-group select:hover, .form-group textarea:hover {
+        .form-group input:hover,
+        .form-group select:hover,
+        .form-group textarea:hover {
             border-color: rgba(255, 255, 255, 0.2);
         }
 
@@ -143,7 +151,8 @@
             grid-column: 1 / -1;
         }
 
-        .save-btn, .cancel-btn {
+        .save-btn,
+        .cancel-btn {
             padding: 14px 28px;
             border-radius: 12px;
             font-weight: 500;
@@ -192,8 +201,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .alert-success {
@@ -235,7 +251,9 @@
             position: relative;
         }
 
-        .input-icon input, .input-icon select, .input-icon textarea {
+        .input-icon input,
+        .input-icon select,
+        .input-icon textarea {
             padding-left: 15px;
         }
 
@@ -243,7 +261,7 @@
             display: none;
         }
 
-        .input-icon textarea + svg {
+        .input-icon textarea+svg {
             display: none;
         }
 
@@ -255,17 +273,17 @@
             .form-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .button-group {
                 flex-direction: column;
             }
-            
+
             .header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 15px;
             }
-            
+
             .back-btn {
                 align-self: flex-start;
             }
@@ -449,13 +467,13 @@
             position: relative;
         }
 
-        .pmh-checkbox:checked + .pmh-label .pmh-checkbox-visual {
+        .pmh-checkbox:checked+.pmh-label .pmh-checkbox-visual {
             background: var(--primary);
             border-color: var(--primary);
             transform: scale(1.1);
         }
 
-        .pmh-checkbox:checked + .pmh-label .pmh-checkbox-visual::after {
+        .pmh-checkbox:checked+.pmh-label .pmh-checkbox-visual::after {
             content: '';
             width: 6px;
             height: 10px;
@@ -547,7 +565,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .loading-text {
@@ -556,101 +576,117 @@
         }
     </style>
 </head>
+
 <body>
     <div class="page-container">
         <div class="header">
             <h2>Edit Patient Information</h2>
             <a href="/view-patient/{{ patient.id }}/?action=access" class="back-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
                 Back to Patient
             </a>
         </div>
-        
+
         <div class="edit-form">
             <form id="patientForm" method="POST">
                 {% csrf_token %}
-                
-                
+
+
                 <h3 class="section-title">Personal Information</h3>
                 <div class="form-section">
                     <div class="form-grid">
                         <div class="form-group input-icon">
                             <label for="first_name">First Name</label>
-                            <input type="text" id="first_name" name="first_name" value="{{ patient.user.first_name }}" required>
+                            <input type="text" id="first_name" name="first_name" value="{{ patient.user.first_name }}"
+                                required>
                         </div>
-                        
+
                         <div class="form-group input-icon">
                             <label for="last_name">Last Name</label>
-                            <input type="text" id="last_name" name="last_name" value="{{ patient.user.last_name }}" required>
+                            <input type="text" id="last_name" name="last_name" value="{{ patient.user.last_name }}"
+                                required>
                         </div>
-                        
+
                         <div class="form-group input-icon">
                             <label for="date_of_birth">Date of Birth</label>
-                            <input type="date" id="date_of_birth" name="date_of_birth" value="{{ patient.date_of_birth|date:'Y-m-d' }}">
+                            <input type="date" id="date_of_birth" name="date_of_birth"
+                                value="{{ patient.date_of_birth|date:'Y-m-d' }}">
                         </div>
-                        
+
+                        <div class="form-group input-icon">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" name="phone_number" value="{{ patient.phone_number }}" required>
+                        </div>
+
                         <div class="form-group input-icon">
                             <label for="sex">Sex</label>
-                            <select id="sex" name="sex" >
+                            <select id="sex" name="sex">
                                 <option value="M" {% if patient.sex == 'M' %}selected{% endif %}>Male</option>
                                 <option value="F" {% if patient.sex == 'F' %}selected{% endif %}>Female</option>
                                 <option value="O" {% if patient.sex == 'O' %}selected{% endif %}>Other</option>
                             </select>
                         </div>
+
+                        <div class="form-group input-icon">
+                            <label for="home_address">Home Address</label>
+                            <textarea id="home_address" name="home_address" rows="3"
+                                placeholder="Enter complete home address">{{ patient.home_address }}</textarea>
+                        </div>
                     </div>
                 </div>
-                
+
                 <h3 class="section-title">Physical Information</h3>
                 <div class="form-section">
                     <div class="form-grid">
                         <div class="form-group input-icon">
-                <label for="weight">Weight (pounds)</label>
-                <input type="number" id="weight" name="weight" step="0.01"
-                    {% if form_data.weight and form_data.weight != 0.0 %}
-                        value="{{ form_data.weight }}"
-                    {% endif %}
-                    placeholder="Enter weight" >                        </div>
-                        
-                        <div class="form-group input-icon">
-                <label for="height">Height (inches)</label>
-                <input type="number" id="height" name="height" step="0.01"
-                    {% if form_data.height and form_data.height != 0.0 %}
-                        value="{{ form_data.height }}"
-                    {% endif %}
-                    placeholder="Enter height" >
+                            <label for="weight">Weight (pounds)</label>
+                            <input type="number" id="weight" name="weight" step="0.01" 
+                                {% if form_data.weight and form_data.weight != 0.0 %}value="{{ form_data.weight }}"{% endif %}
+                                placeholder="Enter weight">
                         </div>
-                        
+
+                        <div class="form-group input-icon">
+                            <label for="height">Height (inches)</label>
+                            <input type="number" id="height" name="height" step="0.01" 
+                                {% if form_data.height and form_data.height != 0.0 %}value="{{ form_data.height }}"{% endif %}
+                                placeholder="Enter height">
+                        </div>
+
                         <div class="form-group input-icon">
                             <label for="insurance">Insurance Provider</label>
                             <input type="text" id="insurance" name="insurance" value="{{ patient.insurance }}">
                         </div>
                         <div class="form-group input-icon">
                             <label for="insurance">Insurance Number</label>
-                            <input type="text" id="insurance_number" name="insurance_number" value="{{ patient.insurance_number }}">
+                            <input type="text" id="insurance_number" name="insurance_number"
+                                value="{{ patient.insurance_number }}">
                         </div>
-                        
+
                         <div class="form-group input-icon">
                             <label for="device_serial_number">Device Serial Number</label>
-                            <input type="text" id="device_serial_number" name="device_serial_number" value="{{ patient.device_serial_number }}">
+                            <input type="text" id="device_serial_number" name="device_serial_number"
+                                value="{{ patient.device_serial_number }}">
                         </div>
                     </div>
                 </div>
-                
+
                 <h3 class="section-title">Health Information</h3>
                 <div class="form-section">
                     <div class="form-grid">
                         <div class="form-group input-icon full-width">
                             <label for="monitoring_parameters">Monitoring Parameters</label>
-                            <textarea id="monitoring_parameters" name="monitoring_parameters" rows="3">{{ patient.monitoring_parameters }}</textarea>
+                            <textarea id="monitoring_parameters" name="monitoring_parameters"
+                                rows="3">{{ patient.monitoring_parameters }}</textarea>
                         </div>
-                        
+
                         <div class="form-group input-icon full-width">
                             <label for="allergies">Allergies</label>
                             <textarea id="allergies" name="allergies" rows="3">{{ patient.allergies }}</textarea>
                         </div>
-                        
+
                         <div class="form-group">
                             <label>Lifestyle</label>
                             <div class="checkbox-group">
@@ -662,46 +698,52 @@
                                 <label for="smoke">Smoking</label>
                             </div>
                         </div>
-                        
+
                         <div class="form-group input-icon full-width">
                             <label for="family_history">Family History</label>
-                            <textarea id="family_history" name="family_history" rows="3" placeholder="Enter family medical history">{{ patient.family_history }}</textarea>
+                            <textarea id="family_history" name="family_history" rows="3"
+                                placeholder="Enter family medical history">{{ patient.family_history }}</textarea>
                         </div>
-                        
+
                         <div class="form-group input-icon full-width">
                             <label for="medications">Current Medications</label>
-                            <textarea id="medications" name="medications" rows="3" placeholder="Enter current medications">{{ patient.medications }}</textarea>
+                            <textarea id="medications" name="medications" rows="3"
+                                placeholder="Enter current medications">{{ patient.medications }}</textarea>
                         </div>
-                        
+                        <div class="form-group full-width">
+                            <label for="pharmacy_info">Pharmacy Information</label>
+                            <textarea id="pharmacy_info" name="pharmacy_info" 
+                              placeholder="Enter pharmacy details (name, address, phone number)"
+                              rows="3">{{ patient.pharmacy_info|default:'' }}</textarea>
+                        </div>
+
                         <div class="form-group pmh-section" style="grid-column: 1 / -1;">
                             <label for="past_medical_history" class="pmh-title">Past Medical History</label>
                             <div class="pmh-container">
                                 <div class="pmh-search-box">
-                                    <input type="text" id="pmh-search" placeholder="Search conditions..." class="pmh-search-input">
+                                    <input type="text" id="pmh-search" placeholder="Search conditions..."
+                                        class="pmh-search-input">
                                     <!-- <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="11" cy="11" r="8"></circle>
                                         <path d="m21 21-4.35-4.35"></path>
                                     </svg> -->
                                 </div>
-                                <div class="pmh-grid">
-                                    {% for value, label in pmh_choices %}
-                                        <div class="pmh-card" data-condition="{{ label|lower }}">
-                                            <input type="checkbox" 
-                                                   id="pmh_{{ value }}" 
-                                                   name="past_medical_history" 
-                                                   value="{{ value }}"
-                                                   class="pmh-checkbox"
-                                                   {% for condition in patient.medical_history.all %}{% if condition.pmh == value %}checked{% endif %}{% endfor %}>
-                                            <label for="pmh_{{ value }}" class="pmh-label">
-                                                <div class="pmh-checkbox-visual"></div>
-                                                <div class="pmh-content">
-                                                    <span class="pmh-code">{{ value }}</span>
-                                                    <span class="pmh-name">{{ label }}</span>
-                                                </div>
-                                            </label>
+                            <div class="pmh-grid">
+                                {% for value, label in pmh_choices %}
+                                <div class="pmh-card" data-condition="{{ label|lower }}">
+                                    <input type="checkbox" id="pmh_{{ value }}" name="past_medical_history"
+                                        value="{{ value }}" class="pmh-checkbox" 
+                                        {% for condition in patient.medical_history.all %}{% if condition.pmh == value %}checked{% endif %}{% endfor %}>
+                                    <label for="pmh_{{ value }}" class="pmh-label">
+                                        <div class="pmh-checkbox-visual"></div>
+                                        <div class="pmh-content">
+                                            <span class="pmh-code">{{ value }}</span>
+                                            <span class="pmh-name">{{ label }}</span>
                                         </div>
-                                    {% endfor %}
+                                    </label>
                                 </div>
+                                {% endfor %}
+                            </div>
                                 <div class="pmh-selected-count">
                                     <span id="selected-count">0</span> conditions selected
                                 </div>
@@ -709,58 +751,64 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <h3 class="section-title">Contact Information</h3>
                 <div class="form-section">
                     <div class="form-grid">
                         <div class="form-group input-icon">
-                            <label for="home_address">Home Address</label>
-                            <textarea id="home_address" name="home_address" rows="3" placeholder="Enter complete home address">{{ patient.home_address }}</textarea>
-                        </div>
-                        
-                        <div class="form-group input-icon">
                             <label for="emergency_contact_name">Emergency Contact Name</label>
-                            <input type="text" id="emergency_contact_name" name="emergency_contact_name" value="{{ patient.emergency_contact_name }}" placeholder="Enter emergency contact name">
+                            <input type="text" id="emergency_contact_name" name="emergency_contact_name"
+                                value="{{ patient.emergency_contact_name }}" placeholder="Enter emergency contact name">
                         </div>
-                        
+
                         <div class="form-group input-icon">
                             <label for="emergency_contact_phone">Emergency Contact Phone</label>
-                            <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" value="{{ patient.emergency_contact_phone }}" placeholder="Enter emergency contact phone">
+                            <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone"
+                                value="{{ patient.emergency_contact_phone }}"
+                                placeholder="Enter emergency contact phone">
                         </div>
-                        
+
                         <div class="form-group input-icon">
                             <label for="emergency_contact_relationship">Emergency Contact Relationship</label>
-                            <input type="text" id="emergency_contact_relationship" name="emergency_contact_relationship" value="{{ patient.emergency_contact_relationship }}" placeholder="e.g., Spouse, Parent">
+                            <input type="text" id="emergency_contact_relationship" name="emergency_contact_relationship"
+                                value="{{ patient.emergency_contact_relationship }}" placeholder="e.g., Spouse, Parent">
                         </div>
-                        
+
                         <div class="form-group input-icon">
                             <label for="primary_care_physician">Primary Care Physician</label>
-                            <input type="text" id="primary_care_physician" name="primary_care_physician" value="{{ patient.primary_care_physician }}" placeholder="Enter primary care physician name">
+                            <input type="text" id="primary_care_physician" name="primary_care_physician"
+                                value="{{ patient.primary_care_physician }}"
+                                placeholder="Enter primary care physician name">
                         </div>
-                        
+
                         <div class="form-group input-icon">
                             <label for="primary_care_physician_phone">Primary Care Physician Phone</label>
-                            <input type="tel" id="primary_care_physician_phone" name="primary_care_physician_phone" value="{{ patient.primary_care_physician_phone }}" placeholder="Enter primary care physician phone">
+                            <input type="tel" id="primary_care_physician_phone" name="primary_care_physician_phone"
+                                value="{{ patient.primary_care_physician_phone }}"
+                                placeholder="Enter primary care physician phone">
                         </div>
                     </div>
                 </div>
-                                <div id="alert" class="alert"></div>
+                <div id="alert" class="alert"></div>
 
-                 <div class="loading">
+                <div class="loading">
                     {% comment %} <div class="loading-spinner"></div> {% endcomment %}
                     {% comment %} <div class="loading-text">Saving changes...</div> {% endcomment %}
                 </div>
-                
+
                 <div class="button-group">
                     <button type="submit" class="save-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            width="20" height="20">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
                         Save Changes
                     </button>
-                    <a href="javascript:history.back()" class="cancel-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    <a href="/view-patient/{{ patient.id }}/?action=access&_refresh={% now 'U' %}" class="cancel-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         Back to Home
                     </a>
@@ -775,14 +823,14 @@
             const searchInput = document.getElementById('pmh-search');
             const pmhCards = document.querySelectorAll('.pmh-card');
             const selectedCountElement = document.getElementById('selected-count');
-            
+
             // Search functionality
-            searchInput.addEventListener('input', function() {
+            searchInput.addEventListener('input', function () {
                 const searchTerm = this.value.toLowerCase();
                 pmhCards.forEach(card => {
                     const condition = card.getAttribute('data-condition');
                     const code = card.querySelector('.pmh-code').textContent.toLowerCase();
-                    
+
                     if (condition.includes(searchTerm) || code.includes(searchTerm)) {
                         card.classList.remove('hidden');
                     } else {
@@ -790,12 +838,12 @@
                     }
                 });
             });
-            
+
             // Update selected count and card styling
             function updateSelection() {
                 const checkedBoxes = document.querySelectorAll('.pmh-checkbox:checked');
                 selectedCountElement.textContent = checkedBoxes.length;
-                
+
                 pmhCards.forEach(card => {
                     const checkbox = card.querySelector('.pmh-checkbox');
                     if (checkbox.checked) {
@@ -805,39 +853,39 @@
                     }
                 });
             }
-            
+
             // Add event listeners to all checkboxes
             pmhCards.forEach(card => {
                 const checkbox = card.querySelector('.pmh-checkbox');
                 checkbox.addEventListener('change', updateSelection);
             });
-            
+
             // Initialize the count
             updateSelection();
         }
-        
+
         document.addEventListener('DOMContentLoaded', initializePMH);
 
-        document.getElementById('patientForm').addEventListener('submit', function(e) {
+        document.getElementById('patientForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             // Show loading animation
             document.querySelector('.loading').style.display = 'flex';
-            
+
             const formData = new FormData(this);
             const patientId = "{{ patient.id }}";
-            
+
             // Handle checkbox values
             formData.set('drink', document.getElementById('drink').checked ? 'Yes' : 'No');
             formData.set('smoke', document.getElementById('smoke').checked ? 'Yes' : 'No');
-            
+
             // Handle past medical history checkboxes
             const pmhCheckboxes = document.querySelectorAll('input[name="past_medical_history"]:checked');
             formData.delete('past_medical_history'); // Clear existing values
             pmhCheckboxes.forEach(checkbox => {
                 formData.append('past_medical_history', checkbox.value);
             });
-            
+
             fetch(`/reports/edit-patient/${patientId}/`, {
                 method: 'POST',
                 body: formData,
@@ -845,56 +893,56 @@
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                // Hide loading animation
-                document.querySelector('.loading').style.display = 'none';
-                
-                const alert = document.getElementById('alert');
-                if (data.success) {
-                    alert.className = 'alert alert-success';
-                    alert.textContent = 'Patient information updated successfully!';
-                    alert.style.display = 'block';
-                    
-                    // Add a nice animation to the form
-                    document.querySelector('.edit-form').style.transform = 'scale(0.98)';
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading animation
+                    document.querySelector('.loading').style.display = 'none';
+
+                    const alert = document.getElementById('alert');
+                    if (data.success) {
+                        alert.className = 'alert alert-success';
+                        alert.textContent = 'Patient information updated successfully!';
+                        alert.style.display = 'block';
+
+                        // Add a nice animation to the form
+                        document.querySelector('.edit-form').style.transform = 'scale(0.98)';
+                        setTimeout(() => {
+                            document.querySelector('.edit-form').style.transform = 'scale(1)';
+                        }, 200);
+                    } else {
+                        alert.className = 'alert alert-error';
+                        alert.textContent = data.error || 'An error occurred while updating patient information.';
+                        alert.style.display = 'block';
+
+                        // Shake the form to indicate error
+                        document.querySelector('.edit-form').style.animation = 'shake 0.5s ease';
+                        setTimeout(() => {
+                            document.querySelector('.edit-form').style.animation = '';
+                        }, 500);
+                    }
+
+                    // Make alert box disappear after 5 seconds
                     setTimeout(() => {
-                        document.querySelector('.edit-form').style.transform = 'scale(1)';
-                    }, 200);
-                } else {
+                        alert.style.display = 'none';
+                    }, 5000);
+                })
+                .catch(error => {
+                    // Hide loading animation
+                    document.querySelector('.loading').style.display = 'none';
+
+                    const alert = document.getElementById('alert');
                     alert.className = 'alert alert-error';
-                    alert.textContent = data.error || 'An error occurred while updating patient information.';
+                    alert.textContent = 'An error occurred while updating patient information.';
                     alert.style.display = 'block';
-                    
+
                     // Shake the form to indicate error
                     document.querySelector('.edit-form').style.animation = 'shake 0.5s ease';
                     setTimeout(() => {
                         document.querySelector('.edit-form').style.animation = '';
                     }, 500);
-                }
-                
-                // Make alert box disappear after 5 seconds
-                setTimeout(() => {
-                    alert.style.display = 'none';
-                }, 5000);
-            })
-            .catch(error => {
-                // Hide loading animation
-                document.querySelector('.loading').style.display = 'none';
-                
-                const alert = document.getElementById('alert');
-                alert.className = 'alert alert-error';
-                alert.textContent = 'An error occurred while updating patient information.';
-                alert.style.display = 'block';
-                
-                // Shake the form to indicate error
-                document.querySelector('.edit-form').style.animation = 'shake 0.5s ease';
-                setTimeout(() => {
-                    document.querySelector('.edit-form').style.animation = '';
-                }, 500);
-            });
+                });
         });
-        
+
         // Add shake animation
         const style = document.createElement('style');
         style.textContent = `
@@ -907,4 +955,5 @@
         document.head.appendChild(style);
     </script>
 </body>
+
 </html>
