@@ -417,6 +417,27 @@
             </div>
             <a href="{% url 'leads_list' %}" class="action-button">Manage Leads</a>
         </div>
+
+        <div class="action-card">
+            <div>
+                <div class="action-icon">📞</div>
+                <h2 class="action-title">Lead Calls Summary</h2>
+                <p class="action-description">
+                    Initiate AI calls to leads, track call summaries, and monitor lead engagement through automated calling campaigns.
+                </p>
+                <div class="action-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ lead_calls_count }}</span>
+                        <span class="stat-label">Lead Calls</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ leads_with_calls_count }}</span>
+                        <span class="stat-label">Leads Called</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'leads_call_summaries' %}" class="action-button">Manage Lead Calls</a>
+        </div>
     </div>
 </body>
 </html>

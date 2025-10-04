@@ -275,6 +275,17 @@ class InterestLead(models.Model):
     # can_follow_instructions = models.BooleanField(default=False)
     # can_take_readings = models.BooleanField(default=False)
     additional_comments = models.TextField(blank=True, null=True)
+    
+    # Additional fields from Excel import
+    street_address = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    zip_code = models.CharField(max_length=10, blank=True, null=True)
+    mrn_number = models.CharField(max_length=50, blank=True, null=True, verbose_name="MRN#")
+    phone_number_2 = models.CharField(max_length=20, blank=True, null=True, verbose_name="Phone 2")
+    sex = models.CharField(max_length=1, blank=True, null=True, choices=[('M', 'Male'), ('F', 'Female')])
+    marital_status = models.CharField(max_length=20, blank=True, null=True)
+    primary_insured_id = models.CharField(max_length=50, blank=True, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     session_key = models.CharField(max_length=64, blank=True, null=True, db_index=True)
@@ -288,7 +299,7 @@ class InterestLead(models.Model):
     @property
     def completion_percentage(self):
         """Calculate how complete the lead data is based on filled fields"""
-        total_fields = 10  # Total number of relevant fields for completion
+        total_fields = 18  # Total number of relevant fields for completion
         filled_fields = 0
         
         # Check each field and count filled ones
@@ -312,6 +323,22 @@ class InterestLead(models.Model):
             filled_fields += 1
         if self.additional_comments:
             filled_fields += 1
+        if self.street_address:
+            filled_fields += 1
+        if self.city:
+            filled_fields += 1
+        if self.zip_code:
+            filled_fields += 1
+        if self.mrn_number:
+            filled_fields += 1
+        if self.phone_number_2:
+            filled_fields += 1
+        if self.sex:
+            filled_fields += 1
+        if self.marital_status:
+            filled_fields += 1
+        if self.primary_insured_id:
+            filled_fields += 1
             
         return round((filled_fields / total_fields) * 100, 1)
     
@@ -327,6 +354,23 @@ class InterestLead(models.Model):
             self.insurance
         ]
         return all(field for field in required_fields)
+    
+    def save(self, *args, **kwargs):
+        """Override save to clean phone numbers and skip leads without mobile numbers"""
+        from .utils import clean_phone_number
+        
+        # Skip saving if no mobile number is provided
+        if not self.phone_number or not self.phone_number.strip():
+            print(f"Skipping lead save - no mobile number provided for {self.first_name} {self.last_name}")
+            return  # Skip saving this lead
+        
+        # Clean phone numbers before saving
+        if self.phone_number:
+            self.phone_number = clean_phone_number(self.phone_number)
+        if self.phone_number_2:
+            self.phone_number_2 = clean_phone_number(self.phone_number_2)
+        
+        super().save(*args, **kwargs)
     
     def __str__(self):
         name = f"{self.first_name or ''} {self.last_name or ''}".strip()

@@ -9,8 +9,8 @@ import requests
 from typing import Dict, Optional, Any, List
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from rpm_users.models import Patient
-from .models import RetellCallSession
+from rpm_users.models import Patient, InterestLead
+from .models import RetellCallSession, LeadCallSession
 import google.generativeai as genai
 
 try:
@@ -61,33 +61,15 @@ class RetellCallService:
         if not phone_number:
             raise ValidationError("Phone number is required")
         
-        # Remove all non-digit characters
-        digits_only = re.sub(r'\D', '', phone_number)
+        # Use the utility function for consistent phone number formatting
+        from rpm_users.utils import get_phone_for_api
         
-        # Check if it's empty after cleaning
-        if not digits_only:
-            raise ValidationError("Phone number contains no digits")
-        
-        # Handle US numbers (10 digits) - add country code
-        if len(digits_only) == 10:
-            formatted_number = f"+1{digits_only}"
-        # Handle numbers with country code (11+ digits)
-        elif len(digits_only) >= 11:
-            # If it starts with 1 and has 11 digits, it's likely US with country code
-            if digits_only.startswith('1') and len(digits_only) == 11:
-                formatted_number = f"+{digits_only}"
-            else:
-                # For other international numbers, assume they already include country code
-                formatted_number = f"+{digits_only}"
-        else:
-            raise ValidationError(f"Invalid phone number length: {len(digits_only)} digits")
-        
-        # Basic validation - ensure it looks like a valid phone number
-        if len(formatted_number) < 10 or len(formatted_number) > 16:
-            raise ValidationError(f"Phone number length invalid: {formatted_number}")
-        
-        logger.debug(f"Phone number validated and formatted: {phone_number} -> {formatted_number}")
-        return formatted_number
+        try:
+            formatted_number = get_phone_for_api(phone_number)
+            logger.debug(f"Phone number validated and formatted: {phone_number} -> {formatted_number}")
+            return formatted_number
+        except Exception as e:
+            raise ValidationError(f"Invalid phone number: {str(e)}")
     
     def create_phone_call(self, patient: Patient, agent_id: str = None, dynamic_variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -202,6 +184,123 @@ class RetellCallService:
             
         except Exception as e:
             error_msg = f"Unexpected error creating call for patient {patient.user.email}: {str(e)}"
+            logger.error(error_msg)
+            raise
+    
+    def create_lead_call(self, lead: InterestLead, agent_id: str = None, dynamic_variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Create a phone call to a lead using Retell API.
+        
+        Args:
+            lead: InterestLead instance to call
+            agent_id: Optional Retell agent ID (uses default if not provided)
+            dynamic_variables: Optional dynamic variables for the call
+            
+        Returns:
+            Dictionary containing call details and LeadCallSession instance
+            
+        Raises:
+            ValidationError: If lead data is invalid
+            requests.RequestException: If API call fails
+        """
+        logger.info(f"Initiating call for lead: {lead.email or 'No email'}")
+        
+        # Validate lead has phone number
+        if not lead.phone_number:
+            error_msg = f"Lead {lead.email or 'No email'} has no phone number"
+            logger.error(error_msg)
+            raise ValidationError(error_msg)
+        
+        # Validate and format phone numbers
+        try:
+            to_number = self.validate_phone_number(lead.phone_number)
+            from_number = self.validate_phone_number(self.from_number)
+        except ValidationError as e:
+            logger.error(f"Phone number validation failed for lead {lead.email or 'No email'}: {e}")
+            raise
+        
+        # Prepare API request payload
+        payload = {
+            "call_type": "phone_call",
+            "from_number": from_number,
+            "to_number": to_number,
+        }
+        
+        # Add agent ID if provided
+        if agent_id:
+            payload["agent_id"] = agent_id
+        
+        # Add provided dynamic variables, merging with basic lead name if available
+        if dynamic_variables is not None:
+            payload["retell_llm_dynamic_variables"] = dynamic_variables
+        elif lead.first_name:
+            payload["retell_llm_dynamic_variables"] = {
+                "lead_name": lead.first_name
+            }
+        
+        logger.debug(f"Retell API payload for lead: {payload}")
+        
+        try:
+            # Make API request to Retell
+            print("from",from_number,to_number)
+            response = requests.post(
+                f"{self.base_url}/create-phone-call",
+                headers=self.headers,
+                json=payload,
+                timeout=30
+            )
+            logger.info(f"Retell API response status: {response.status_code}")
+            
+            # Check if request was successful
+            response.raise_for_status()
+            
+            # Parse response
+            response_data = response.json()
+            call_id = response_data.get('call_id')
+            
+            if not call_id:
+                error_msg = "No call_id returned from Retell API"
+                logger.error(f"{error_msg}. Response: {response_data}")
+                raise ValueError(error_msg)
+            
+            logger.info(f"Lead call created successfully with ID: {call_id}")
+            
+            # Create LeadCallSession record
+            call_session = LeadCallSession.objects.create(
+                lead=lead,
+                retell_call_id=call_id,
+                call_status='initiated',
+                from_number=from_number,
+                to_number=to_number,
+                agent_id=agent_id or ''
+            )
+            
+            logger.info(f"LeadCallSession created with ID: {call_session.id}")
+            
+            return {
+                'success': True,
+                'call_id': call_id,
+                'call_session': call_session,
+                'response_data': response_data
+            }
+            
+        except requests.exceptions.Timeout:
+            error_msg = f"Timeout calling Retell API for lead {lead.email or 'No email'}"
+            logger.error(error_msg)
+            raise requests.RequestException(error_msg)
+            
+        except requests.exceptions.HTTPError as e:
+            error_msg = f"HTTP error from Retell API: {e.response.status_code}"
+            logger.error(f"{error_msg}. Response: {e.response.text}")
+            raise requests.RequestException(f"{error_msg}: {e.response.text}")
+            
+        except requests.exceptions.RequestException as e:
+            error_msg = f"Request error calling Retell API for lead {lead.email or 'No email'}: {str(e)}"
+            logger.error(error_msg)
+            raise
+            
+        except Exception as e:
+            error_msg = f"Unexpected error creating call for lead {lead.email or 'No email'}: {str(e)}"
             logger.error(error_msg)
             raise
     

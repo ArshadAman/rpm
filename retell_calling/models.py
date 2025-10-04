@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-from rpm_users.models import Patient
+from rpm_users.models import Patient, InterestLead
 
 
 class RetellCallSession(models.Model):
@@ -104,6 +104,107 @@ class CallSummary(models.Model):
     
     def __str__(self):
         return f"Summary for {self.patient.user.email} - {self.generated_at.strftime('%Y-%m-%d %H:%M')}"
+
+
+class LeadCallSession(models.Model):
+    """Call session for leads (not patients) using Retell AI integration"""
+    
+    RETELL_STATUS_CHOICES = [
+        ('initiated', 'Initiated'),
+        ('ringing', 'Ringing'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('no_answer', 'No Answer'),
+        ('busy', 'Busy'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    lead = models.ForeignKey(InterestLead, on_delete=models.CASCADE, related_name='lead_call_sessions')
+    retell_call_id = models.CharField(max_length=100, unique=True, help_text="Unique call ID from Retell API")
+    call_status = models.CharField(max_length=20, choices=RETELL_STATUS_CHOICES, default='initiated')
+    from_number = models.CharField(max_length=20, help_text="Phone number used to make the call")
+    to_number = models.CharField(max_length=20, help_text="Lead's phone number")
+    start_timestamp = models.BigIntegerField(null=True, blank=True, help_text="Call start time as Unix timestamp")
+    end_timestamp = models.BigIntegerField(null=True, blank=True, help_text="Call end time as Unix timestamp")
+    duration_ms = models.IntegerField(null=True, blank=True, help_text="Call duration in milliseconds")
+    transcript = models.TextField(blank=True, help_text="Full call transcript from Retell")
+    transcript_object = models.JSONField(null=True, blank=True, help_text="Structured transcript object from Retell")
+    recording_url = models.URLField(blank=True, help_text="URL to call recording")
+    agent_id = models.CharField(max_length=100, blank=True, help_text="Retell agent ID used for the call")
+    disconnection_reason = models.CharField(max_length=50, blank=True, help_text="Reason for call disconnection")
+    ai_summary = models.JSONField(null=True, blank=True, help_text="AI-generated summary and analysis")
+    call_analysis = models.JSONField(null=True, blank=True, help_text="Retell's call analysis data")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Lead Call Session"
+        verbose_name_plural = "Lead Call Sessions"
+    
+    @property
+    def is_completed(self):
+        """Check if the call is in a completed state"""
+        return self.call_status in ['completed', 'failed', 'no_answer', 'busy', 'cancelled']
+    
+    @property
+    def duration_seconds(self):
+        """Get call duration in seconds"""
+        if self.duration_ms:
+            return self.duration_ms / 1000
+        return 0
+    
+    def __str__(self):
+        return f"Lead Call to {self.lead.email or 'No email'} - {self.call_status}"
+
+
+class LeadCallSummary(models.Model):
+    """AI-generated summaries of lead call transcripts"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    call_session = models.OneToOneField(
+        LeadCallSession, 
+        on_delete=models.CASCADE, 
+        related_name='summary',
+        help_text="Associated lead call session"
+    )
+    lead = models.ForeignKey(
+        InterestLead, 
+        on_delete=models.CASCADE, 
+        related_name='lead_call_summaries',
+        help_text="Lead associated with this summary"
+    )
+    summary_text = models.TextField(help_text="AI-generated summary of the call")
+    key_points = models.JSONField(
+        default=list, 
+        help_text="List of key discussion points from the call"
+    )
+    concerning_flags = models.JSONField(
+        default=list, 
+        help_text="List of concerning responses or red flags identified"
+    )
+    health_metrics = models.JSONField(
+        default=dict, 
+        help_text="Structured health data extracted from the call"
+    )
+    ai_confidence_score = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="AI confidence score for the summary (0.00-1.00)"
+    )
+    generated_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-generated_at']
+        verbose_name = "Lead Call Summary"
+        verbose_name_plural = "Lead Call Summaries"
+    
+    def __str__(self):
+        return f"Lead Summary for {self.lead.email or 'No email'} - {self.generated_at.strftime('%Y-%m-%d %H:%M')}"
 
 
 class CallCondition(models.Model):

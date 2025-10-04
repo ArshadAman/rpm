@@ -11,7 +11,7 @@ from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
 from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor
-from retell_calling.models import CallSummary
+from retell_calling.models import CallSummary, LeadCallSession, LeadCallSummary
 from django.db import models
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
@@ -90,6 +90,12 @@ def admin_dashboard(request):
         converted_leads = InterestLead.objects.filter(is_converted=True).count()
         conversion_rate = round((converted_leads / total_leads * 100), 1) if total_leads > 0 else 0
         
+        # Get lead call statistics
+        lead_calls_count = LeadCallSession.objects.count()
+        leads_with_calls_count = InterestLead.objects.annotate(
+            call_count=models.Count('lead_call_summaries')
+        ).filter(call_count__gt=0).count()
+        
         context = {
             'moderator_count': moderator_count,
             'doctor_count': doctor_count,
@@ -98,6 +104,8 @@ def admin_dashboard(request):
             'total_leads': total_leads,
             'converted_leads': converted_leads,
             'conversion_rate': conversion_rate,
+            'lead_calls_count': lead_calls_count,
+            'leads_with_calls_count': leads_with_calls_count,
         }
         
         return render(request, 'admin_dashboard.html', context)
@@ -1560,14 +1568,23 @@ def track_interest(request):
                             setattr(lead, field, value)
                             updated_fields.append(field)
                 
-                # Save the lead with updated timestamp
-                lead.save()
-                
-                # Enhanced logging for monitoring
-                if updated_fields:
-                    logger.info(f"Updated lead {lead.id} fields: {', '.join(updated_fields)}, completion: {lead.completion_percentage}%")
-                else:
-                    logger.info(f"No changes for lead {lead.id}, completion: {lead.completion_percentage}%")
+                # Save the lead with updated timestamp and validation
+                try:
+                    lead.save()
+                    
+                    # Enhanced logging for monitoring
+                    if updated_fields:
+                        logger.info(f"Updated lead {lead.id} fields: {', '.join(updated_fields)}, completion: {lead.completion_percentage}%")
+                    else:
+                        logger.info(f"No changes for lead {lead.id}, completion: {lead.completion_percentage}%")
+                        
+                except Exception as validation_error:
+                    logger.error(f"Validation error saving lead {lead.id}: {str(validation_error)}")
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'Validation error: {str(validation_error)}',
+                        'lead_id': str(lead.id) if lead.id else None
+                    }, status=400)
                 
                 # Calculate completion metrics for response
                 completion_percentage = lead.completion_percentage
@@ -2118,11 +2135,339 @@ def search_shortcuts(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 @user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def handle_excel_import(request):
+    """Handle Excel file import for leads"""
+    try:
+        import openpyxl
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+        import tempfile
+        import os
+        
+        print("handle_excel_import function called")
+        print("Request FILES:", request.FILES)
+        excel_file = request.FILES['excel_file']
+        print(f"Excel file received: {excel_file.name}, size: {excel_file.size}")
+        
+        # Validate file type - accept Excel and CSV files
+        if not excel_file.name.lower().endswith(('.xlsx', '.xls', '.csv')):
+            messages.error(request, 'Please upload a valid Excel or CSV file (.xlsx, .xls, or .csv)')
+            return redirect('leads_list')
+        
+        # Determine file type and save accordingly
+        file_name_lower = excel_file.name.lower()
+        if file_name_lower.endswith('.csv'):
+            file_extension = '.csv'
+        elif file_name_lower.endswith('.xlsx'):
+            file_extension = '.xlsx'
+        else:
+            file_extension = '.xls'
+            
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as tmp_file:
+            for chunk in excel_file.chunks():
+                tmp_file.write(chunk)
+            tmp_file_path = tmp_file.name
+        
+        print(f"Temporary file saved as: {tmp_file_path}")
+        
+        try:
+            workbook = None
+            worksheet = None
+            
+            # Handle CSV files
+            if file_extension == '.csv':
+                print("Processing CSV file...")
+                import csv
+                
+                # Read CSV file
+                with open(tmp_file_path, 'r', encoding='utf-8') as csvfile:
+                    csv_reader = csv.reader(csvfile)
+                    rows = list(csv_reader)
+                
+                if not rows:
+                    raise Exception("CSV file is empty")
+                
+                print(f"CSV file has {len(rows)} rows")
+                print(f"Headers: {rows[0]}")
+                
+                # Convert CSV to openpyxl workbook for consistent processing
+                workbook = openpyxl.Workbook()
+                worksheet = workbook.active
+                
+                # Write CSV data to worksheet
+                for row_idx, row in enumerate(rows, 1):
+                    for col_idx, value in enumerate(row, 1):
+                        worksheet.cell(row=row_idx, column=col_idx, value=value)
+                
+                print("Successfully converted CSV to Excel format")
+            
+            # Handle Excel files
+            else:
+                # First try: Use pandas if available (handles both .xlsx and .xls)
+                try:
+                    import pandas as pd
+                    print("Trying to read with pandas...")
+                    df = pd.read_excel(tmp_file_path)
+                    print(f"Successfully read Excel file with pandas. Shape: {df.shape}")
+                    print(f"Columns: {list(df.columns)}")
+                    
+                    # Convert to openpyxl workbook for processing
+                    converted_path = tmp_file_path.replace(file_extension, '_converted.xlsx')
+                    df.to_excel(converted_path, index=False, engine='openpyxl')
+                    workbook = openpyxl.load_workbook(converted_path)
+                    worksheet = workbook.active
+                    
+                    # Clean up converted file
+                    os.unlink(converted_path)
+                    print("Successfully processed with pandas")
+                    
+                except ImportError:
+                    print("Pandas not available, trying openpyxl directly...")
+                except Exception as pandas_error:
+                    print(f"Pandas failed to read file: {pandas_error}")
+                
+                # Second try: Direct openpyxl (works for .xlsx files)
+                if workbook is None:
+                    try:
+                        print("Trying openpyxl directly...")
+                        workbook = openpyxl.load_workbook(tmp_file_path)
+                        worksheet = workbook.active
+                        print("Successfully processed with openpyxl")
+                    except Exception as openpyxl_error:
+                        print(f"Openpyxl failed: {openpyxl_error}")
+                
+                if workbook is None:
+                    raise Exception("Could not read Excel file with any available method")
+            
+            # Get headers from first row
+            headers = [cell.value for cell in worksheet[1]]
+            
+            # Find all available columns (case-insensitive)
+            column_mapping = {}
+            
+            for i, header in enumerate(headers, 1):
+                if header and isinstance(header, str):
+                    header_lower = header.lower().strip()
+                    
+                    # Map Excel columns to model fields (case-insensitive matching)
+                    if 'first' in header_lower and 'name' in header_lower:
+                        column_mapping['first_name'] = i
+                    elif 'last' in header_lower and 'name' in header_lower:
+                        column_mapping['last_name'] = i
+                    elif header_lower == 'phone_number' or (header_lower == 'phone' and 'phone 2' not in headers[i:i+2]):
+                        column_mapping['phone_number'] = i
+                    elif header_lower == 'phone_number_2':
+                        column_mapping['phone_number_2'] = i
+                    elif header_lower == 'street 1':
+                        column_mapping['street_address'] = i
+                    elif header_lower == 'city':
+                        column_mapping['city'] = i
+                    elif header_lower == 'zip code':
+                        column_mapping['zip_code'] = i
+                    elif header_lower == 'mrn#' or 'mrn' in header_lower:
+                        column_mapping['mrn_number'] = i
+                    elif header_lower == 'date' or 'date' in header_lower:
+                        column_mapping['date_of_birth'] = i
+                    elif header_lower == 'sex' or header_lower == 's':
+                        column_mapping['sex'] = i
+                    elif header_lower == 'marital status' or header_lower == 'm':
+                        column_mapping['marital_status'] = i
+                    elif header_lower == 'primary insured id':
+                        column_mapping['primary_insured_id'] = i
+                    elif header_lower == 'primary insurance':
+                        column_mapping['insurance'] = i
+            
+            # Debug: Print column mapping
+            print(f"Column mapping found: {column_mapping}")
+            print(f"Available headers: {headers}")
+            
+            # Check for required columns
+            if not column_mapping.get('first_name') or not column_mapping.get('last_name') or not column_mapping.get('phone_number'):
+                messages.error(request, 'Excel file must contain columns for first_name, last_name, and phone_number')
+                return redirect('leads_list')
+            
+            # Process rows
+            created_count = 0
+            skipped_count = 0
+            errors = []
+            
+            for row_num in range(2, worksheet.max_row + 1):  # Skip header row
+                try:
+                    # Extract all available data from the row
+                    row_data = {}
+                    
+                    for field_name, col_index in column_mapping.items():
+                        cell_value = worksheet.cell(row=row_num, column=col_index).value
+                        if cell_value is not None:
+                            row_data[field_name] = str(cell_value).strip()
+                        else:
+                            row_data[field_name] = ''
+                    
+                    # Get required fields
+                    first_name = row_data.get('first_name', '')
+                    last_name = row_data.get('last_name', '')
+                    phone_number = row_data.get('phone_number', '')
+                    
+                    # Skip empty rows
+                    if not first_name and not last_name and not phone_number:
+                        continue
+                    
+                    print(f"Processing row {row_num}: {first_name} {last_name}, phone: {phone_number}")
+                    
+                    # Skip if no phone number (required field)
+                    if not phone_number:
+                        skipped_count += 1
+                        errors.append(f'Row {row_num}: Missing phone number')
+                        continue
+                    
+                    # Skip if no first_name AND no last_name (at least one required)
+                    if not first_name and not last_name:
+                        skipped_count += 1
+                        errors.append(f'Row {row_num}: Either first name or last name must be provided')
+                        continue
+                    
+                    # Check if lead already exists (by phone number)
+                    if InterestLead.objects.filter(phone_number=phone_number).exists():
+                        skipped_count += 1
+                        errors.append(f'Row {row_num}: Lead with phone number {phone_number} already exists')
+                        continue
+                    
+                    # Parse date of birth if available
+                    date_of_birth = None
+                    if row_data.get('date_of_birth'):
+                        try:
+                            from datetime import datetime
+                            # Handle different date formats (MM/DD, MM/DD/YYYY, etc.)
+                            date_str = row_data['date_of_birth']
+                            if '/' in date_str:
+                                parts = date_str.split('/')
+                                if len(parts) == 2:  # MM/DD format
+                                    # Assume current year for MM/DD format
+                                    current_year = datetime.now().year
+                                    date_of_birth = datetime.strptime(f"{date_str}/{current_year}", "%m/%d/%Y").date()
+                                elif len(parts) == 3:  # MM/DD/YYYY format
+                                    date_of_birth = datetime.strptime(date_str, "%m/%d/%Y").date()
+                        except Exception as date_error:
+                            print(f"Date parsing error for row {row_num}: {date_error}")
+                    
+                    # Create new lead with all available data
+                    try:
+                        lead_data = {
+                            'first_name': first_name,
+                            'last_name': last_name,
+                            'phone_number': phone_number,
+                        }
+                        
+                        # Add optional fields if they exist
+                        if row_data.get('phone_number_2'):
+                            lead_data['phone_number_2'] = row_data['phone_number_2']
+                        if row_data.get('street_address'):
+                            lead_data['street_address'] = row_data['street_address']
+                        if row_data.get('city'):
+                            lead_data['city'] = row_data['city']
+                        if row_data.get('zip_code'):
+                            lead_data['zip_code'] = row_data['zip_code']
+                        if row_data.get('mrn_number'):
+                            lead_data['mrn_number'] = row_data['mrn_number']
+                        if date_of_birth:
+                            lead_data['date_of_birth'] = date_of_birth
+                        if row_data.get('sex'):
+                            lead_data['sex'] = row_data['sex'].upper()[:1]  # Take first character and uppercase
+                        if row_data.get('marital_status'):
+                            lead_data['marital_status'] = row_data['marital_status']
+                        if row_data.get('primary_insured_id'):
+                            lead_data['primary_insured_id'] = row_data['primary_insured_id']
+                        if row_data.get('insurance'):
+                            lead_data['insurance'] = row_data['insurance']
+                        
+                        lead = InterestLead.objects.create(**lead_data)
+                        created_count += 1
+                        print(f"Created lead: {lead}")
+                        
+                    except Exception as validation_error:
+                        skipped_count += 1
+                        errors.append(f'Row {row_num}: Validation error - {str(validation_error)}')
+                        continue
+                    
+                except Exception as e:
+                    skipped_count += 1
+                    errors.append(f'Row {row_num}: {str(e)}')
+            
+            # Clean up temporary file
+            os.unlink(tmp_file_path)
+            
+            # Show results
+            if created_count > 0:
+                messages.success(request, f'Successfully imported {created_count} leads')
+            
+            if skipped_count > 0:
+                messages.warning(request, f'Skipped {skipped_count} rows due to errors or duplicates')
+            
+            if errors and len(errors) <= 10:  # Show first 10 errors
+                for error in errors[:10]:
+                    messages.warning(request, error)
+            elif len(errors) > 10:
+                messages.warning(request, f'First 10 errors: {", ".join(errors[:10])}')
+            
+        except Exception as e:
+            # Clean up temporary file
+            if os.path.exists(tmp_file_path):
+                os.unlink(tmp_file_path)
+            messages.error(request, f'Error processing Excel file: {str(e)}')
+            
+    except ImportError:
+        messages.error(request, 'Excel processing library not installed. Please install openpyxl.')
+    except Exception as e:
+        messages.error(request, f'Error importing leads: {str(e)}')
+    
+    return redirect('leads_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def delete_all_leads(request):
+    """Delete all leads from the system"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    if request.method == 'POST':
+        try:
+            # Get count before deletion for logging
+            total_leads = InterestLead.objects.count()
+            
+            if total_leads == 0:
+                messages.info(request, 'No leads to delete.')
+                return redirect('leads_list')
+            
+            # Delete all leads (this will cascade to related objects)
+            deleted_count = InterestLead.objects.all().delete()[0]
+            
+            messages.success(request, f'Successfully deleted {deleted_count} leads and all associated data.')
+            logger.info(f'Admin {request.user.username} deleted all {deleted_count} leads')
+            
+        except Exception as e:
+            messages.error(request, f'Error deleting leads: {str(e)}')
+            logger.error(f'Error deleting all leads: {str(e)}')
+    
+    return redirect('leads_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
 def leads_list(request):
-    """Display list of all leads with search and makeing patient capabilities"""
+    """Display list of all leads with search and making patient capabilities"""
     try:
         from django.core.paginator import Paginator
         from datetime import datetime
+        
+        print(f"leads_list view called with method: {request.method}")
+        
+        # Handle Excel import if POST request
+        if request.method == 'POST' and 'excel_file' in request.FILES:
+            print("Excel import request detected")
+            return handle_excel_import(request)
+        elif request.method == 'POST':
+            print("POST request but no excel_file in FILES")
+            print("Available FILES:", request.FILES.keys())
+            print("Available POST data:", request.POST.keys())
         
         # Get search and filter parameters
         search_query = request.GET.get('search', '').strip()
@@ -2415,3 +2760,67 @@ def convert_lead_to_patient(request, lead_id):
     except Exception as e:
         messages.error(request, f'Error loading conversion form: {str(e)}')
         return redirect('leads_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def delete_lead(request, lead_id):
+    """Delete a lead with confirmation"""
+    if request.method == 'POST':
+        try:
+            lead = get_object_or_404(InterestLead, id=lead_id)
+            
+            # Store lead info for success message
+            lead_name = f"{lead.first_name or ''} {lead.last_name or ''}".strip()
+            if not lead_name:
+                lead_name = f"Lead {lead.id}"
+            
+            
+            # Delete the lead
+            lead.delete()
+            
+            messages.success(request, f'Lead "{lead_name}" has been successfully deleted.')
+            return redirect('leads_list')
+            
+        except Exception as e:
+            messages.error(request, f'Error deleting lead: {str(e)}')
+            return redirect('lead_detail', lead_id=lead_id)
+    
+    # If not POST request, redirect to lead detail
+    return redirect('lead_detail', lead_id=lead_id)
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def leads_call_summaries_list(request):
+    """
+    Display all leads with their call summary counts for admin access.
+    """
+    try:
+        # Get all leads with their call summary counts
+        leads_with_calls = InterestLead.objects.annotate(
+            call_count=models.Count('lead_call_summaries'),
+            latest_call=models.Max('lead_call_summaries__generated_at')
+        ).filter(call_count__gt=0).order_by('-latest_call')
+        
+        # Get leads without calls
+        leads_without_calls = InterestLead.objects.annotate(
+            call_count=models.Count('lead_call_summaries')
+        ).filter(call_count=0).order_by('first_name', 'last_name')
+        
+        # Calculate statistics for admin dashboard
+        total_lead_calls = LeadCallSession.objects.count()
+        leads_with_calls_count = leads_with_calls.count()
+        
+        context = {
+            'leads_with_calls': leads_with_calls,
+            'leads_without_calls': leads_without_calls,
+            'total_summaries': LeadCallSummary.objects.count(),
+            'total_leads_with_calls': leads_with_calls_count,
+            'lead_calls_count': total_lead_calls,
+            'leads_with_calls_count': leads_with_calls_count,
+        }
+        
+        return render(request, 'retell_calling/leads_call_summaries_list.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading leads call summaries: {str(e)}')
+        return redirect('admin_dashboard')

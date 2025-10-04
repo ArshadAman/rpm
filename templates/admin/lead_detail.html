@@ -1,8 +1,7 @@
 {% extends "admin/base.html" %}
 {% load i18n %}
 
-{% block title %}{% translate 'Lead Details' %} - {{ lead.first_name|default:'Unknown' }} {{ lead.last_name|default:''
-}} - Admin Portal{% endblock %}
+{% block title %}{% translate 'Lead Details' %} - {{ lead.first_name|default:'Unknown' }} {{ lead.last_name|default:''}} - Admin Portal{% endblock %}
 
 {% block extrastyle %}
 <style>
@@ -567,6 +566,7 @@
 {% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="lead-header">
     <div class="lead-title-section">
         <h1 class="lead-title">
@@ -696,6 +696,66 @@
                         {{ lead.insurance|default:'Not provided' }}
                     </div>
                 </div>
+
+                <div class="info-item">
+                    <div class="info-label">{% translate 'Street Address' %}</div>
+                    <div class="info-value {% if not lead.street_address %}empty{% endif %}">
+                        {{ lead.street_address|default:'Not provided' }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">{% translate 'City' %}</div>
+                    <div class="info-value {% if not lead.city %}empty{% endif %}">
+                        {{ lead.city|default:'Not provided' }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">{% translate 'Zip Code' %}</div>
+                    <div class="info-value {% if not lead.zip_code %}empty{% endif %}">
+                        {{ lead.zip_code|default:'Not provided' }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">{% translate 'MRN Number' %}</div>
+                    <div class="info-value {% if not lead.mrn_number %}empty{% endif %}">
+                        {{ lead.mrn_number|default:'Not provided' }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">{% translate 'Phone Number 2' %}</div>
+                    <div class="info-value phone {% if not lead.phone_number_2 %}empty{% endif %}">
+                        {{ lead.phone_number_2|default:'Not provided' }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">{% translate 'Sex' %}</div>
+                    <div class="info-value {% if not lead.sex %}empty{% endif %}">
+                        {% if lead.sex %}
+                            {% if lead.sex == 'M' %}{% translate 'Male' %}{% elif lead.sex == 'F' %}{% translate 'Female' %}{% else %}{{ lead.sex }}{% endif %}
+                        {% else %}
+                            Not provided
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">{% translate 'Marital Status' %}</div>
+                    <div class="info-value {% if not lead.marital_status %}empty{% endif %}">
+                        {{ lead.marital_status|default:'Not provided' }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">{% translate 'Primary Insured ID' %}</div>
+                    <div class="info-value {% if not lead.primary_insured_id %}empty{% endif %}">
+                        {{ lead.primary_insured_id|default:'Not provided' }}
+                    </div>
+                </div>
             </div>
 
             {% if lead.allergies %}
@@ -789,7 +849,7 @@
                             {% if lead.phone_number %}
                             ✓ {% translate 'Pre-filled from lead data' %}
                             {% else %}
-                            ⚠ {% translate 'Required field - please complete' %}
+                            ⚠ <strong>{% translate 'Required field - please complete' %}</strong>
                             {% endif %}
                         </div>
                     </div>
@@ -822,17 +882,99 @@
                             {% endif %}
                         </div>
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="street_address">{% translate 'Street Address' %}</label>
+                        <input type="text" id="street_address" name="street_address"
+                            class="form-input {% if lead.street_address %}prefilled{% endif %}"
+                            value="{{ lead.street_address|default:'' }}"
+                            placeholder="{% translate 'Enter street address' %}">
+                        <div class="field-hint {% if lead.street_address %}prefilled{% endif %}">
+                            {% if lead.street_address %}
+                            ✓ {% translate 'Pre-filled from lead data' %}
+                            {% else %}
+                            {% translate 'Optional field' %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="city">{% translate 'City' %}</label>
+                        <input type="text" id="city" name="city"
+                            class="form-input {% if lead.city %}prefilled{% endif %}"
+                            value="{{ lead.city|default:'' }}"
+                            placeholder="{% translate 'Enter city' %}">
+                        <div class="field-hint {% if lead.city %}prefilled{% endif %}">
+                            {% if lead.city %}
+                            ✓ {% translate 'Pre-filled from lead data' %}
+                            {% else %}
+                            {% translate 'Optional field' %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="zip_code">{% translate 'Zip Code' %}</label>
+                        <input type="text" id="zip_code" name="zip_code"
+                            class="form-input {% if lead.zip_code %}prefilled{% endif %}"
+                            value="{{ lead.zip_code|default:'' }}"
+                            placeholder="{% translate 'Enter zip code' %}">
+                        <div class="field-hint {% if lead.zip_code %}prefilled{% endif %}">
+                            {% if lead.zip_code %}
+                            ✓ {% translate 'Pre-filled from lead data' %}
+                            {% else %}
+                            {% translate 'Optional field' %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="mrn_number">{% translate 'MRN Number' %}</label>
+                        <input type="text" id="mrn_number" name="mrn_number"
+                            class="form-input {% if lead.mrn_number %}prefilled{% endif %}"
+                            value="{{ lead.mrn_number|default:'' }}"
+                            placeholder="{% translate 'Enter MRN number' %}">
+                        <div class="field-hint {% if lead.mrn_number %}prefilled{% endif %}">
+                            {% if lead.mrn_number %}
+                            ✓ {% translate 'Pre-filled from lead data' %}
+                            {% else %}
+                            {% translate 'Optional field' %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="sex">{% translate 'Sex' %}</label>
+                        <select id="sex" name="sex" class="form-select {% if lead.sex %}prefilled{% endif %}">
+                            <option value="">{% translate 'Select sex' %}</option>
+                            <option value="M" {% if lead.sex == 'M' %}selected{% endif %}>{% translate 'Male' %}</option>
+                            <option value="F" {% if lead.sex == 'F' %}selected{% endif %}>{% translate 'Female' %}</option>
+                        </select>
+                        <div class="field-hint {% if lead.sex %}prefilled{% endif %}">
+                            {% if lead.sex %}
+                            ✓ {% translate 'Pre-filled from lead data' %}
+                            {% else %}
+                            {% translate 'Optional field' %}
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
 
-                {% if lead.allergies or lead.additional_comments %}
+                {% if lead.allergies or lead.additional_comments or lead.phone_number_2 or lead.marital_status or lead.primary_insured_id %}
                 <div class="form-group" style="margin-top: 1rem;">
                     <label class="form-label" for="additional_notes">{% translate 'Additional Notes' %}</label>
                     <textarea id="additional_notes" name="additional_notes" class="form-textarea"
-                        placeholder="{% translate 'Any additional notes or comments...' %}">{% if lead.allergies %}Allergies: {{ lead.allergies }}{% if lead.additional_comments %}
+                        placeholder="{% translate 'Any additional notes or comments...' %}">{% if lead.allergies %}Allergies: {{ lead.allergies }}{% endif %}{% if lead.phone_number_2 %}{% if lead.allergies %}
 
-{% endif %}{% endif %}{% if lead.additional_comments %}Comments: {{ lead.additional_comments }}{% endif %}</textarea>
+{% endif %}Secondary Phone: {{ lead.phone_number_2 }}{% endif %}{% if lead.marital_status %}{% if lead.allergies or lead.phone_number_2 %}
+
+{% endif %}Marital Status: {{ lead.marital_status }}{% endif %}{% if lead.primary_insured_id %}{% if lead.allergies or lead.phone_number_2 or lead.marital_status %}
+
+{% endif %}Primary Insured ID: {{ lead.primary_insured_id }}{% endif %}{% if lead.additional_comments %}{% if lead.allergies or lead.phone_number_2 or lead.marital_status or lead.primary_insured_id %}
+
+{% endif %}Comments: {{ lead.additional_comments }}{% endif %}</textarea>
                     <div class="field-hint">
-                        {% translate 'Pre-filled with allergies and comments from lead data' %}
+                        {% translate 'Pre-filled with additional lead data including allergies, secondary phone, marital status, insured ID, and comments' %}
                     </div>
                 </div>
                 {% endif %}
@@ -1036,14 +1178,26 @@
             // Create a form to submit the delete request
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{% url "lead_detail" lead.id %}delete/';
+            form.action = '{% url "delete_lead" lead.id %}';
 
-            // Add CSRF token
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-            if (csrfToken) {
-                const newToken = csrfToken.cloneNode();
-                newToken.name = 'csrfmiddlewaretoken';
-                form.appendChild(newToken);
+            // Add CSRF token from meta tag
+            const metaToken = document.querySelector('meta[name=csrf-token]');
+            if (metaToken) {
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = 'csrfmiddlewaretoken';
+                tokenInput.value = metaToken.getAttribute('content');
+                form.appendChild(tokenInput);
+            } else {
+                // Fallback: try to get CSRF token from form input
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (csrfToken) {
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = 'csrfmiddlewaretoken';
+                    tokenInput.value = csrfToken.value;
+                    form.appendChild(tokenInput);
+                }
             }
 
             document.body.appendChild(form);
