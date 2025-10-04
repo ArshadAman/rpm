@@ -11,14 +11,14 @@ from rest_framework import status
 import json
 import logging
 
-from rpm_users.models import Patient
+from rpm_users.models import Patient, InterestLead
 from reports.models import Reports
 from rpm_users.models import  PastMedicalHistory
 from django.utils import timezone
 from datetime import timedelta
 from .services import RetellCallService, GeminiSummaryService
 from reports.models import Documentation
-from .models import RetellCallSession, CallSummary
+from .models import RetellCallSession, CallSummary, LeadCallSession, LeadCallSummary
 
 logger = logging.getLogger('retell_calling.views')
 
@@ -35,11 +35,8 @@ def trigger_call(request):
     }
     """
     try:
-        # Parse request data
-        if request.content_type == 'application/json':
-            data = json.loads(request.body)
-        else:
-            data = request.data
+        # Parse request data - use request.data for DRF @api_view
+        data = request.data
         
         patient_id = data.get('patient_id')
         agent_id = data.get('agent_id')
@@ -253,14 +250,24 @@ def retell_webhook(request):
                 'error': 'call_id is required in call object'
             }, status=400)
         
-        # Find the call session
+        # Find the call session - check both patient and lead call sessions
+        call_session = None
+        call_type = None
+        
         try:
             call_session = RetellCallSession.objects.get(retell_call_id=call_id)
+            call_type = 'patient'
+            logger.info(f"Found patient call session for call_id: {call_id}")
         except RetellCallSession.DoesNotExist:
-            logger.error(f"Call session not found for call_id: {call_id}")
-            return JsonResponse({
-                'error': f'Call session not found for call_id: {call_id}'
-            }, status=404)
+            try:
+                call_session = LeadCallSession.objects.get(retell_call_id=call_id)
+                call_type = 'lead'
+                logger.info(f"Found lead call session for call_id: {call_id}")
+            except LeadCallSession.DoesNotExist:
+                logger.error(f"Call session not found for call_id: {call_id}")
+                return JsonResponse({
+                    'error': f'Call session not found for call_id: {call_id}'
+                }, status=404)
         
         # Update call session based on event type and call data
         if event_type == 'call_started':
@@ -309,78 +316,109 @@ def retell_webhook(request):
             
             # Process transcript with AI if available
             if call_session.transcript:
-                logger.info(f"Processing transcript with AI for call: {call_id}")
+                logger.info(f"Processing transcript with AI for {call_type} call: {call_id}")
                 
                 try:
                     # Initialize Gemini service
                     gemini_service = GeminiSummaryService()
                     
-                    # Prepare patient context
-                    patient_context = {
-                        'patient_name': call_session.patient.user.first_name,
-                        'patient_id': call_session.patient.id
-                    }
+                    # Prepare context based on call type
+                    if call_type == 'patient':
+                        context = {
+                            'patient_name': call_session.patient.user.first_name,
+                            'patient_id': call_session.patient.id
+                        }
+                    else:  # lead call
+                        context = {
+                            'lead_name': f"{call_session.lead.first_name or ''} {call_session.lead.last_name or ''}".strip(),
+                            'lead_id': call_session.lead.id
+                        }
                     
                     # Generate AI summary
                     summary_data = gemini_service.generate_summary(
                         call_session.transcript, 
-                        patient_context
+                        context
                     )
                     
                     # Store the AI summary in the call session for backward compatibility
                     call_session.ai_summary = json.dumps(summary_data)
                     
-                    # Create or update CallSummary record
-                    call_summary, created = CallSummary.objects.get_or_create(
-                        call_session=call_session,
-                        defaults={
-                            'patient': call_session.patient,
-                            'summary_text': summary_data.get('summary', ''),
-                            'key_points': summary_data.get('key_points', []),
-                            'concerning_flags': summary_data.get('concerning_flags', []),
-                            'health_metrics': summary_data.get('health_metrics', {}),
-                            'ai_confidence_score': summary_data.get('confidence_score')
-                        }
-                    )
-                    
-                    if not created:
-                        # Update existing summary
-                        call_summary.summary_text = summary_data.get('summary', '')
-                        call_summary.key_points = summary_data.get('key_points', [])
-                        call_summary.concerning_flags = summary_data.get('concerning_flags', [])
-                        call_summary.health_metrics = summary_data.get('health_metrics', {})
-                        call_summary.ai_confidence_score = summary_data.get('confidence_score')
-                        call_summary.save()
-                    
-                    # Also create a Documentation record with the summary text
-                    try:
-                        Documentation.objects.create(
-                            patient=call_session.patient,
-                            title='AI Note',
-                            history_of_present_illness=summary_data.get('summary', ''),
-                            written_by='AI Note',
-                            doc_report_date=timezone.now().date(),
+                    if call_type == 'patient':
+                        # Create or update CallSummary record for patient calls
+                        call_summary, created = CallSummary.objects.get_or_create(
+                            call_session=call_session,
+                            defaults={
+                                'patient': call_session.patient,
+                                'summary_text': summary_data.get('summary', ''),
+                                'key_points': summary_data.get('key_points', []),
+                                'concerning_flags': summary_data.get('concerning_flags', []),
+                                'health_metrics': summary_data.get('health_metrics', {}),
+                                'ai_confidence_score': summary_data.get('confidence_score')
+                            }
                         )
-                        logger.info(f"Documentation created from AI summary for call: {call_id}")
-                    except Exception as doc_err:
-                        logger.error(f"Failed to create Documentation from AI summary for call {call_id}: {str(doc_err)}")
+                        
+                        if not created:
+                            # Update existing summary
+                            call_summary.summary_text = summary_data.get('summary', '')
+                            call_summary.key_points = summary_data.get('key_points', [])
+                            call_summary.concerning_flags = summary_data.get('concerning_flags', [])
+                            call_summary.health_metrics = summary_data.get('health_metrics', {})
+                            call_summary.ai_confidence_score = summary_data.get('confidence_score')
+                            call_summary.save()
+                        
+                        # Also create a Documentation record with the summary text
+                        try:
+                            Documentation.objects.create(
+                                patient=call_session.patient,
+                                title='AI Note',
+                                history_of_present_illness=summary_data.get('summary', ''),
+                                written_by='AI Note',
+                                doc_report_date=timezone.now().date(),
+                            )
+                            logger.info(f"Documentation created from AI summary for patient call: {call_id}")
+                        except Exception as doc_err:
+                            logger.error(f"Failed to create Documentation from AI summary for patient call {call_id}: {str(doc_err)}")
+                    
+                    else:  # lead call
+                        # Create or update LeadCallSummary record for lead calls
+                        from .models import LeadCallSummary
+                        lead_call_summary, created = LeadCallSummary.objects.get_or_create(
+                            call_session=call_session,
+                            defaults={
+                                'lead': call_session.lead,
+                                'summary_text': summary_data.get('summary', ''),
+                                'key_points': summary_data.get('key_points', []),
+                                'concerning_flags': summary_data.get('concerning_flags', []),
+                                'health_metrics': summary_data.get('health_metrics', {}),
+                                'ai_confidence_score': summary_data.get('confidence_score')
+                            }
+                        )
+                        
+                        if not created:
+                            # Update existing summary
+                            lead_call_summary.summary_text = summary_data.get('summary', '')
+                            lead_call_summary.key_points = summary_data.get('key_points', [])
+                            lead_call_summary.concerning_flags = summary_data.get('concerning_flags', [])
+                            lead_call_summary.health_metrics = summary_data.get('health_metrics', {})
+                            lead_call_summary.ai_confidence_score = summary_data.get('confidence_score')
+                            lead_call_summary.save()
                     
                     action = "created" if created else "updated"
-                    logger.info(f"CallSummary {action} for call: {call_id}")
-                    logger.info(f"AI summary generated and stored for call: {call_id}")
+                    logger.info(f"{'CallSummary' if call_type == 'patient' else 'LeadCallSummary'} {action} for {call_type} call: {call_id}")
+                    logger.info(f"AI summary generated and stored for {call_type} call: {call_id}")
                     
                     # Log concerning flags if any
                     concerning_flags = summary_data.get('concerning_flags', [])
                     if concerning_flags:
-                        logger.warning(f"CONCERNING FLAGS identified in call {call_id}: {concerning_flags}")
+                        logger.warning(f"CONCERNING FLAGS identified in {call_type} call {call_id}: {concerning_flags}")
                     
                     # Log key health metrics
                     health_metrics = summary_data.get('health_metrics', {})
                     if health_metrics:
-                        logger.info(f"Health metrics extracted for call {call_id}: {health_metrics}")
+                        logger.info(f"Health metrics extracted for {call_type} call {call_id}: {health_metrics}")
                     
                 except Exception as e:
-                    logger.error(f"Error processing transcript with AI for call {call_id}: {str(e)}")
+                    logger.error(f"Error processing transcript with AI for {call_type} call {call_id}: {str(e)}")
                     # Don't fail the webhook if AI processing fails
             
         elif event_type == 'call_analyzed':
@@ -707,3 +745,397 @@ def debug_call_summaries(request):
         return JsonResponse({
             'error': f'Debug failed: {str(e)}'
         }, status=500)
+
+
+# Helper functions for sequential calling
+def wait_for_call_completion(call_session, timeout=300):
+    """
+    Wait for a call to complete by polling the call session status.
+    Returns True if call completed, False if timeout.
+    """
+    import time
+    from .models import LeadCallSession
+    
+    start_time = time.time()
+    logger.info(f"Waiting for call completion for session {call_session.id}")
+    
+    while time.time() - start_time < timeout:
+        try:
+            # Refresh the call session from database
+            call_session.refresh_from_db()
+            
+            # Check if call is completed
+            if call_session.is_completed:
+                logger.info(f"Call completed with status: {call_session.call_status}")
+                return True
+                
+            # Wait 5 seconds before checking again
+            time.sleep(5)
+            
+        except Exception as e:
+            logger.error(f"Error checking call status: {str(e)}")
+            time.sleep(5)
+    
+    logger.warning(f"Call timeout after {timeout} seconds")
+    return False
+
+
+def generate_lead_call_summary(call_session):
+    """
+    Generate AI summary for a completed lead call.
+    Returns True if successful, False otherwise.
+    """
+    try:
+        from .models import LeadCallSummary
+        from .services import GeminiSummaryService
+        
+        # Check if summary already exists
+        if LeadCallSummary.objects.filter(call_session=call_session).exists():
+            logger.info(f"Summary already exists for call session {call_session.id}")
+            return True
+        
+        # Get the call transcript and metadata
+        transcript = getattr(call_session, 'transcript', '') or ''
+        call_duration = call_session.duration_seconds
+        
+        if not transcript:
+            logger.warning(f"No transcript available for call session {call_session.id}")
+            return False
+        
+        # Generate AI summary using Gemini
+        summary_service = GeminiSummaryService()
+        summary_data = summary_service.generate_summary(transcript, call_duration)
+        
+        if summary_data:
+            # Create the lead call summary
+            lead_call_summary = LeadCallSummary.objects.create(
+                call_session=call_session,
+                lead=call_session.lead,
+                summary_text=summary_data.get('summary', ''),
+                key_points=summary_data.get('key_points', []),
+                concerning_flags=summary_data.get('concerning_flags', []),
+                health_metrics=summary_data.get('health_metrics', {}),
+                ai_confidence_score=summary_data.get('confidence_score')
+            )
+            
+            logger.info(f"Created lead call summary for session {call_session.id}")
+            return True
+        else:
+            logger.warning(f"Failed to generate summary data for call session {call_session.id}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error generating lead call summary: {str(e)}")
+        return False
+
+
+# Lead Call Views
+@api_view(['POST'])
+def trigger_bulk_lead_calls(request):
+    """
+    Trigger sequential calls to all leads without existing calls.
+    This will call one lead at a time, wait for completion, then move to the next.
+    
+    Expected payload:
+    {
+        "agent_id": "optional_agent_id"
+    }
+    """
+    try:
+        # Parse request data - use request.data for DRF @api_view
+        data = request.data
+        
+        agent_id = "agent_f1e1852a2a6b90b39d997f95b5"
+        
+        logger.info("Starting sequential bulk calls to all leads")
+        
+        # Get leads without calls
+        leads_without_calls = InterestLead.objects.annotate(
+            call_count=models.Count('lead_call_sessions')
+        ).filter(call_count=0).filter(phone_number__isnull=False).exclude(phone_number='')
+        
+        if not leads_without_calls.exists():
+            return Response({
+                'success': True,
+                'message': 'No leads available for calling',
+                'calls_initiated': 0,
+                'leads': []
+            }, status=status.HTTP_200_OK)
+        
+        # Initialize the call service
+        call_service = RetellCallService()
+        
+        initiated_calls = []
+        failed_calls = []
+        
+        # Process leads one by one
+        for lead in leads_without_calls:
+            try:
+                logger.info(f"Starting call to lead {lead.id}: {lead.first_name} {lead.last_name}")
+                
+                # Build dynamic variables for the agent flow
+                dynamic_variables = {
+                    'lead_id': str(lead.id),
+                    'lead_name': f"{lead.first_name or ''} {lead.last_name or ''}".strip(),
+                    'lead_first_name': lead.first_name or '',
+                    'lead_last_name': lead.last_name or '',
+                    'lead_email': lead.email or '',
+                    'lead_phone': lead.phone_number or '',
+                    'service_interest': lead.service_interest or '',
+                    'insurance': lead.insurance or '',
+                    'allergies': lead.allergies or '',
+                    'additional_comments': lead.additional_comments or '',
+                }
+                
+                # Create the call
+                result = call_service.create_lead_call(lead, agent_id, dynamic_variables)
+                
+                call_session = result['call_session']
+                call_id = result['call_id']
+                
+                logger.info(f"Call initiated for lead {lead.id}, call_id: {call_id}")
+                
+                # Wait for call to complete (polling approach)
+                call_completed = wait_for_call_completion(call_session, timeout=300)  # 5 minute timeout
+                
+                if call_completed:
+                    logger.info(f"Call completed for lead {lead.id}, generating summary...")
+                    
+                    # Generate summary for the completed call
+                    try:
+                        summary_result = generate_lead_call_summary(call_session)
+                        if summary_result:
+                            logger.info(f"Summary generated for lead {lead.id}")
+                        else:
+                            logger.warning(f"Failed to generate summary for lead {lead.id}")
+                    except Exception as summary_error:
+                        logger.error(f"Error generating summary for lead {lead.id}: {str(summary_error)}")
+                    
+                    initiated_calls.append({
+                        'lead_id': lead.id,
+                        'lead_name': f"{lead.first_name or ''} {lead.last_name or ''}".strip(),
+                        'phone': lead.phone_number,
+                        'call_id': call_id,
+                        'call_session_id': call_session.id,
+                        'status': 'completed'
+                    })
+                else:
+                    logger.warning(f"Call timeout for lead {lead.id}")
+                    initiated_calls.append({
+                        'lead_id': lead.id,
+                        'lead_name': f"{lead.first_name or ''} {lead.last_name or ''}".strip(),
+                        'phone': lead.phone_number,
+                        'call_id': call_id,
+                        'call_session_id': call_session.id,
+                        'status': 'timeout'
+                    })
+                
+                logger.info(f"Completed processing lead {lead.id}, moving to next lead...")
+                
+            except Exception as e:
+                logger.error(f"Failed to process lead {lead.id}: {str(e)}")
+                failed_calls.append({
+                    'lead_id': lead.id,
+                    'lead_name': f"{lead.first_name or ''} {lead.last_name or ''}".strip(),
+                    'phone': lead.phone_number,
+                    'error': str(e)
+                })
+        
+        logger.info(f"Sequential bulk calling completed. {len(initiated_calls)} calls processed, {len(failed_calls)} failed.")
+        
+        return Response({
+            'success': True,
+            'message': f'Sequential bulk calling completed. {len(initiated_calls)} calls processed, {len(failed_calls)} failed.',
+            'calls_initiated': len(initiated_calls),
+            'calls_failed': len(failed_calls),
+            'initiated_calls': initiated_calls,
+            'failed_calls': failed_calls
+        }, status=status.HTTP_200_OK)
+        
+    except json.JSONDecodeError:
+        return Response({
+            'error': 'Invalid JSON in request body'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Exception as e:
+        logger.error(f"Unexpected error in trigger_bulk_lead_calls: {str(e)}")
+        return Response({
+            'error': f'Internal server error: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def trigger_lead_call(request):
+    """
+    Trigger a call to a specific lead.
+    
+    Expected payload:
+    {
+        "lead_id": 123,
+        "agent_id": "optional_agent_id"
+    }
+    """
+    try:
+        # Parse request data - use request.data for DRF @api_view
+        data = request.data
+        
+        lead_id = data.get('lead_id')
+        agent_id = "agent_f1e1852a2a6b90b39d997f95b5"
+        print("lead_id",lead_id)
+        print("agent_id",agent_id)
+        if not lead_id:
+            return Response({
+                'error': 'lead_id is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info(f"Triggering call for lead ID: {lead_id}")
+        
+        # Get the lead
+        try:
+            lead = InterestLead.objects.get(id=lead_id)
+        except InterestLead.DoesNotExist:
+            return Response({
+                'error': f'Lead with ID {lead_id} not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Initialize the call service
+        call_service = RetellCallService()
+        
+        # Build dynamic variables for the agent flow
+        dynamic_variables = {
+            'lead_id': str(lead.id),
+            'lead_name': f"{lead.first_name or ''} {lead.last_name or ''}".strip(),
+            'lead_first_name': lead.first_name or '',
+            'lead_last_name': lead.last_name or '',
+            'lead_email': lead.email or '',
+            'lead_phone': lead.phone_number or '',
+            'service_interest': lead.service_interest or '',
+            'insurance': lead.insurance or '',
+            'allergies': lead.allergies or '',
+            'additional_comments': lead.additional_comments or '',
+        }
+        print("dynamic_variables",dynamic_variables)
+        # Create the call
+        try:
+            result = call_service.create_lead_call(lead, agent_id, dynamic_variables)
+            print("result",result)
+            return Response({
+                'success': True,
+                'message': 'Lead call initiated successfully',
+                'call_id': result['call_id'],
+                'call_session_id': result['call_session'].id,
+                'lead': {
+                    'id': lead.id,
+                    'name': f"{lead.first_name or ''} {lead.last_name or ''}".strip(),
+                    'phone': lead.phone_number
+                }
+            }, status=status.HTTP_201_CREATED)
+            
+        except ValidationError as e:
+            logger.error(f"Validation error creating lead call: {str(e)}")
+            return Response({
+                'error': f'Validation error: {str(e)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            logger.error(f"Error creating lead call: {str(e)}")
+            return Response({
+                'error': f'Failed to create lead call: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    except json.JSONDecodeError:
+        return Response({
+            'error': 'Invalid JSON in request body'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Exception as e:
+        logger.error(f"Unexpected error in trigger_lead_call: {str(e)}")
+        return Response({
+            'error': f'Internal server error: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def leads_call_summaries_list(request):
+    """
+    Display all leads with their call summary counts for admin access.
+    Supports search by name.
+    """
+    try:
+        # Get search query
+        search_query = request.GET.get('search', '').strip()
+        
+        # Base queryset for leads with calls
+        leads_with_calls_qs = InterestLead.objects.annotate(
+            call_count=models.Count('lead_call_summaries'),
+            latest_call=models.Max('lead_call_summaries__generated_at')
+        ).filter(call_count__gt=0)
+        
+        # Base queryset for leads without calls
+        leads_without_calls_qs = InterestLead.objects.annotate(
+            call_count=models.Count('lead_call_summaries')
+        ).filter(call_count=0)
+        
+        # Apply search filter if provided
+        if search_query:
+            # Search by first name or last name (case insensitive)
+            search_filter = models.Q(first_name__icontains=search_query) | models.Q(last_name__icontains=search_query)
+            leads_with_calls_qs = leads_with_calls_qs.filter(search_filter)
+            leads_without_calls_qs = leads_without_calls_qs.filter(search_filter)
+        
+        # Order the querysets
+        leads_with_calls = leads_with_calls_qs.order_by('-latest_call')
+        leads_without_calls = leads_without_calls_qs.order_by('first_name', 'last_name')
+        
+        context = {
+            'leads_with_calls': leads_with_calls,
+            'leads_without_calls': leads_without_calls,
+            'total_summaries': LeadCallSummary.objects.count(),
+            'total_leads_with_calls': leads_with_calls.count(),
+            'search_query': search_query,
+        }
+        
+        return render(request, 'retell_calling/leads_call_summaries_list.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error loading leads call summaries list: {str(e)}")
+        messages.error(request, f'Error loading leads call summaries: {str(e)}')
+        return redirect('admin_dashboard')
+
+
+def lead_call_summaries(request, lead_id):
+    """
+    Display all call summaries and detailed call information for a specific lead.
+    """
+    try:
+        lead = InterestLead.objects.get(id=lead_id)
+        
+        # Get all call summaries for this lead with related call session data
+        call_summaries = LeadCallSummary.objects.filter(lead=lead).select_related(
+            'call_session'
+        ).order_by('-generated_at')
+        
+        # Get call sessions without summaries (if any)
+        call_sessions_without_summaries = LeadCallSession.objects.filter(
+            lead=lead
+        ).exclude(
+            id__in=call_summaries.values_list('call_session_id', flat=True)
+        ).order_by('-created_at')
+        
+        context = {
+            'lead': lead,
+            'call_summaries': call_summaries,
+            'call_sessions_without_summaries': call_sessions_without_summaries,
+            'total_calls': call_summaries.count() + call_sessions_without_summaries.count(),
+            'total_summaries': call_summaries.count(),
+        }
+        
+        return render(request, 'retell_calling/lead_call_summaries.html', context)
+        
+    except InterestLead.DoesNotExist:
+        messages.error(request, f'Lead with ID {lead_id} not found.')
+        return redirect('leads_call_summaries')
+    
+    except Exception as e:
+        logger.error(f"Error loading lead call summaries: {str(e)}")
+        messages.error(request, f'Error loading lead call summaries: {str(e)}')
+        return redirect('leads_call_summaries')

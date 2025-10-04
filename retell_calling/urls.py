@@ -18,4 +18,10 @@ urlpatterns = [
     path('call-summaries/', views.call_summaries_list, name='call_summaries_list'),
     path('patient/<uuid:patient_id>/call-summaries/', views.patient_call_summaries, name='patient_call_summaries'),
     path('debug/call-summaries/', views.debug_call_summaries, name='debug_call_summaries'),
+    
+        # Lead Call Management
+    path('trigger-lead-call/', views.trigger_lead_call, name='trigger_lead_call'),
+    path('trigger-bulk-lead-calls/', views.trigger_bulk_lead_calls, name='trigger_bulk_lead_calls'),
+    path('leads-call-summaries/', views.leads_call_summaries_list, name='leads_call_summaries_list'),
+    path('lead/<int:lead_id>/call-summaries/', views.lead_call_summaries, name='lead_call_summaries'),
 ]
