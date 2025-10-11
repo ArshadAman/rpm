@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from django.utils import timezone
 from rpm_users.models import Patient, InterestLead
 
 
@@ -122,6 +123,7 @@ class LeadCallSession(models.Model):
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     lead = models.ForeignKey(InterestLead, on_delete=models.CASCADE, related_name='lead_call_sessions')
+    bulk_session_id = models.UUIDField(null=True, blank=True, help_text="Associated bulk calling session")
     retell_call_id = models.CharField(max_length=100, unique=True, help_text="Unique call ID from Retell API")
     call_status = models.CharField(max_length=20, choices=RETELL_STATUS_CHOICES, default='initiated')
     from_number = models.CharField(max_length=20, help_text="Phone number used to make the call")
@@ -253,3 +255,95 @@ class CallCondition(models.Model):
     def __str__(self):
         status = "Active" if self.is_active else "Inactive"
         return f"{self.name} ({self.get_condition_type_display()}) - {status}"
+
+
+class BulkCallSession(models.Model):
+    """Track bulk calling sessions for leads or patients"""
+    
+    SESSION_TYPE_CHOICES = [
+        ('lead_calls', 'Lead Calls'),
+        ('patient_calls', 'Patient Calls'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('initiated', 'Initiated'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('paused', 'Paused'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    session_type = models.CharField(max_length=20, choices=SESSION_TYPE_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='initiated')
+    total_leads = models.PositiveIntegerField(help_text="Total number of leads/patients to call")
+    leads_data = models.JSONField(help_text="List of leads/patients data")
+    agent_id = models.CharField(max_length=100, help_text="Retell agent ID to use for calls")
+    current_index = models.PositiveIntegerField(default=0, help_text="Current position in the leads list")
+    successful_calls = models.PositiveIntegerField(default=0)
+    failed_calls = models.PositiveIntegerField(default=0)
+    no_answer_calls = models.PositiveIntegerField(default=0)
+    busy_calls = models.PositiveIntegerField(default=0)
+    completed_calls = models.PositiveIntegerField(default=0)
+    call_results = models.JSONField(default=list, help_text="Results of each call attempt")
+    error_message = models.TextField(blank=True, help_text="Error message if session failed")
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Bulk Call Session"
+        verbose_name_plural = "Bulk Call Sessions"
+    
+    @property
+    def progress_percentage(self):
+        """Calculate progress percentage"""
+        if self.total_leads == 0:
+            return 0
+        return round((self.completed_calls / self.total_leads) * 100, 2)
+    
+    @property
+    def remaining_calls(self):
+        """Get number of remaining calls"""
+        return self.total_leads - self.completed_calls
+    
+    def mark_call_completed(self, success=True, call_data=None):
+        """Mark a call as completed and update counters"""
+        self.completed_calls += 1
+        
+        # Update specific counters based on call outcome
+        if call_data:
+            call_status = call_data.get('status', 'unknown')
+            if success and call_data.get('answered', False):
+                self.successful_calls += 1
+            elif call_status == 'no_answer':
+                self.no_answer_calls += 1
+            elif call_status == 'busy':
+                self.busy_calls += 1
+            elif call_status in ['failed', 'cancelled']:
+                self.failed_calls += 1
+            else:
+                # Default to failed for unknown statuses
+                self.failed_calls += 1
+            
+            # Store call result
+            self.call_results.append(call_data)
+        else:
+            # Fallback if no call_data provided
+            if success:
+                self.successful_calls += 1
+            else:
+                self.failed_calls += 1
+        
+        # Check if all calls are completed
+        if self.completed_calls >= self.total_leads:
+            self.status = 'completed'
+            self.completed_at = timezone.now()
+        
+        self.save()
+    
+    def __str__(self):
+        return f"Bulk {self.get_session_type_display()} - {self.status} ({self.completed_calls}/{self.total_leads})"
