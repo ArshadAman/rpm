@@ -60,8 +60,11 @@ urlpatterns = [
     
     # Leads management
     path('dashboard/leads/', views.leads_list, name='leads_list'),
+    path('dashboard/leads/delete-all/', views.delete_all_leads, name='delete_all_leads'),
     path('dashboard/leads/<int:lead_id>/', views.lead_detail, name='lead_detail'),
+    path('dashboard/leads/<int:lead_id>/delete/', views.delete_lead, name='delete_lead'),
     path('dashboard/leads/<int:lead_id>/convert/', views.convert_lead_to_patient, name='convert_lead_to_patient'),
+    path('dashboard/leads-call-summaries/', views.leads_call_summaries_list, name='leads_call_summaries'),
     
     # Admin-verified user creation
     path('staff/create-user/', views.admin_create_user, name='admin_create_user'),

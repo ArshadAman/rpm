@@ -406,6 +406,149 @@
         margin-bottom: 2rem;
     }
 
+    .import-section {
+        background: var(--card-bg);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        backdrop-filter: blur(20px);
+        margin-bottom: 1.5rem;
+    }
+
+    .import-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .import-title {
+        color: var(--secondary);
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .import-description {
+        color: var(--text);
+        opacity: 0.8;
+        font-size: 0.875rem;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .import-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .file-upload-container {
+        position: relative;
+    }
+
+    .file-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        border: 2px dashed var(--border);
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.02);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    .file-upload-label:hover {
+        border-color: var(--primary);
+        background: rgba(121, 40, 202, 0.05);
+    }
+
+    .file-upload-text {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    .file-upload-hint {
+        font-size: 0.75rem;
+        color: var(--text);
+        opacity: 0.6;
+    }
+
+    .import-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .import-actions .btn {
+        min-width: 150px;
+    }
+
+    .delete-section {
+        background: var(--card-bg);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        backdrop-filter: blur(20px);
+        margin-bottom: 1.5rem;
+    }
+
+    .delete-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .delete-title {
+        color: var(--error);
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .delete-description {
+        color: var(--text);
+        opacity: 0.8;
+        font-size: 0.875rem;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .delete-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .delete-actions .btn {
+        min-width: 150px;
+    }
+
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
     @media (max-width: 1024px) {
         .leads-header {
             flex-direction: column;
@@ -478,6 +621,82 @@
     </div>
 </div>
 
+<div class="import-section">
+    <div class="import-header">
+        <h3 class="import-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            {% translate 'Import Leads' %}
+        </h3>
+        <p class="import-description">
+            {% translate 'Upload an Excel or CSV file (.xlsx, .xls, .csv) to import leads. The file should contain columns for first_name, last_name, and phone_number.' %}
+        </p>
+    </div>
+    
+    <form method="post" enctype="multipart/form-data" id="import-form" class="import-form">
+        {% csrf_token %}
+        <div class="file-upload-container">
+            <input type="file" 
+                   id="excel_file" 
+                   name="excel_file" 
+                   accept=".xlsx,.xls,.csv" 
+                   class="file-input" 
+                   required>
+            <label for="excel_file" class="file-upload-label">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span class="file-upload-text">{% translate 'Choose Excel File' %}</span>
+                <span class="file-upload-hint">{% translate 'Only .xlsx, .xls, and .csv files are allowed' %}</span>
+            </label>
+        </div>
+        
+        <div class="import-actions">
+            <button type="submit" class="btn btn-primary" id="import-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                {% translate 'Import Leads' %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="delete-section">
+    <div class="delete-header">
+        <h3 class="delete-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="m19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            {% translate 'Delete All Leads' %}
+        </h3>
+        <p class="delete-description">
+            {% translate 'Permanently delete all leads from the system. This action cannot be undone and will remove all lead data including call summaries.' %}
+        </p>
+    </div>
+    
+    <div class="delete-actions">
+        <button type="button" class="btn btn-delete" id="delete-all-btn" style="display: block; visibility: visible; opacity: 1;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="m19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            {% translate 'Delete All Leads' %}
+        </button>
+    </div>
+</div>
+
+<!-- CSRF Token for delete functionality -->
+{% csrf_token %}
+
 <div class="filters-section">
     <h3 class="filters-title">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -494,7 +713,7 @@
                        id="search" 
                        name="search" 
                        class="filter-input" 
-                       placeholder="{% translate 'Search by name, email, or phone...' %}"
+                       placeholder="{% translate 'Search by name, or phone...' %}"
                        value="{{ request.GET.search }}">
             </div>
             
@@ -583,9 +802,9 @@
             <tr>
                 <th>{% translate 'Name' %}</th>
                 <th>{% translate 'Contact' %}</th>
-                <th>{% translate 'Service Interest' %}</th>
-                <th>{% translate 'Completion' %}</th>
-                <th>{% translate 'Status' %}</th>
+                <th>{% translate 'City' %}</th>
+                <th>{% translate 'Zip Code' %}</th>
+                <th>{% translate 'Address' %}</th>
                 <th>{% translate 'Created' %}</th>
                 <th>{% translate 'Actions' %}</th>
             </tr>
@@ -603,72 +822,21 @@
                     </div>
                 </td>
                 <td>
-                    <div>
-                        {% if lead_data.lead.email %}
-                            <a href="mailto:{{ lead_data.lead.email }}" class="lead-email">{{ lead_data.lead.email }}</a>
-                        {% else %}
-                            <em>{% translate 'No email' %}</em>
-                        {% endif %}
-                    </div>
                     {% if lead_data.lead.phone_number %}
                         <div class="lead-phone">{{ lead_data.lead.phone_number }}</div>
                     {% endif %}
                 </td>
                 <td>
-                    {% if lead_data.lead.service_interest %}
-                        {{ lead_data.lead.service_interest }}
-                    {% else %}
-                        <em>{% translate 'Not specified' %}</em>
-                    {% endif %}
+                    <div>{{ lead_data.lead.city }}</div>
                 </td>
                 <td>
-                    {% if lead_data.completion_percentage >= 80 %}
-                        <span class="completion-badge completion-high">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            {{ lead_data.completion_percentage }}%
-                        </span>
-                    {% elif lead_data.completion_percentage >= 50 %}
-                        <span class="completion-badge completion-medium">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
-                            {{ lead_data.completion_percentage }}%
-                        </span>
-                    {% else %}
-                        <span class="completion-badge completion-low">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="15" y1="9" x2="9" y2="15"></line>
-                                <line x1="9" y1="9" x2="15" y2="15"></line>
-                            </svg>
-                            {{ lead_data.completion_percentage }}%
-                        </span>
-                    {% endif %}
+                    <div>{{ lead_data.lead.zip_code }}</div>
                 </td>
                 <td>
-                    {% if lead_data.lead.is_converted %}
-                        <span class="status-badge status-converted">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            {% translate 'Converted' %}
-                        </span>
-                    {% else %}
-                        <span class="status-badge status-pending">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                            {% translate 'Pending' %}
-                        </span>
-                    {% endif %}
+                    <div>{{ lead_data.lead.street_address }}</div>
                 </td>
                 <td>
-                    <div>{{ lead_data.lead.created_at|date:"M d, Y" }}</div>
+                <div>{{ lead_data.lead.created_at|date:"M d, Y" }}</div>
                     <div style="font-size: 0.75rem; opacity: 0.7;">{{ lead_data.lead.created_at|time:"H:i" }}</div>
                 </td>
                 <td>
@@ -792,6 +960,117 @@ document.addEventListener('DOMContentLoaded', function() {
             // filterForm.submit();
         });
     });
+
+    // Handle file upload for import functionality
+    const fileInput = document.getElementById('excel_file');
+    const fileLabel = document.querySelector('.file-upload-label');
+    const importForm = document.getElementById('import-form');
+    const importBtn = document.getElementById('import-btn');
+
+    if (fileInput && fileLabel) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Update label text to show selected file
+                const fileName = file.name;
+                const fileText = fileLabel.querySelector('.file-upload-text');
+                if (fileText) {
+                    fileText.textContent = fileName;
+                }
+                
+                // Validate file type
+                const allowedTypes = ['.xlsx', '.xls', '.csv'];
+                const fileExtension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+                
+                if (!allowedTypes.includes(fileExtension)) {
+                    alert('{% translate "Please select a valid Excel or CSV file (.xlsx, .xls, or .csv)" %}');
+                    fileInput.value = '';
+                    fileText.textContent = '{% translate "Choose Excel File" %}';
+                    return;
+                }
+            }
+        });
+    }
+
+    // Handle form submission
+    if (importForm) {
+        importForm.addEventListener('submit', function(e) {
+            console.log('Form submission started');
+            const file = fileInput.files[0];
+            console.log('Selected file:', file);
+            
+            if (!file) {
+                e.preventDefault();
+                alert('{% translate "Please select a file to import" %}');
+                return;
+            }
+
+            console.log('File validation passed, submitting form...');
+            // Show loading state
+            importBtn.disabled = true;
+            importBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                </svg>
+                {% translate 'Importing...' %}
+            `;
+            
+            // Let the form submit naturally - don't prevent default
+            console.log('Form will submit to:', importForm.action || window.location.href);
+        });
+    }
+
+    // Handle delete all leads functionality
+    const deleteAllBtn = document.getElementById('delete-all-btn');
+    
+    if (deleteAllBtn) {
+        deleteAllBtn.addEventListener('click', function() {
+            const leadCount = {{ total_leads }};
+            
+            if (leadCount === 0) {
+                alert('No leads to delete.');
+                return;
+            }
+            
+            // Double confirmation for safety
+            const firstConfirm = confirm(`Are you sure you want to delete ALL ${leadCount} leads? This action cannot be undone.`);
+            if (!firstConfirm) return;
+            
+            const secondConfirm = confirm(`FINAL WARNING: This will permanently delete ALL ${leadCount} leads and their associated data. Type 'DELETE ALL' to confirm.`);
+            if (!secondConfirm) return;
+            
+            const finalConfirm = prompt(`Type 'DELETE ALL' to confirm deletion of ${leadCount} leads:`);
+            if (finalConfirm !== 'DELETE ALL') {
+                alert('Deletion cancelled. You must type exactly "DELETE ALL" to confirm.');
+                return;
+            }
+            
+            // Show loading state
+            deleteAllBtn.disabled = true;
+            deleteAllBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                </svg>
+                Deleting All Leads...
+            `;
+            
+            // Create form to submit delete request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "delete_all_leads" %}';
+            
+            // Add CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfToken) {
+                form.appendChild(csrfToken.cloneNode());
+            }
+            
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
 });
 </script>
 {% endblock %}
