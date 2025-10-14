@@ -17,6 +17,7 @@ django-grappelli==4.0.2
 django-rest-framework==0.1.0
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
+django-ratelimit==4.1.0
 ecdsa==0.19.1
 frozenlist==1.7.0
 fuzzywuzzy==0.18.0

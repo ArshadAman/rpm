@@ -10,7 +10,7 @@ from django.conf import settings
 from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
-from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor
+from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor, EmailOTP
 from retell_calling.models import CallSummary, LeadCallSession, LeadCallSummary
 from django.db import models
 from .serializers import PatientSerializer, ModeratorSerializer
@@ -37,6 +37,59 @@ from django.db import transaction
 import re
 import logging
 from datetime import datetime
+from django_ratelimit.decorators import ratelimit
+import random
+from datetime import timedelta
+
+def send_otp_email(email, otp_code):
+    """Send OTP verification email using SendGrid"""
+    try:
+        # Skip email sending if no SendGrid API key is configured
+        if not hasattr(settings, 'SENDGRID_API_KEY') or not settings.SENDGRID_API_KEY:
+            logging.warning(f"SendGrid not configured. Skipping OTP email for {email}")
+            return False
+        
+        # Use SendGrid to send email
+        sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+        message = Mail(
+            from_email='marketing@pinksurfing.com',
+            to_emails=email,
+            subject='RPM Patient Registration - Email Verification',
+            html_content=f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #7928CA; text-align: center;">Email Verification</h2>
+                <p>Thank you for registering with RPM Patient Portal. Please use the following verification code to complete your registration:</p>
+                
+                <div style="background: linear-gradient(135deg, #7928CA, #FF0080); color: white; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;">
+                    <h1 style="margin: 0; font-size: 32px; letter-spacing: 5px;">{otp_code}</h1>
+                </div>
+                
+                <p><strong>Important:</strong></p>
+                <ul>
+                    <li>This code will expire in 10 minutes</li>
+                    <li>Do not share this code with anyone</li>
+                    <li>If you didn't request this verification, please ignore this email</li>
+                </ul>
+                
+                <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                    If you have any questions, please contact our support team.
+                </p>
+            </div>
+            """
+        )
+        
+        # Send email
+        sg.send(message)
+        logging.info(f"OTP email sent successfully to {email}")
+        return True
+        
+    except Exception as e:
+        logging.error(f"Failed to send OTP email to {email}: {str(e)}")
+        return False
+
+def generate_otp():
+    """Generate a 6-digit OTP code"""
+    return str(random.randint(100000, 999999))
 
 def home(request):
     """Homepage with options for moderator login and patient registration"""
@@ -1130,10 +1183,145 @@ def register_patient(request):
 def registration_success(request):
     return render(request, 'registration_success.html')
 
-def patient_self_registration(request):
+@ratelimit(key="ip", rate="1/m", method='POST', block=True)
+def send_email_otp(request):
+    """Send OTP to email for verification"""
     if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        if not email:
+            messages.error(request, 'Email is required')
+            context = {
+                'sex_choices': Patient.SEX_CHOICES,
+                'monitoring_choices': Patient.MONITORING_CHOICES,
+                'pmh_choices': PastMedicalHistory.PMH_CHOICES,
+                'verified_email': None
+            }
+            return render(request, 'patient_self_register.html', context)
+        
+        # Check if user already exists
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'An account with this email already exists')
+            context = {
+                'sex_choices': Patient.SEX_CHOICES,
+                'monitoring_choices': Patient.MONITORING_CHOICES,
+                'pmh_choices': PastMedicalHistory.PMH_CHOICES,
+                'verified_email': None
+            }
+            return render(request, 'patient_self_register.html', context)
+        
+        # Generate OTP
+        otp_code = generate_otp()
+        expires_at = timezone.now() + timedelta(minutes=10)
+        
+        # Delete any existing OTPs for this email
+        EmailOTP.objects.filter(email=email).delete()
+        
+        # Create new OTP record
+        otp_record = EmailOTP.objects.create(
+            email=email,
+            otp_code=otp_code,
+            expires_at=expires_at
+        )
+        
+        # Send OTP email
+        if send_otp_email(email, otp_code):
+            messages.success(request, f'Verification code sent to {email}')
+            return render(request, 'verify_email_otp.html', {'email': email})
+        else:
+            messages.error(request, 'Failed to send verification email. Please try again.')
+            context = {
+                'sex_choices': Patient.SEX_CHOICES,
+                'monitoring_choices': Patient.MONITORING_CHOICES,
+                'pmh_choices': PastMedicalHistory.PMH_CHOICES,
+                'verified_email': None
+            }
+            return render(request, 'patient_self_register.html', context)
+    
+    context = {
+        'sex_choices': Patient.SEX_CHOICES,
+        'monitoring_choices': Patient.MONITORING_CHOICES,
+        'pmh_choices': PastMedicalHistory.PMH_CHOICES,
+        'verified_email': None
+    }
+    return render(request, 'patient_self_register.html', context)
+
+@ratelimit(key="ip", rate="1/m", method='POST', block=False)
+def verify_email_otp(request):
+    """Verify OTP and proceed to registration form"""
+    print(f"DEBUG: verify_email_otp called with method: {request.method}")
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        otp_code = request.POST.get('otp_code')
+        
+        print(f"DEBUG: Received OTP verification - Email: {email}, OTP: {otp_code}")
+        
+        if not email or not otp_code:
+            messages.error(request, 'Email and OTP code are required')
+            return render(request, 'verify_email_otp.html', {'email': email})
+        
+        # Find the OTP record
+        try:
+            print(f"DEBUG: Looking for OTP record with email: {email}, code: {otp_code}")
+            
+            # Test if EmailOTP table exists
+            try:
+                EmailOTP.objects.count()
+                print(f"DEBUG: EmailOTP table exists")
+            except Exception as table_error:
+                print(f"DEBUG: EmailOTP table error: {str(table_error)}")
+                messages.error(request, 'Database error. Please contact support.')
+                return render(request, 'verify_email_otp.html', {'email': email})
+            
+            otp_record = EmailOTP.objects.filter(
+                email=email,
+                otp_code=otp_code,
+                is_verified=False
+            ).latest('created_at')
+            
+            print(f"DEBUG: Found OTP record: {otp_record}")
+            
+            # Check if OTP is expired
+            if otp_record.is_expired():
+                print(f"DEBUG: OTP expired")
+                messages.error(request, 'OTP code has expired. Please request a new one.')
+                return render(request, 'verify_email_otp.html', {'email': email})
+            
+            # Mark OTP as verified
+            otp_record.is_verified = True
+            otp_record.save()
+            
+            # Store email in session for registration form
+            request.session['verified_email'] = email
+            
+            print(f"DEBUG: OTP verified successfully for {email}, redirecting to patient_register")
+            messages.success(request, 'Email verified successfully! Please complete your registration.')
+            return redirect('patient_register')
+            
+        except EmailOTP.DoesNotExist:
+            print(f"DEBUG: OTP record not found")
+            messages.error(request, 'Invalid OTP code. Please check and try again.')
+            return render(request, 'verify_email_otp.html', {'email': email})
+        except Exception as e:
+            print(f"DEBUG: Error in OTP verification: {str(e)}")
+            messages.error(request, f'Error verifying OTP: {str(e)}')
+            return render(request, 'verify_email_otp.html', {'email': email})
+    
+    # Handle GET request - redirect to registration if no email provided
+    return redirect('patient_register')
+
+# @ratelimit(key="ip", rate="1/m", method='POST', block=True)
+def patient_self_registration(request):
+    verified_email = request.session.get('verified_email')
+    
+    if request.method == 'POST':
+        # Check if email is verified in session for POST requests
+        if not verified_email:
+            messages.error(request, 'Please verify your email first')
+            return redirect('patient_register')
         data = {
-            'email': request.POST.get('email'),
+            'email': verified_email,  # Use verified email from session
             'password': request.POST.get('password'),
             'first_name': request.POST.get('first_name'), 
             'last_name': request.POST.get('last_name'),
@@ -1211,19 +1399,35 @@ def patient_self_registration(request):
                     )
 
             messages.success(request, 'Patient registered successfully')
+            # Clear verified email from session
+            if 'verified_email' in request.session:
+                del request.session['verified_email']
             return redirect('registration_success')
 
         except ValueError as e:
             messages.error(request, str(e))  # This will catch the BMI calculation error
-            return render(request, 'patient_self_register.html')
+            context = {
+                'sex_choices': Patient.SEX_CHOICES,
+                'monitoring_choices': Patient.MONITORING_CHOICES,
+                'pmh_choices': PastMedicalHistory.PMH_CHOICES,
+                'verified_email': verified_email
+            }
+            return render(request, 'patient_self_register.html', context)
         except Exception as e:
             messages.error(request, f'Error creating patient: {str(e)}')
-            return render(request, 'patient_self_register.html')
+            context = {
+                'sex_choices': Patient.SEX_CHOICES,
+                'monitoring_choices': Patient.MONITORING_CHOICES,
+                'pmh_choices': PastMedicalHistory.PMH_CHOICES,
+                'verified_email': verified_email
+            }
+            return render(request, 'patient_self_register.html', context)
 
     context = {
         'sex_choices': Patient.SEX_CHOICES,
         'monitoring_choices': Patient.MONITORING_CHOICES,
-        'pmh_choices': PastMedicalHistory.PMH_CHOICES
+        'pmh_choices': PastMedicalHistory.PMH_CHOICES,
+        'verified_email': verified_email
     }
     return render(request, 'patient_self_register.html', context)
 
