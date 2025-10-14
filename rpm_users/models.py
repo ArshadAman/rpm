@@ -404,3 +404,22 @@ class ModeratorShortcut(models.Model):
     
     def __str__(self):
         return f"{self.moderator.user.username} - {self.shortcut_key}"
+
+
+class EmailOTP(models.Model):
+    """Model to store email OTP verification codes for patient registration"""
+    email = models.EmailField()
+    otp_code = models.CharField(max_length=6)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"OTP for {self.email} - {self.otp_code}"
+    
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at

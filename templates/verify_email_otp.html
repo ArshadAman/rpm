@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - RPM Patient Portal</title>
+    {% load static %}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1;
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+        }
+
+        .email-display {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(121, 40, 202, 0.1);
+            border: 1px solid rgba(121, 40, 202, 0.2);
+            border-radius: 12px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .otp-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(121, 40, 202, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .otp-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: normal;
+        }
+
+        .messages {
+            margin-bottom: 30px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            border-left: 4px solid var(--primary);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .messages .error {
+            color: var(--error);
+        }
+
+        .messages .success {
+            color: var(--success);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .submit-btn, .back-btn, .resend-btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 0.5px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            flex: 2;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .back-btn, .resend-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            flex: 1;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
+        }
+
+        .back-btn:hover, .resend-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .resend-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .resend-btn:disabled:hover {
+            transform: none;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .info-text {
+            text-align: center;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .timer {
+            text-align: center;
+            margin-top: 15px;
+            color: var(--secondary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* Loading state for submit button */
+        .submit-btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .submit-btn.loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px;
+                margin: 10px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .submit-btn, .back-btn, .resend-btn {
+                width: 100%;
+                padding: 14px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Verify Your Email</h2>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                {% if 'admin' not in message.extra_tags %}
+                <div class="{{ message.tags }}">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="email-display">
+            📧 {{ email }}
+        </div>
+
+        <div class="info-text">
+            We've sent a 6-digit verification code to your email address. 
+            Please enter the code below to continue with your registration.
+        </div>
+
+        <form method="POST" action="{% url 'verify_email_otp' %}" id="otpForm">
+            {% csrf_token %}
+            <input type="hidden" name="email" value="{{ email }}">
+            
+            <div class="form-group">
+                <label for="otp_code">Verification Code</label>
+                <input type="text" 
+                       id="otp_code" 
+                       name="otp_code" 
+                       class="otp-input"
+                       placeholder="000000"
+                       maxlength="6"
+                       pattern="[0-9]{6}"
+                       required
+                       autocomplete="off">
+            </div>
+
+            <div class="timer" id="timer">
+                Code expires in: <span id="countdown">10:00</span>
+            </div>
+            
+            <div class="timer" id="resendTimer" style="display: none; color: var(--secondary);">
+                Resend available in: <span id="resendCountdown">1:00</span>
+            </div>
+
+            <div class="button-group">
+                <a href="{% url 'patient_register' %}" class="back-btn">Back</a>
+                <button type="button" class="resend-btn" id="resendBtn" onclick="resendOTP()" disabled>Resend Code</button>
+                <button type="submit" class="submit-btn">Verify & Continue</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Auto-focus on OTP input
+        document.getElementById('otp_code').focus();
+
+        // Timer countdown
+        let timeLeft = 600; // 10 minutes in seconds
+        let resendCooldown = 0; // Resend cooldown in seconds
+        const countdownElement = document.getElementById('countdown');
+        const resendBtn = document.getElementById('resendBtn');
+
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                countdownElement.textContent = 'Expired';
+                if (resendCooldown <= 0) {
+                    resendBtn.disabled = false;
+                    resendBtn.textContent = 'Resend Code';
+                }
+            } else {
+                timeLeft--;
+                setTimeout(updateTimer, 1000);
+            }
+        }
+
+        function updateResendCooldown() {
+            if (resendCooldown > 0) {
+                const minutes = Math.floor(resendCooldown / 60);
+                const seconds = resendCooldown % 60;
+                resendBtn.textContent = `Resend in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Update the separate timer display
+                document.getElementById('resendCountdown').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                document.getElementById('resendTimer').style.display = 'block';
+                
+                resendCooldown--;
+                setTimeout(updateResendCooldown, 1000);
+            } else {
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Resend Code';
+                document.getElementById('resendTimer').style.display = 'none';
+            }
+        }
+
+        // Start timer
+        updateTimer();
+        
+        // Enable resend button after 1 minute initially
+        resendCooldown = 60; // Start with 1 minute cooldown
+        updateResendCooldown(); // Start the cooldown timer immediately
+
+        // OTP input formatting
+        document.getElementById('otp_code').addEventListener('input', function(e) {
+            // Only allow numbers
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            
+            // Disable auto-submit for now to debug the issue
+            // Auto-submit when 6 digits are entered (with a small delay to ensure user is done typing)
+            // if (e.target.value.length === 6) {
+            //     setTimeout(() => {
+            //         if (e.target.value.length === 6) {
+            //             document.getElementById('otpForm').submit();
+            //         }
+            //     }, 500); // 500ms delay
+            // }
+        });
+
+        // Resend OTP function
+        function resendOTP() {
+            if (resendBtn.disabled || resendCooldown > 0) return;
+            
+            resendBtn.disabled = true;
+            resendBtn.textContent = 'Sending...';
+            
+            // Set 1 minute cooldown
+            resendCooldown = 60; // 60 seconds = 1 minute
+            
+            // Create a form to resend OTP
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "send_email_otp" %}';
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const emailInput = document.createElement('input');
+            emailInput.type = 'hidden';
+            emailInput.name = 'email';
+            emailInput.value = '{{ email }}';
+            
+            form.appendChild(document.querySelector('[name=csrfmiddlewaretoken]').cloneNode());
+            form.appendChild(emailInput);
+            document.body.appendChild(form);
+            form.submit();
+            
+            // Start cooldown timer
+            updateResendCooldown();
+        }
+
+        // Form submission with loading state
+        document.getElementById('otpForm').addEventListener('submit', function(e) {
+            console.log('Form submitting with OTP:', document.getElementById('otp_code').value);
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+        });
+
+        // Prevent form submission if OTP is not 6 digits
+        document.getElementById('otpForm').addEventListener('submit', function(e) {
+            const otpInput = document.getElementById('otp_code');
+            console.log('Form validation - OTP length:', otpInput.value.length);
+            if (otpInput.value.length !== 6) {
+                e.preventDefault();
+                alert('Please enter a valid 6-digit verification code');
+                otpInput.focus();
+                return false;
+            }
+            console.log('Form validation passed, submitting...');
+        });
+    </script>
+</body>
+</html>
