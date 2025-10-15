@@ -8,7 +8,9 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('add-patient/', views.create_patient),
     path('patient-token-refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('', views.home, name='home'),
+    path('', views.landing_page, name='landing'),
+    path('home/', views.home, name='home'),
+    path('home', views.home),
     path('moderator_login/', views.moderator_login, name='moderator_login'),
     path('patient_register/', views.patient_self_registration, name='patient_register'),
     path('send-email-otp/', views.send_email_otp, name='send_email_otp'),
