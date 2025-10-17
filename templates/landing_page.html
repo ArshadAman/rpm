@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stratton Health — Wellness & Membership Tiers</title>
+  <meta name="description" content="Stratton Health Wellness & Relaxation packages integrated with RPM, Concierge Medicine, and Regenerative offerings." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #7928CA;
+      --primary-dark: #6A0DAD;
+      --secondary: #FF0080;
+      --text: #E0C3FC;
+      --background: #0F1116;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --error: #FF4E4E;
+      --success: #00CC88;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      --radius: 24px;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+      line-height: 1.55;
+    }
+    a { color: rgba(255,255,255,0.9); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 1120px; margin: 0 auto; padding: 24px; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: var(--card-bg); color: var(--text); font-weight: 600; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.1); }
+
+    header.hero { padding: 72px 0 32px; text-align: center; }
+    .hero h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.1; margin: 14px 0 10px; letter-spacing: -0.02em; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p.sub { max-width: 820px; margin: 0 auto; color: rgba(255,255,255,0.7); font-size: clamp(14px, 2.5vw, 18px); }
+
+    .cta-row { margin-top: 28px; display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; padding: 14px 24px; border-radius: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); box-shadow: var(--shadow); position: relative; overflow: hidden; letter-spacing: .3px; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color:#fff; border-color: transparent; }
+    .btn-primary::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: .5s; }
+    .btn-primary:hover::before { left: 100%; }
+    .btn-ghost { background: transparent; color: var(--text); border-color: rgba(255,255,255,.15); }
+
+    section { padding: 56px 0; }
+
+    .grid { display: grid; grid-template-columns: repeat(12,1fr); gap: 20px; }
+    .card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+    .card h3 { margin: 0 0 10px; font-size: 22px; letter-spacing: -0.01em; color: #fff; }
+    .muted { color: rgba(255,255,255,0.75); }
+
+    .pricing { margin-top: 10px; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+    .small { font-size: 12px; color: var(--muted); }
+    .badge { display:inline-block; padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.06); color: #eaefff; font-weight:600; font-size:12px; margin-left: 6px; }
+
+    .features { margin: 14px 0 18px; }
+    .features li { margin: 8px 0; }
+
+    .note { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 10px; }
+
+    .foot { text-align:center; color: rgba(255,255,255,0.6); font-size: 12px; padding: 10px 0 40px; }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .grid-cols-3 { grid-template-columns: 1fr; }
+      .grid-cols-2 { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 961px){
+      .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+      .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero container">
+    <span class="pill">Stratton Health · RPM + Wellness</span>
+    <h1>Remote Patient Monitoring, reimagined as a luxury wellness experience.</h1>
+    <p class="sub">We blend clinical-grade blood pressure monitoring with curated relaxation rituals — luxury perfumes, candles, and calming tools — to help reduce stress spikes and create consistency in your daily readings. Concierge access and elite longevity options complete the experience.</p>
+    <div class="cta-row">
+  <a class="btn btn-primary" href="{% url 'express_interest' %}">Express Interest</a>
+      <a class="btn btn-ghost" href="#tiers">View Plans</a>
+    </div>
+  </header>
+
+  <main id="tiers" class="container">
+    <!-- Wellness & Relaxation Packages -->
+    <section aria-labelledby="wellness">
+      <div class="grid grid-cols-2">
+        <div class="card">
+          <h3 id="wellness">✨ Luxe Wellness & Relaxation Package</h3>
+          <div class="muted">A sensorial experience curated by experts with exclusive access to the world’s rarest scents. <strong>Very limited spots</strong> available due to the inclusion of niche and rare perfumes.</div>
+          <div class="pricing">$189<span class="small">/month</span></div>
+          <ul class="features">
+            <li><strong>Primary focus on exceptional perfumes</strong> sourced from <em>Beverly Hills</em> boutiques, <em>Neiman Marcus</em> (via our expert’s direct relationships for rare & limited releases), and <em>Scent Bar</em> niche houses.</li>
+            <li><strong>Curated scent & relaxation experience</strong> monthly — refined selections only (no decants). Includes seasonal drops.</li>
+            <li>Receive other curated experiences with candles, devices, and accessories.</li>
+          </ul>
+          <a class="btn btn-primary" href="{% url 'express_interest' %}">Join Luxe Wellness</a>
+        </div>
+
+        <div class="card">
+          <h3>🌱 Wellness & Relaxation Package</h3>
+          <div class="muted">Accessible wellness with a playful, uplifting twist. This includes brand new perfumes and occasional decants of rarer and niche perfumes.</div>
+          <div class="pricing">$59<span class="small">/month</span></div>
+          <ul class="features">
+            <li>Monthly <strong>decants or high-quality inspired fragrances</strong> that echo designer signatures.</li>
+            <li>Access to our <strong>Relaxational Uplift</strong> program: email/text guidance with daily mood boosters and calming mini-rituals.</li>
+            <li>Pairs with RPM to encourage consistent, stress-aware measurement habits.</li>
+          </ul>
+          <a class="btn btn-primary" href="{% url 'express_interest' %}">Start Core Wellness</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Medicare Patients -->
+    <section aria-labelledby="medicare">
+      <div class="card">
+        <h3 id="medicare">🧾 Medicare Patients</h3>
+        <div class="pricing">$0<span class="small"> Monthly Cost — Covered by Medicare</span></div>
+        <p class="muted">Medicare patients can enjoy the full benefits of our <strong>Core RPM + CCM Program</strong> with <strong>no monthly out-of-pocket cost</strong>.*</p>
+        <ul class="features">
+          <li>Setup Fee: <s>$500</s> $200 <span class="small">* Win Your Money Back Guarantee — 20 readings/month for 5 months</span></li>
+          <li>Receive a device and personalized onboarding.</li>
+          <li>Daily monitoring and monthly physician oversight included.</li>
+          <li>Ask about our <strong>fee assistance program</strong> for need-based clients.</li>
+        </ul>
+        
+  <a class="btn btn-primary" href="{% url 'express_interest' %}">Enroll with Medicare</a>
+        <div class="note">Refer patients: <a href="https://strattonhealth.com/referral" target="_blank">Affiliate Referral Link</a><br>* Medicare must be primary insurance and not a managed Medicare plan.</div>
+      </div>
+    </section>
+
+    <!-- Cash-Pay Medical Memberships -->
+    <section aria-labelledby="medical">
+      <div class="grid grid-cols-3">
+        <div class="card">
+          <h3 id="medical">💊 Core RPM + CCM</h3>
+          <div class="muted">Private model mirroring Medicare RPM — convenience, clarity, continuity.</div>
+          <div class="pricing">$399<span class="small">/month</span> <span class="badge">Limited spots</span></div>
+          <ul class="features">
+            <li>FDA-approved RPM device, monitoring, and monthly physician oversight.</li>
+            <li>Chronic Care Management integrated for longitudinal support.</li>
+            <li>Secure messaging and follow-up calls.</li>
+            <li>Optional pairing with Wellness Add-ons.</li>
+          </ul>
+          <a class="btn btn-primary" href="{% url 'express_interest' %}">Enroll in Core RPM</a>
+          <div class="note">Refer patients: <a href="https://strattonhealth.com/referral" target="_blank">Affiliate Referral Link</a></div>
+        </div>
+
+        <div class="card">
+          <h3>🧬 Regenerative Medicine Luxury Package</h3>
+          <div class="muted">For elite clients seeking complete, curated longevity care.</div>
+          <div class="pricing">$50,000<span class="small">/month</span> <span class="badge">Invite-only</span></div>
+          <ul class="features">
+            <li>Fully orchestrated regenerative & preventive experience under a white-glove concierge framework.</li>
+            <li>Highly individualized planning, direct physician coordination, elite testing, and bespoke pathways.</li>
+            <li>Exclusive access and fully managed logistics.</li>
+          </ul>
+          <a class="btn btn-primary" href="{% url 'express_interest' %}">Request Invitation</a>
+        </div>
+
+        <div class="card">
+          <h3>🩺 Full Concierge Medical Membership</h3>
+          <div class="muted">Doctor on speed dial. Strictly limited availability — <strong>99 memberships</strong> opening now.</div>
+          <div class="pricing">$2,500<span class="small">/month</span> <span class="badge">Very limited</span></div>
+          <ul class="features">
+            <li>Direct MD access with integrated RPM/CCM and coordinated care.</li>
+            <li>Coverage across <strong>Mercy Southwest</strong>, <strong>Bakersfield Memorial</strong>, <strong>UCLA West Hills</strong>, <strong>Bakersfield rehabilitation hospitals</strong>, <strong>Encompass</strong>, and <strong>Central California Rehabilitation</strong>.</li>
+            <li>Full MD coverage during home health via <strong>Arna Home Health</strong>.</li>
+          </ul>
+          <a class="btn btn-primary" href="{% url 'express_interest' %}">Apply for Concierge</a>
+          <div class="note">Limited spaces available across all packages; Concierge capped at 99 members on launch.</div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:16px;">* Pricing subject to change without notice. Medicare setup fees not included in cash plans. Availability is limited across all tiers.</div>
+      <div class="note">* Win Your Money Back Guarantee: Complete 20 readings per month for five consecutive months to qualify. Terms apply.</div>
+    </section>
+
+    <!-- How it connects -->
+    <section aria-labelledby="connect">
+      <div class="card">
+        <h3 id="connect">⚡ How it all ties together</h3>
+        <p class="muted">Begin daily RPM readings with a short relaxation ritual — apply your curated scent, take a deep breath, and measure. Reducing stress before measurement improves consistency, supports cardiovascular goals, and turns care into a ritual you actually enjoy.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot container">
+    © Stratton Health — RPM · Wellness · Concierge. <a href="{% url 'home' %}">HOME</a>
+  </footer>
+</body>
+</html>

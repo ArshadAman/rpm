@@ -95,6 +95,10 @@ def home(request):
     """Homepage with options for moderator login and patient registration"""
     return render(request, 'home.html')
 
+def landing_page(request):
+    """Public landing page mapped to '/' route"""
+    return render(request, 'landing_page.html')
+
 def admin_login(request):
     """Custom admin login page that only allows superusers"""
     if request.user.is_authenticated and request.user.is_superuser:
