@@ -1,162 +1,924 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <title>Stratton Health — Wellness & Membership Tiers</title>
   <meta name="description" content="Stratton Health Wellness & Relaxation packages integrated with RPM, Concierge Medicine, and Regenerative offerings." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #7928CA;
-      --primary-dark: #6A0DAD;
+      --primary-dark: #5A1E96;
+      --primary-light: #9D4EDD;
       --secondary: #FF0080;
-      --text: #E0C3FC;
-      --background: #0F1116;
-      --card-bg: rgba(255, 255, 255, 0.05);
-      --error: #FF4E4E;
-      --success: #00CC88;
-      --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      --secondary-dark: #CC0066;
+      --secondary-light: #FF33A1;
+      --accent: #00F5FF;
+      --text-primary: #FFFFFF;
+      --text-secondary: #E0C3FC;
+      --text-muted: rgba(255, 255, 255, 0.7);
+      --background: #0A0A0F;
+      --background-secondary: #13131A;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --shadow-primary: 0 20px 60px rgba(121, 40, 202, 0.3);
+      --shadow-secondary: 0 20px 60px rgba(255, 0, 128, 0.3);
+      --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --blur: 20px;
       --radius: 24px;
+      --radius-small: 12px;
+      --transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+      --transition-fast: all 0.2s cubic-bezier(0.23, 1, 0.320, 1);
     }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
+    
+    * { 
+      box-sizing: border-box; 
       margin: 0;
-      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      color: var(--text);
-      background: radial-gradient(circle at top right, #1a1a2e, var(--background));
-      line-height: 1.55;
+      padding: 0;
     }
-    a { color: rgba(255,255,255,0.9); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
-    .container { max-width: 1120px; margin: 0 auto; padding: 24px; }
-    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: var(--card-bg); color: var(--text); font-weight: 600; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.1); }
-
-    header.hero { padding: 72px 0 32px; text-align: center; }
-    .hero h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.1; margin: 14px 0 10px; letter-spacing: -0.02em; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero p.sub { max-width: 820px; margin: 0 auto; color: rgba(255,255,255,0.7); font-size: clamp(14px, 2.5vw, 18px); }
-
-    .cta-row { margin-top: 28px; display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
-    .btn { display:inline-flex; align-items:center; justify-content:center; padding: 14px 24px; border-radius: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); box-shadow: var(--shadow); position: relative; overflow: hidden; letter-spacing: .3px; }
-    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color:#fff; border-color: transparent; }
-    .btn-primary::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: .5s; }
-    .btn-primary:hover::before { left: 100%; }
-    .btn-ghost { background: transparent; color: var(--text); border-color: rgba(255,255,255,.15); }
-
-    section { padding: 56px 0; }
-
-    .grid { display: grid; grid-template-columns: repeat(12,1fr); gap: 20px; }
-    .card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
-    .card h3 { margin: 0 0 10px; font-size: 22px; letter-spacing: -0.01em; color: #fff; }
-    .muted { color: rgba(255,255,255,0.75); }
-
-    .pricing { margin-top: 10px; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
-    .small { font-size: 12px; color: var(--muted); }
-    .badge { display:inline-block; padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.06); color: #eaefff; font-weight:600; font-size:12px; margin-left: 6px; }
-
-    .features { margin: 14px 0 18px; }
-    .features li { margin: 8px 0; }
-
-    .note { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 10px; }
-
-    .foot { text-align:center; color: rgba(255,255,255,0.6); font-size: 12px; padding: 10px 0 40px; }
-
-    /* Responsive */
-    @media (max-width: 960px) {
-      .grid-cols-3 { grid-template-columns: 1fr; }
-      .grid-cols-2 { grid-template-columns: 1fr; }
+    
+    html { 
+      scroll-behavior: smooth;
+      overflow-x: hidden;
     }
-    @media (min-width: 961px){
-      .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-      .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom Cursor */
+    .cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, var(--primary), var(--secondary));
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.1s ease;
+      mix-blend-mode: difference;
+    }
+
+    .cursor-follower {
+      position: fixed;
+      width: 40px;
+      height: 40px;
+      border: 2px solid var(--primary);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transition: all 0.15s ease;
+      opacity: 0.5;
+    }
+
+    /* Particle Canvas */
+    #particles-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Background */
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at top left, rgba(121, 40, 202, 0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at bottom right, rgba(255, 0, 128, 0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at center, rgba(0, 245, 255, 0.05) 0%, transparent 70%),
+        linear-gradient(135deg, var(--background) 0%, var(--background-secondary) 100%);
+      z-index: 0;
+    }
+
+    .background::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(121, 40, 202, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(255, 0, 128, 0.1) 0%, transparent 50%);
+      animation: backgroundShift 20s ease-in-out infinite;
+    }
+
+    @keyframes backgroundShift {
+      0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+      25% { transform: translateX(-20px) translateY(-20px) rotate(1deg); }
+      50% { transform: translateX(20px) translateY(-10px) rotate(-1deg); }
+      75% { transform: translateX(-10px) translateY(20px) rotate(0.5deg); }
+    }
+    
+    /* Global Elements */
+    a { 
+      color: var(--text-primary); 
+      text-decoration: none; 
+      transition: var(--transition-fast);
+    }
+    
+    a:hover { 
+      color: var(--primary-light);
+    }
+
+    .container { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 0 24px; 
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Header & Navigation */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      backdrop-filter: blur(var(--blur));
+      background: var(--glass-bg);
+      border-bottom: 1px solid var(--card-border);
+      transition: var(--transition);
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-weight: 500;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: var(--transition-fast);
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      padding-top: 80px; /* Add space for fixed navbar */
+    }
+
+    .hero-content {
+      max-width: 900px;
+      opacity: 0;
+      transform: translateY(50px);
+      animation: heroFadeIn 1.5s cubic-bezier(0.23, 1, 0.320, 1) 0.5s forwards;
+    }
+
+    @keyframes heroFadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 32px;
+      transition: var(--transition);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .hero-badge:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-primary);
+      border-color: var(--primary);
+    }
+
+    .hero-badge::before {
+      content: '✨';
+      font-size: 16px;
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(40px, 8vw, 80px);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 30%, var(--secondary) 70%, var(--accent) 100%);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 8s ease-in-out infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .hero p {
+      font-size: clamp(18px, 3vw, 24px);
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      line-height: 1.6;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 32px;
+      border-radius: var(--radius-small);
+      font-weight: 600;
+      font-size: 16px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+      text-transform: none;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--text-primary);
+      box-shadow: var(--shadow-primary);
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: var(--shadow-primary), 0 0 40px rgba(121, 40, 202, 0.4);
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-secondary {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-4px);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-glass);
+    }
+
+    /* Sections */
+    .section {
+      padding: 120px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text-primary), var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-subtitle {
+      font-size: 20px;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Grid System */
+    .grid {
+      display: grid;
+      gap: 32px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+
+    /* Cards */
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+      opacity: 0;
+      transform: translateY(50px);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-12px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-primary);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-icon {
+      font-size: 48px;
+      margin-bottom: 24px;
+      display: block;
+    }
+
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .card-description {
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .card-price {
+      font-size: 36px;
+      font-weight: 800;
+      margin: 24px 0 16px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card-price-small {
+      font-size: 16px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      color: var(--text-primary);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      animation: pulse 2s infinite;
+    }
+
+    .card-features {
+      list-style: none;
+      margin: 24px 0;
+    }
+
+    .card-features li {
+      padding: 8px 0;
+      padding-left: 24px;
+      position: relative;
+      color: var(--text-muted);
+    }
+
+    .card-features li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Footer */
+    .footer {
+      padding: 80px 0 40px;
+      text-align: center;
+      border-top: 1px solid var(--card-border);
+      position: relative;
+      z-index: 2;
+    }
+
+    .footer-content {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .footer-content a {
+      color: var(--primary);
+      margin-left: 16px;
+      font-weight: 500;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .cursor,
+      .cursor-follower {
+        display: none;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero-cta {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 24px;
+      }
+
+      .section {
+        padding: 60px 0;
+      }
+    }
+
+    /* Scroll Animations */
+    .fade-in-up {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.8s cubic-bezier(0.23, 1, 0.320, 1);
+    }
+
+    .fade-in-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Special effects */
+    .glow {
+      position: relative;
+    }
+
+    .glow::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: inherit;
+      filter: blur(20px);
+      opacity: 0.3;
+      z-index: -1;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: var(--background-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 40px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow-primary);
+      animation: slideInUp 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .modal-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 16px;
+      background: var(--glass-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-small);
+      color: var(--text-primary);
+      font-size: 16px;
+      transition: var(--transition-fast);
+      backdrop-filter: blur(10px);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-end;
+      margin-top: 32px;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+    }
+
+    .btn-cancel:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text-muted);
+      color: var(--text-primary);
     }
   </style>
 </head>
 <body>
-  <header class="hero container">
-    <span class="pill">Stratton Health · RPM + Wellness</span>
-    <h1>Remote Patient Monitoring, reimagined as a luxury wellness experience.</h1>
-    <p class="sub">We blend clinical-grade blood pressure monitoring with curated relaxation rituals — luxury perfumes, candles, and calming tools — to help reduce stress spikes and create consistency in your daily readings. Concierge access and elite longevity options complete the experience.</p>
-    <div class="cta-row">
-  <a class="btn btn-primary" href="{% url 'express_interest' %}">Express Interest</a>
-      <a class="btn btn-ghost" href="#tiers">View Plans</a>
-    </div>
-  </header>
+  <!-- Custom Cursor -->
+  <div class="cursor"></div>
+  <div class="cursor-follower"></div>
 
-  <main id="tiers" class="container">
-    <!-- Wellness & Relaxation Packages -->
-    <section aria-labelledby="wellness">
-      <div class="grid grid-cols-2">
-        <div class="card">
-          <h3 id="wellness">✨ Luxe Wellness & Relaxation Package</h3>
-          <div class="muted">A sensorial experience curated by experts with exclusive access to the world’s rarest scents. <strong>Very limited spots</strong> available due to the inclusion of niche and rare perfumes.</div>
-          <div class="pricing">$189<span class="small">/month</span></div>
-          <ul class="features">
-            <li><strong>Primary focus on exceptional perfumes</strong> sourced from <em>Beverly Hills</em> boutiques, <em>Neiman Marcus</em> (via our expert’s direct relationships for rare & limited releases), and <em>Scent Bar</em> niche houses.</li>
-            <li><strong>Curated scent & relaxation experience</strong> monthly — refined selections only (no decants). Includes seasonal drops.</li>
+  <!-- Particle Canvas -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- Background -->
+  <div class="background"></div>
+
+  <!-- Referral Modal -->
+  <div id="referralModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">🤝 Earn With Us</h3>
+        <button class="close-btn" onclick="closeReferralModal()">×</button>
+      </div>
+      
+      <form id="referralForm">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label" for="referrerName">Your Name *</label>
+          <input type="text" id="referrerName" name="referrer_name" class="form-input" placeholder="John Smith" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="referrerEmail">Your Email Address *</label>
+          <input type="email" id="referrerEmail" name="referrer_email" class="form-input" placeholder="your.email@example.com" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="referralName">Person You're Referring *</label>
+          <input type="text" id="referralName" name="patient_name" class="form-input" placeholder="Full Name" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="referralPhone">Their Phone Number *</label>
+          <input type="tel" id="referralPhone" name="patient_phone" class="form-input" placeholder="(555) 123-4567" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="referralEmail">Their Email Address</label>
+          <input type="email" id="referralEmail" name="patient_email" class="form-input" placeholder="their.email@example.com">
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-cancel" onclick="closeReferralModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Referral</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container nav-container">
+      <div class="logo">Stratton Health</div>
+      <ul class="nav-links">
+        <li><a href="#wellness">Wellness</a></li>
+        <li><a href="#medicare">Medicare</a></li>
+        <li><a href="#medical">Medical</a></li>
+        <li><a href="{% url 'express_interest' %}">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          Stratton Health · RPM + Wellness
+        </div>
+        <h1>Remote Patient Monitoring, reimagined as a luxury wellness experience.</h1>
+        <p>We blend clinical-grade blood pressure monitoring with curated relaxation rituals — luxury perfumes, candles, and calming tools — to help reduce stress spikes and create consistency in your daily readings.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="{% url 'express_interest' %}">Express Interest</a>
+          <a class="btn btn-secondary" href="#wellness">View Plans</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <!-- Main Content -->
+  <main id="wellness" class="section">
+    <div class="container">
+      <!-- Wellness & Relaxation Packages -->
+      <div class="section-header">
+        <h2 class="section-title">Wellness & Relaxation Packages</h2>
+        <p class="section-subtitle">Transform your health monitoring into a luxury wellness ritual</p>
+      </div>
+      
+      <div class="grid grid-2">
+        <div class="card fade-in-up">
+          <span class="card-badge">Limited</span>
+          <span class="card-icon">✨</span>
+          <h3 class="card-title">Luxe Wellness & Relaxation Package</h3>
+          <p class="card-description">A sensorial experience curated by experts with exclusive access to the world's rarest scents. Very limited spots available due to the inclusion of niche and rare perfumes.</p>
+          <div class="card-price">$189<span class="card-price-small">/month</span></div>
+          <ul class="card-features">
+            <li>Primary focus on exceptional perfumes sourced from Beverly Hills boutiques, Neiman Marcus (via our expert's direct relationships for rare & limited releases), and Scent Bar niche houses.</li>
+            <li>Curated scent & relaxation experience monthly — refined selections only (no decants). Includes seasonal drops.</li>
             <li>Receive other curated experiences with candles, devices, and accessories.</li>
           </ul>
           <a class="btn btn-primary" href="{% url 'express_interest' %}">Join Luxe Wellness</a>
         </div>
 
-        <div class="card">
-          <h3>🌱 Wellness & Relaxation Package</h3>
-          <div class="muted">Accessible wellness with a playful, uplifting twist. This includes brand new perfumes and occasional decants of rarer and niche perfumes.</div>
-          <div class="pricing">$59<span class="small">/month</span></div>
-          <ul class="features">
-            <li>Monthly <strong>decants or high-quality inspired fragrances</strong> that echo designer signatures.</li>
-            <li>Access to our <strong>Relaxational Uplift</strong> program: email/text guidance with daily mood boosters and calming mini-rituals.</li>
+        <div class="card fade-in-up">
+          <span class="card-icon">🌱</span>
+          <h3 class="card-title">Wellness & Relaxation Package</h3>
+          <p class="card-description">Accessible wellness with a playful, uplifting twist. This includes brand new perfumes and occasional decants of rarer and niche perfumes.</p>
+          <div class="card-price">$59<span class="card-price-small">/month</span></div>
+          <ul class="card-features">
+            <li>Monthly decants or high-quality inspired fragrances that echo designer signatures.</li>
+            <li>Access to our Relaxational Uplift program: email/text guidance with daily mood boosters and calming mini-rituals.</li>
             <li>Pairs with RPM to encourage consistent, stress-aware measurement habits.</li>
           </ul>
           <a class="btn btn-primary" href="{% url 'express_interest' %}">Start Core Wellness</a>
         </div>
       </div>
-    </section>
+    </div>
+  </main>
 
-    <!-- Medicare Patients -->
-    <section aria-labelledby="medicare">
-      <div class="card">
-        <h3 id="medicare">🧾 Medicare Patients</h3>
-        <div class="pricing">$0<span class="small"> Monthly Cost — Covered by Medicare</span></div>
-        <p class="muted">Medicare patients can enjoy the full benefits of our <strong>Core RPM + CCM Program</strong> with <strong>no monthly out-of-pocket cost</strong>.*</p>
-        <ul class="features">
-          <li>Setup Fee: <s>$500</s> $200 <span class="small">* Win Your Money Back Guarantee — 20 readings/month for 5 months</span></li>
+  <!-- Medicare Section -->
+  <section id="medicare" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Medicare Patients</h2>
+        <p class="section-subtitle">Comprehensive care covered by Medicare</p>
+      </div>
+      
+      <div class="card fade-in-up">
+        <span class="card-icon">🧾</span>
+        <h3 class="card-title">Medicare Coverage</h3>
+        <div class="card-price">$0<span class="card-price-small"> Monthly Cost — Covered by Medicare</span></div>
+        <p class="card-description">Medicare patients can enjoy the full benefits of our Core RPM + CCM Program with no monthly out-of-pocket cost.*</p>
+        <ul class="card-features">
+          <li>Setup Fee: <s>$500</s> $200 * Win Your Money Back Guarantee — 20 readings/month for 5 months</li>
           <li>Receive a device and personalized onboarding.</li>
           <li>Daily monitoring and monthly physician oversight included.</li>
-          <li>Ask about our <strong>fee assistance program</strong> for need-based clients.</li>
+          <li>Ask about our fee assistance program for need-based clients.</li>
         </ul>
-        
-  <a class="btn btn-primary" href="{% url 'express_interest' %}">Enroll with Medicare</a>
-        <div class="note">Refer patients: <a href="https://strattonhealth.com/referral" target="_blank">Affiliate Referral Link</a><br>* Medicare must be primary insurance and not a managed Medicare plan.</div>
+        <a class="btn btn-primary" href="{% url 'express_interest' %}">Enroll with Medicare</a>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Cash-Pay Medical Memberships -->
-    <section aria-labelledby="medical">
-      <div class="grid grid-cols-3">
-        <div class="card">
-          <h3 id="medical">💊 Core RPM + CCM</h3>
-          <div class="muted">Private model mirroring Medicare RPM — convenience, clarity, continuity.</div>
-          <div class="pricing">$399<span class="small">/month</span> <span class="badge">Limited spots</span></div>
-          <ul class="features">
+  <!-- Medical Memberships -->
+  <section id="medical" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Cash-Pay Medical Memberships</h2>
+        <p class="section-subtitle">Premium healthcare services for discerning clients</p>
+      </div>
+      
+      <div class="grid grid-3">
+        <div class="card fade-in-up">
+          <span class="card-badge">Limited</span>
+          <span class="card-icon">💊</span>
+          <h3 class="card-title">Core RPM + CCM</h3>
+          <p class="card-description">Private model mirroring Medicare RPM — convenience, clarity, continuity.</p>
+          <div class="card-price">$399<span class="card-price-small">/month</span></div>
+          <ul class="card-features">
             <li>FDA-approved RPM device, monitoring, and monthly physician oversight.</li>
             <li>Chronic Care Management integrated for longitudinal support.</li>
             <li>Secure messaging and follow-up calls.</li>
             <li>Optional pairing with Wellness Add-ons.</li>
           </ul>
           <a class="btn btn-primary" href="{% url 'express_interest' %}">Enroll in Core RPM</a>
-          <div class="note">Refer patients: <a href="https://strattonhealth.com/referral" target="_blank">Affiliate Referral Link</a></div>
         </div>
 
-        <div class="card">
-          <h3>🧬 Regenerative Medicine Luxury Package</h3>
-          <div class="muted">For elite clients seeking complete, curated longevity care.</div>
-          <div class="pricing">$50,000<span class="small">/month</span> <span class="badge">Invite-only</span></div>
-          <ul class="features">
+        <div class="card fade-in-up">
+          <span class="card-badge">Invite-only</span>
+          <span class="card-icon">🧬</span>
+          <h3 class="card-title">Regenerative Medicine Luxury</h3>
+          <p class="card-description">For elite clients seeking complete, curated longevity care.</p>
+          <div class="card-price">$50,000<span class="card-price-small">/month</span></div>
+          <ul class="card-features">
             <li>Fully orchestrated regenerative & preventive experience under a white-glove concierge framework.</li>
             <li>Highly individualized planning, direct physician coordination, elite testing, and bespoke pathways.</li>
             <li>Exclusive access and fully managed logistics.</li>
@@ -164,34 +926,432 @@
           <a class="btn btn-primary" href="{% url 'express_interest' %}">Request Invitation</a>
         </div>
 
-        <div class="card">
-          <h3>🩺 Full Concierge Medical Membership</h3>
-          <div class="muted">Doctor on speed dial. Strictly limited availability — <strong>99 memberships</strong> opening now.</div>
-          <div class="pricing">$2,500<span class="small">/month</span> <span class="badge">Very limited</span></div>
-          <ul class="features">
+        <div class="card fade-in-up">
+          <span class="card-badge">99 spots</span>
+          <span class="card-icon">🩺</span>
+          <h3 class="card-title">Full Concierge Medical</h3>
+          <p class="card-description">Doctor on speed dial. Strictly limited availability — 99 memberships opening now.</p>
+          <div class="card-price">$2,500<span class="card-price-small">/month</span></div>
+          <ul class="card-features">
             <li>Direct MD access with integrated RPM/CCM and coordinated care.</li>
-            <li>Coverage across <strong>Mercy Southwest</strong>, <strong>Bakersfield Memorial</strong>, <strong>UCLA West Hills</strong>, <strong>Bakersfield rehabilitation hospitals</strong>, <strong>Encompass</strong>, and <strong>Central California Rehabilitation</strong>.</li>
-            <li>Full MD coverage during home health via <strong>Arna Home Health</strong>.</li>
+            <li>Coverage across Mercy Southwest, Bakersfield Memorial, UCLA West Hills, and rehabilitation hospitals.</li>
+            <li>Full MD coverage during home health via Arna Home Health.</li>
           </ul>
           <a class="btn btn-primary" href="{% url 'express_interest' %}">Apply for Concierge</a>
           <div class="note">Limited spaces available across all packages; Concierge capped at 99 members on launch.</div>
         </div>
       </div>
-      <div class="note" style="margin-top:16px;">* Pricing subject to change without notice. Medicare setup fees not included in cash plans. Availability is limited across all tiers.</div>
-      <div class="note">* Win Your Money Back Guarantee: Complete 20 readings per month for five consecutive months to qualify. Terms apply.</div>
-    </section>
+      <div class="note" style="margin-top:24px; text-align: center;">* Pricing subject to change without notice. Medicare setup fees not included in cash plans. Availability is limited across all tiers.</div>
+    </div>
+  </section>
 
-    <!-- How it connects -->
-    <section aria-labelledby="connect">
-      <div class="card">
-        <h3 id="connect">⚡ How it all ties together</h3>
-        <p class="muted">Begin daily RPM readings with a short relaxation ritual — apply your curated scent, take a deep breath, and measure. Reducing stress before measurement improves consistency, supports cardiovascular goals, and turns care into a ritual you actually enjoy.</p>
+  <!-- Referral Section -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Referral Program</h2>
+        <p class="section-subtitle">Earn by helping others access premium healthcare</p>
       </div>
-    </section>
-  </main>
+      
+      <div class="card fade-in-up glow">
+        <span class="card-icon">🤝</span>
+        <h3 class="card-title">Earn with Us</h3>
+        <p class="card-description">Join our referral program and earn competitive fees for every person you refer to our premium RPM and wellness services. Anyone can participate - friends, family, healthcare professionals, or community members.</p>
+        <ul class="card-features">
+          <li>Competitive referral compensation for successful enrollments</li>
+          <li>Simple referral process with full support</li>
+          <li>No medical background required to participate</li>
+          <li>Help others access premium RPM and wellness programs</li>
+        </ul>
+        <button class="btn btn-primary" onclick="openReferralModal()">Refer Someone</button>
+      </div>
+    </div>
+  </section>
 
-  <footer class="foot container">
-    © Stratton Health — RPM · Wellness · Concierge. <a href="{% url 'home' %}">HOME</a>
+  <!-- How it connects -->
+  <section class="section">
+    <div class="container">
+      <div class="card fade-in-up glow">
+        <span class="card-icon">⚡</span>
+        <h3 class="card-title">How it all ties together</h3>
+        <p class="card-description">Begin daily RPM readings with a short relaxation ritual — apply your curated scent, take a deep breath, and measure. Reducing stress before measurement improves consistency, supports cardiovascular goals, and turns care into a ritual you actually enjoy.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        © Stratton Health — RPM · Wellness · Concierge. <a href="{% url 'home' %}">HOME</a>
+      </div>
+    </div>
   </footer>
+
+  <script>
+    // Advanced Particle System with Mouse Tracking
+    class ParticleSystem {
+      constructor() {
+        this.canvas = document.getElementById('particles-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.mouse = { x: 0, y: 0 };
+        this.connections = [];
+        
+        this.resize();
+        this.createParticles();
+        this.setupEventListeners();
+        this.animate();
+      }
+
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      createParticles() {
+        const particleCount = Math.floor((this.canvas.width * this.canvas.height) / 15000);
+        
+        for (let i = 0; i < particleCount; i++) {
+          this.particles.push({
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2,
+            size: Math.random() * 3 + 1,
+            opacity: Math.random() * 0.5 + 0.2,
+            hue: Math.random() > 0.5 ? 280 : 320, // Purple or Pink
+            originalX: 0,
+            originalY: 0
+          });
+        }
+        
+        // Set original positions
+        this.particles.forEach(particle => {
+          particle.originalX = particle.x;
+          particle.originalY = particle.y;
+        });
+      }
+
+      setupEventListeners() {
+        window.addEventListener('resize', () => this.resize());
+        
+        document.addEventListener('mousemove', (e) => {
+          this.mouse.x = e.clientX;
+          this.mouse.y = e.clientY;
+        });
+      }
+
+      updateParticles() {
+        this.particles.forEach(particle => {
+          // Mouse interaction
+          const dx = this.mouse.x - particle.x;
+          const dy = this.mouse.y - particle.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const maxDistance = 150;
+          
+          if (distance < maxDistance) {
+            const force = (maxDistance - distance) / maxDistance;
+            const angle = Math.atan2(dy, dx);
+            particle.vx -= Math.cos(angle) * force * 0.5;
+            particle.vy -= Math.sin(angle) * force * 0.5;
+          }
+          
+          // Update position
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+          
+          // Gentle return to original position
+          const returnForce = 0.002;
+          particle.vx += (particle.originalX - particle.x) * returnForce;
+          particle.vy += (particle.originalY - particle.y) * returnForce;
+          
+          // Add some random movement
+          particle.vx += (Math.random() - 0.5) * 0.02;
+          particle.vy += (Math.random() - 0.5) * 0.02;
+          
+          // Damping
+          particle.vx *= 0.98;
+          particle.vy *= 0.98;
+          
+          // Boundary check
+          if (particle.x < 0) particle.x = this.canvas.width;
+          if (particle.x > this.canvas.width) particle.x = 0;
+          if (particle.y < 0) particle.y = this.canvas.height;
+          if (particle.y > this.canvas.height) particle.y = 0;
+          
+          // Breathing effect
+          particle.opacity = 0.3 + Math.sin(Date.now() * 0.001 + particle.x * 0.01) * 0.2;
+        });
+      }
+
+      drawConnections() {
+        this.connections = [];
+        
+        for (let i = 0; i < this.particles.length; i++) {
+          for (let j = i + 1; j < this.particles.length; j++) {
+            const dx = this.particles[i].x - this.particles[j].x;
+            const dy = this.particles[i].y - this.particles[j].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < 120) {
+              this.connections.push({
+                x1: this.particles[i].x,
+                y1: this.particles[i].y,
+                x2: this.particles[j].x,
+                y2: this.particles[j].y,
+                opacity: (120 - distance) / 120 * 0.3
+              });
+            }
+          }
+        }
+        
+        // Draw connections
+        this.connections.forEach(connection => {
+          this.ctx.strokeStyle = `hsla(300, 70%, 60%, ${connection.opacity})`;
+          this.ctx.lineWidth = 1;
+          this.ctx.beginPath();
+          this.ctx.moveTo(connection.x1, connection.y1);
+          this.ctx.lineTo(connection.x2, connection.y2);
+          this.ctx.stroke();
+        });
+      }
+
+      drawParticles() {
+        this.particles.forEach(particle => {
+          this.ctx.beginPath();
+          this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          
+          // Create gradient
+          const gradient = this.ctx.createRadialGradient(
+            particle.x, particle.y, 0,
+            particle.x, particle.y, particle.size
+          );
+          gradient.addColorStop(0, `hsla(${particle.hue}, 70%, 60%, ${particle.opacity})`);
+          gradient.addColorStop(1, `hsla(${particle.hue}, 70%, 60%, 0)`);
+          
+          this.ctx.fillStyle = gradient;
+          this.ctx.fill();
+        });
+      }
+
+      animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        this.updateParticles();
+        this.drawConnections();
+        this.drawParticles();
+        
+        requestAnimationFrame(() => this.animate());
+      }
+    }
+
+    // Custom Cursor System
+    class CustomCursor {
+      constructor() {
+        this.cursor = document.querySelector('.cursor');
+        this.follower = document.querySelector('.cursor-follower');
+        this.cursorPos = { x: 0, y: 0 };
+        this.followerPos = { x: 0, y: 0 };
+        
+        this.setupEventListeners();
+        this.animate();
+      }
+
+      setupEventListeners() {
+        document.addEventListener('mousemove', (e) => {
+          this.cursorPos.x = e.clientX;
+          this.cursorPos.y = e.clientY;
+        });
+
+        // Cursor interactions
+        document.querySelectorAll('a, button, .btn').forEach(el => {
+          el.addEventListener('mouseenter', () => {
+            this.cursor.style.transform = 'scale(1.5)';
+            this.follower.style.transform = 'scale(1.5)';
+          });
+          
+          el.addEventListener('mouseleave', () => {
+            this.cursor.style.transform = 'scale(1)';
+            this.follower.style.transform = 'scale(1)';
+          });
+        });
+      }
+
+      animate() {
+        // Smooth cursor movement
+        this.followerPos.x += (this.cursorPos.x - this.followerPos.x) * 0.1;
+        this.followerPos.y += (this.cursorPos.y - this.followerPos.y) * 0.1;
+        
+        this.cursor.style.left = this.cursorPos.x + 'px';
+        this.cursor.style.top = this.cursorPos.y + 'px';
+        
+        this.follower.style.left = this.followerPos.x + 'px';
+        this.follower.style.top = this.followerPos.y + 'px';
+        
+        requestAnimationFrame(() => this.animate());
+      }
+    }
+
+    // Scroll Animation System
+    class ScrollAnimations {
+      constructor() {
+        this.observerOptions = {
+          threshold: 0.1,
+          rootMargin: '0px 0px -100px 0px'
+        };
+        
+        this.observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+            }
+          });
+        }, this.observerOptions);
+        
+        this.init();
+      }
+
+      init() {
+        // Observe all fade-in elements
+        document.querySelectorAll('.fade-in-up').forEach((el, index) => {
+          el.style.transitionDelay = `${index * 0.1}s`;
+          this.observer.observe(el);
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+          anchor.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = document.querySelector(anchor.getAttribute('href'));
+            if (target) {
+              target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+          });
+        });
+      }
+    }
+
+    // Navigation System
+    class Navigation {
+      constructor() {
+        this.nav = document.querySelector('.nav');
+        this.lastScrollTop = 0;
+        this.init();
+      }
+
+      init() {
+        window.addEventListener('scroll', () => {
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          
+          // Add/remove background based on scroll
+          if (scrollTop > 100) {
+            this.nav.style.background = 'rgba(10, 10, 15, 0.95)';
+            this.nav.style.backdropFilter = 'blur(20px)';
+          } else {
+            this.nav.style.background = 'rgba(255, 255, 255, 0.03)';
+            this.nav.style.backdropFilter = 'blur(20px)';
+          }
+          
+          this.lastScrollTop = scrollTop;
+        });
+      }
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      // Only initialize cursor on desktop
+      if (window.innerWidth > 768) {
+        new CustomCursor();
+      }
+      
+      new ParticleSystem();
+      new ScrollAnimations();
+      new Navigation();
+      
+      // Add loading animation
+      document.body.style.opacity = '0';
+      setTimeout(() => {
+        document.body.style.transition = 'opacity 1s ease';
+        document.body.style.opacity = '1';
+      }, 100);
+    });
+
+    // Modal Functions
+    function openReferralModal() {
+      const modal = document.getElementById('referralModal');
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+      
+      // Focus first input
+      setTimeout(() => {
+        document.getElementById('referrerName').focus();
+      }, 300);
+    }
+
+    function closeReferralModal() {
+      const modal = document.getElementById('referralModal');
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+      
+      // Reset form
+      document.getElementById('referralForm').reset();
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', (e) => {
+      const modal = document.getElementById('referralModal');
+      if (e.target === modal) {
+        closeReferralModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeReferralModal();
+      }
+    });
+
+    // Handle form submission - Submit to Django API
+    document.getElementById('referralForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Get form data
+      const formData = new FormData(e.target);
+      
+      // Get CSRF token
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                       document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      
+      try {
+        const response = await fetch('{% url "referral:api_submit" %}', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': csrfToken,
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Show success message
+          alert('Thank you for your referral! We will contact them within 24 hours.');
+          closeReferralModal();
+        } else {
+          // Show error message
+          alert(`Error: ${result.message}`);
+        }
+        
+      } catch (error) {
+        console.error('Referral submission error:', error);
+        alert('Sorry, there was an error submitting your referral. Please try again.');
+      }
+    });
+  </script>
 </body>
 </html>

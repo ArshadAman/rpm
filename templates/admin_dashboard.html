@@ -438,6 +438,27 @@
             </div>
             <a href="{% url 'leads_call_summaries' %}" class="action-button">Manage Lead Calls</a>
         </div>
+
+        <div class="action-card">
+            <div>
+                <div class="action-icon">🤝</div>
+                <h2 class="action-title">Referral Management</h2>
+                <p class="action-description">
+                    Manage referrals from the "Earn with Us" program, track referral status, mark as contacted, and manage referral rewards.
+                </p>
+                <div class="action-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ total_referrals|default:0 }}</span>
+                        <span class="stat-label">Total Referrals</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ pending_referrals|default:0 }}</span>
+                        <span class="stat-label">Pending Contact</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'referral:list' %}" class="action-button">Manage Referrals</a>
+        </div>
     </div>
 </body>
 </html>
