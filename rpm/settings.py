@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'reports',
     'retell_calling',
     'medications',
+    'referral',
     # Core apps
     'rest_framework',
     'corsheaders',
