@@ -12,4 +12,5 @@ urlpatterns = [
     path('retell_calling/', include('retell_calling.urls')),
     path('grappelli/', include('grappelli.urls')),  
     path("medications/", include("medications.urls")),  # Grappelli URLS
+    path('referrals/', include('referral.urls')),  # Referral system URLs
 ]

@@ -12,6 +12,7 @@ from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
 from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor, EmailOTP
 from retell_calling.models import CallSummary, LeadCallSession, LeadCallSummary
+from referral.models import Referral
 from django.db import models
 from .serializers import PatientSerializer, ModeratorSerializer
 from django.contrib.auth.hashers import make_password
@@ -153,6 +154,10 @@ def admin_dashboard(request):
             call_count=models.Count('lead_call_summaries')
         ).filter(call_count__gt=0).count()
         
+        # Get referral statistics
+        total_referrals = Referral.objects.count()
+        pending_referrals = Referral.objects.filter(contacted=False).count()
+        
         context = {
             'moderator_count': moderator_count,
             'doctor_count': doctor_count,
@@ -163,6 +168,8 @@ def admin_dashboard(request):
             'conversion_rate': conversion_rate,
             'lead_calls_count': lead_calls_count,
             'leads_with_calls_count': leads_with_calls_count,
+            'total_referrals': total_referrals,
+            'pending_referrals': pending_referrals,
         }
         
         return render(request, 'admin_dashboard.html', context)
