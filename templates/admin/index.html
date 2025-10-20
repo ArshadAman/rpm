@@ -453,6 +453,34 @@
                 <div class="stat-label">Total Reports</div>
             </div>
         </div>
+
+        <div class="stat-card">
+            <div class="stat-icon referrals" style="background: rgba(255, 193, 7, 0.1); color: #FFC107;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    <path d="M12 11h.01"></path>
+                    <path d="M12 16h.01"></path>
+                </svg>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_referrals }}</div>
+                <div class="stat-label">Total Referrals</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon pending" style="background: rgba(255, 87, 34, 0.1); color: #FF5722;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <div>
+                <div class="stat-value">{{ pending_referrals }}</div>
+                <div class="stat-label">Pending Referrals</div>
+            </div>
+        </div>
     </div>
 
     <div class="app-grid">

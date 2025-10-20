@@ -1,8 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <title>Stratton Health — Wellness & Membership Tiers</title>
   <meta name="description" content="Stratton Health Wellness & Relaxation packages integrated with RPM, Concierge Medicine, and Regenerative offerings." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -757,29 +759,30 @@
       </div>
       
       <form id="referralForm">
+        {% csrf_token %}
         <div class="form-group">
           <label class="form-label" for="referrerName">Your Name *</label>
-          <input type="text" id="referrerName" name="referrerName" class="form-input" placeholder="John Smith" required>
+          <input type="text" id="referrerName" name="referrer_name" class="form-input" placeholder="John Smith" required>
         </div>
         
         <div class="form-group">
           <label class="form-label" for="referrerEmail">Your Email Address *</label>
-          <input type="email" id="referrerEmail" name="referrerEmail" class="form-input" placeholder="your.email@example.com" required>
+          <input type="email" id="referrerEmail" name="referrer_email" class="form-input" placeholder="your.email@example.com" required>
         </div>
         
         <div class="form-group">
           <label class="form-label" for="referralName">Person You're Referring *</label>
-          <input type="text" id="referralName" name="referralName" class="form-input" placeholder="Full Name" required>
+          <input type="text" id="referralName" name="patient_name" class="form-input" placeholder="Full Name" required>
         </div>
         
         <div class="form-group">
           <label class="form-label" for="referralPhone">Their Phone Number *</label>
-          <input type="tel" id="referralPhone" name="referralPhone" class="form-input" placeholder="(555) 123-4567" required>
+          <input type="tel" id="referralPhone" name="patient_phone" class="form-input" placeholder="(555) 123-4567" required>
         </div>
         
         <div class="form-group">
           <label class="form-label" for="referralEmail">Their Email Address</label>
-          <input type="email" id="referralEmail" name="referralEmail" class="form-input" placeholder="their.email@example.com">
+          <input type="email" id="referralEmail" name="patient_email" class="form-input" placeholder="their.email@example.com">
         </div>
         
         <div class="form-actions">
@@ -1312,22 +1315,41 @@
       }
     });
 
-    // Handle form submission (placeholder for backend integration)
-    document.getElementById('referralForm').addEventListener('submit', (e) => {
+    // Handle form submission - Submit to Django API
+    document.getElementById('referralForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
       // Get form data
       const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData);
       
-      // TODO: Replace with actual backend API call
-      console.log('Referral data:', data);
+      // Get CSRF token
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                       document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
       
-      // Show success message (placeholder)
-      alert('Thank you for your referral! We will contact the patient within 24 hours.');
-      
-      // Close modal
-      closeReferralModal();
+      try {
+        const response = await fetch('{% url "referral:api_submit" %}', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': csrfToken,
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Show success message
+          alert('Thank you for your referral! We will contact them within 24 hours.');
+          closeReferralModal();
+        } else {
+          // Show error message
+          alert(`Error: ${result.message}`);
+        }
+        
+      } catch (error) {
+        console.error('Referral submission error:', error);
+        alert('Sorry, there was an error submitting your referral. Please try again.');
+      }
     });
   </script>
 </body>
