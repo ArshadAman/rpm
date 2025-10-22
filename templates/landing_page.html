@@ -799,7 +799,7 @@
     <div class="container nav-container">
       <div class="logo">Stratton Health</div>
       <ul class="nav-links">
-        <li><a href="#wellness">Wellness</a></li>
+        {% comment %} <li><a href="#wellness">Wellness</a></li> {% endcomment %}
         <li><a href="#medicare">Medicare</a></li>
         <li><a href="#medical">Medical</a></li>
         <li><a href="{% url 'express_interest' %}">Contact</a></li>
@@ -815,7 +815,7 @@
           Stratton Health · RPM + Wellness
         </div>
         <h1>Remote Patient Monitoring, reimagined as a luxury wellness experience.</h1>
-        <p>We blend clinical-grade blood pressure monitoring with curated relaxation rituals — luxury perfumes, candles, and calming tools — to help reduce stress spikes and create consistency in your daily readings.</p>
+        <p>We blend clinical-grade blood pressure monitoring with curated relaxation techniques — luxury perfumes, candles, and calming tools — to help reduce stress spikes and create consistency in your daily readings.</p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="{% url 'express_interest' %}">Express Interest</a>
           <a class="btn btn-secondary" href="#wellness">View Plans</a>
@@ -824,8 +824,35 @@
     </div>
   </section>
 
-    <!-- Main Content -->
-  <main id="wellness" class="section">
+
+  <!-- Medicare Section -->
+  <section id="medicare" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Medicare Patients</h2>
+        <p class="section-subtitle">Chronic Care Management and remote patient monitoring covered by Medicare</p>
+      </div>
+      
+      <div class="card fade-in-up">
+        <span class="card-icon">🧾</span>
+        <h3 class="card-title">Medicare Coverage</h3>
+        <div class="card-price">$0<span class="card-price-small"> Monthly Cost — Covered by Medicare</span></div>
+        <p class="card-description">Medicare patients can enjoy the full benefits of our Core RPM + CCM Program with no monthly out-of-pocket cost.*</p>
+        <ul class="card-features">
+          <li>Setup Fee: <s>$500</s> $200(save 60% for those who act now) *This set-up cost can be free and Win Your Money Back Guarantee just by taking 20 readings/month for 5 months</li>
+          <li>Receive a device, personalized onboarding, comprehensive analysis of chronic issues with analysis by Dr.Jilani.</li>
+          <li>Daily monitoring and monthly physician oversight included.</li>
+          <li>Ask about our fee assistance program for need-based clients.</li>
+        </ul>
+        <a class="btn btn-primary" href="{% url 'express_interest' %}">Enroll with Medicare</a>
+      </div>
+    </div>
+  </section>
+
+      <!-- Main Content -->
+
+
+  {% comment %} <main id="wellness" class="section">
     <div class="container">
       <!-- Wellness & Relaxation Packages -->
       <div class="section-header">
@@ -855,38 +882,14 @@
           <div class="card-price">$59<span class="card-price-small">/month</span></div>
           <ul class="card-features">
             <li>Monthly decants or high-quality inspired fragrances that echo designer signatures.</li>
-            <li>Access to our Relaxational Uplift program: email/text guidance with daily mood boosters and calming mini-rituals.</li>
+            <li>Access to our Relaxational Uplift program: email/text guidance with mood boosters and calming mini-rituals.</li>
             <li>Pairs with RPM to encourage consistent, stress-aware measurement habits.</li>
           </ul>
           <a class="btn btn-primary" href="{% url 'express_interest' %}">Start Core Wellness</a>
         </div>
       </div>
     </div>
-  </main>
-
-  <!-- Medicare Section -->
-  <section id="medicare" class="section">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">Medicare Patients</h2>
-        <p class="section-subtitle">Comprehensive care covered by Medicare</p>
-      </div>
-      
-      <div class="card fade-in-up">
-        <span class="card-icon">🧾</span>
-        <h3 class="card-title">Medicare Coverage</h3>
-        <div class="card-price">$0<span class="card-price-small"> Monthly Cost — Covered by Medicare</span></div>
-        <p class="card-description">Medicare patients can enjoy the full benefits of our Core RPM + CCM Program with no monthly out-of-pocket cost.*</p>
-        <ul class="card-features">
-          <li>Setup Fee: <s>$500</s> $200 * Win Your Money Back Guarantee — 20 readings/month for 5 months</li>
-          <li>Receive a device and personalized onboarding.</li>
-          <li>Daily monitoring and monthly physician oversight included.</li>
-          <li>Ask about our fee assistance program for need-based clients.</li>
-        </ul>
-        <a class="btn btn-primary" href="{% url 'express_interest' %}">Enroll with Medicare</a>
-      </div>
-    </div>
-  </section>
+  </main> {% endcomment %}
 
   <!-- Medical Memberships -->
   <section id="medical" class="section">
