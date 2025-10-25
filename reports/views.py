@@ -455,6 +455,7 @@ def edit_patient(request, patient_id):
                 new_email = (request.POST.get('user_email') or '').strip()
                 if new_email:
                     patient.user.email = new_email
+                    patient.user.username = new_email  # Assuming username is email
                 new_password = (request.POST.get('user_password') or '').strip()
                 if new_password:
                     patient.user.set_password(new_password)
