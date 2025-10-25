@@ -789,6 +789,23 @@
                         </div>
                     </div>
                 </div>
+
+                {% if is_admin %}
+                <h3 class="section-title">Account Settings (Admin Only)</h3>
+                <div class="form-section">
+                    <div class="form-grid">
+                        <div class="form-group input-icon">
+                            <label for="user_email">Patient Email (login)</label>
+                            <input type="email" id="user_email" name="user_email" value="{{ patient.user.email }}" placeholder="Enter patient email">
+                        </div>
+
+                        <div class="form-group input-icon">
+                            <label for="user_password">New Password</label>
+                            <input type="password" id="user_password" name="user_password" placeholder="Set new password (leave blank to keep current)">
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
                 <div id="alert" class="alert"></div>
 
                 <div class="loading">
