@@ -450,6 +450,14 @@ def edit_patient(request, patient_id):
             # Update user information with defaults
             patient.user.first_name = request.POST.get('first_name', '') or ''
             patient.user.last_name = request.POST.get('last_name', '') or ''
+            # Admin-only: update patient account email/password if provided
+            if user.is_superuser:
+                new_email = (request.POST.get('user_email') or '').strip()
+                if new_email:
+                    patient.user.email = new_email
+                new_password = (request.POST.get('user_password') or '').strip()
+                if new_password:
+                    patient.user.set_password(new_password)
             patient.user.save()
 
             # Update patient information with safe defaults
@@ -548,7 +556,8 @@ def edit_patient(request, patient_id):
     from rpm_users.models import PastMedicalHistory
     context = {
         'patient': patient,
-        'pmh_choices': PastMedicalHistory.PMH_CHOICES
+        'pmh_choices': PastMedicalHistory.PMH_CHOICES,
+        'is_admin': request.user.is_superuser
     }
     return render(request, "reports/edit_patient.html", context)
 
