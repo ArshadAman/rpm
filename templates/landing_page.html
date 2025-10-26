@@ -800,6 +800,7 @@
       <div class="logo">Stratton Health</div>
       <ul class="nav-links">
         {% comment %} <li><a href="#wellness">Wellness</a></li> {% endcomment %}
+        <li><a href="/home">Home</a></li>
         <li><a href="#medicare">Medicare</a></li>
         <li><a href="#medical">Medical</a></li>
         <li><a href="{% url 'express_interest' %}">Contact</a></li>
@@ -814,8 +815,10 @@
         <div class="hero-badge">
           Stratton Health · RPM + Wellness
         </div>
-        <h1>Remote Patient Monitoring, reimagined as a luxury wellness experience.</h1>
-        <p>We blend clinical-grade blood pressure monitoring with curated relaxation techniques — luxury perfumes, candles, and calming tools — to help reduce stress spikes and create consistency in your daily readings.</p>
+        <h1>Remote Patient Monitoring.</h1>
+        {% comment %} <h1>Remote Patient Monitoring, reimagined as a luxury wellness experience.</h1> {% endcomment %}
+        <p>Stay connected with your doctor and track your health anytime, anywhere — for smarter, safer, and stress-free care.</p>
+        {% comment %} <p>We blend clinical-grade blood pressure monitoring with curated relaxation techniques — luxury perfumes, candles, and calming tools — to help reduce stress spikes and create consistency in your daily readings.</p> {% endcomment %}
         <div class="hero-cta">
           <a class="btn btn-primary" href="{% url 'express_interest' %}">Express Interest</a>
           <a class="btn btn-secondary" href="#wellness">View Plans</a>
@@ -843,6 +846,7 @@
           <li>Receive a device, personalized onboarding, comprehensive analysis of chronic issues with analysis by Dr.Jilani.</li>
           <li>Daily monitoring and monthly physician oversight included.</li>
           <li>Ask about our fee assistance program for need-based clients.</li>
+          <li>Dont have medicaire primary? Private model mirroring Medicare RPM as cash pay— convenience, clarity, continuity.</li>
         </ul>
         <a class="btn btn-primary" href="{% url 'express_interest' %}">Enroll with Medicare</a>
       </div>
@@ -965,8 +969,10 @@
           <li>Simple referral process with full support</li>
           <li>No medical background required to participate</li>
           <li>Help others access premium RPM and wellness programs</li>
+          <li>For group practices and large groups like assisted living facilities ,contact us.</li>
         </ul>
         <button class="btn btn-primary" onclick="openReferralModal()">Refer Someone</button>
+  <a class="btn btn-primary" href="mailto:sjilani@pinksurfing.com">Contact Us</a>
       </div>
     </div>
   </section>
