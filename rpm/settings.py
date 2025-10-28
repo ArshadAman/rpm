@@ -324,3 +324,10 @@ LOGGING = {
         },
     },
 }
+
+
+# Let Django trust the proxy that sets HTTPS headers
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Don't double redirect — let Nginx handle HTTPS redirection
+SECURE_SSL_REDIRECT = False
