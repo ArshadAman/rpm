@@ -130,6 +130,7 @@ class PastMedicalHistory(models.Model):
         ('CCa', 'Colon Cancer'),
         ('CRPS', 'Complex Regional Pain Syndrome'),
         ('CHF', 'Congestive Heart Failure'),
+        ('Const', 'Constipation'),
         ('CAD', 'Coronary Artery Disease'),
         ('DKA', 'Diabetic Ketoacidosis'),
         ('DMK',' Diabetic nephropathy (kidney)'),
@@ -159,6 +160,7 @@ class PastMedicalHistory(models.Model):
         ('MDD', 'Major Depressive Disorder'),
         ('MI', 'Myocardial Infarction'),
         ('MG', 'Myasthenia Gravis'),
+        ('MVP', 'Mitral Valve Prolapse'),
         ('N/A', 'N/A'),
         ('NMO', 'Neuromyelitis Optica'),
         ('OA', 'Osteoarthritis'),
@@ -185,6 +187,7 @@ class PastMedicalHistory(models.Model):
         ('TB', 'Tuberculosis'),
         ('UTI', 'Urinary Tract Infection'),
         ('URI', 'Upper Respiratory Infection'),
+        ('VF', 'Valley Fever'),
     ))
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medical_history')
     pmh = models.CharField(choices=PMH_CHOICES, default="N/A", max_length=100)
