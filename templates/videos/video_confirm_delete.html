@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Video - RPM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .delete-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 78, 78, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .warning-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .video-info {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .info-value {
+            color: white;
+        }
+
+        .warning-text {
+            color: var(--error);
+            font-size: 16px;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #FF6B6B);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 78, 78, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .delete-card {
+                padding: 25px;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="delete-card">
+        <div class="warning-icon">⚠️</div>
+        <h1>Delete Video?</h1>
+        <p class="warning-text">This action cannot be undone. The video will be permanently removed.</p>
+
+        <div class="video-info">
+            <div class="info-row">
+                <span class="info-label">Title:</span>
+                <span class="info-value">{{ video.title }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status:</span>
+                <span class="info-value">
+                    {% if video.is_active %}
+                        🟢 Active
+                    {% else %}
+                        🔴 Inactive
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Order:</span>
+                <span class="info-value">{{ video.order }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Created:</span>
+                <span class="info-value">{{ video.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="{% url 'video_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger">🗑️ Yes, Delete Video</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

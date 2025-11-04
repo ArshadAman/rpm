@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if is_edit %}Edit{% else %}Add{% endif %} Video - RPM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .breadcrumb {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            font-size: 36px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: white;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-label .required {
+            color: var(--error);
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.2);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(121, 40, 202, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .messages {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .messages li {
+            padding: 16px 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .messages .error {
+            background: rgba(255, 78, 78, 0.15);
+            color: var(--error);
+            border: 1px solid rgba(255, 78, 78, 0.3);
+        }
+
+        .preview-box {
+            margin-top: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+
+        .preview-box.show {
+            display: block;
+        }
+
+        .preview-thumbnail {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .form-card {
+                padding: 25px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-section">
+            <div class="logo">RPM</div>
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Home</a> / 
+                <a href="{% url 'admin_dashboard' %}">Admin Dashboard</a> / 
+                <a href="{% url 'video_list' %}">Video Management</a> / 
+                {% if is_edit %}Edit Video{% else %}Add Video{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="page-title">
+            <h1>{% if is_edit %}✏️ Edit Video{% else %}➕ Add New Video{% endif %}</h1>
+        </div>
+
+        <div class="form-card">
+            <form method="POST" id="videoForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        Video Title <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="title" 
+                        class="form-input" 
+                        placeholder="e.g., Introduction to Blood Pressure Monitoring"
+                        value="{% if video %}{{ video.title }}{% endif %}"
+                        required
+                    >
+                    <div class="form-hint">Enter a clear, descriptive title for the video</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        YouTube URL <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="url" 
+                        name="youtube_url" 
+                        id="youtubeUrl"
+                        class="form-input" 
+                        placeholder="https://www.youtube.com/watch?v=... or https://youtube.com/shorts/..."
+                        value="{% if video %}{{ video.youtube_url }}{% endif %}"
+                        required
+                        onchange="validateYouTubeUrl(this)"
+                    >
+                    <div class="form-hint">Paste the full YouTube video URL (supports regular videos, shorts, and short links)</div>
+                    <div id="urlPreview" class="preview-box">
+                        <strong>✓ Valid YouTube URL</strong>
+                        <img id="thumbnailPreview" class="preview-thumbnail" src="" alt="Video thumbnail">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Description
+                    </label>
+                    <textarea 
+                        name="description" 
+                        class="form-textarea" 
+                        placeholder="Brief description of what this video covers..."
+                    >{% if video %}{{ video.description }}{% endif %}</textarea>
+                    <div class="form-hint">Provide a brief description to help users understand the video content</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Display Order
+                    </label>
+                    <input 
+                        type="number" 
+                        name="order" 
+                        class="form-input" 
+                        min="0"
+                        value="{% if video %}{{ video.order }}{% else %}{{ max_order }}{% endif %}"
+                    >
+                    <div class="form-hint">Lower numbers appear first (0 = first position)</div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input 
+                            type="checkbox" 
+                            name="is_active" 
+                            id="isActive"
+                            class="checkbox-input"
+                            {% if not is_edit or video.is_active %}checked{% endif %}
+                        >
+                        <label for="isActive" class="checkbox-label">
+                            Show this video on the landing page
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'video_list' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if is_edit %}💾 Update Video{% else %}➕ Add Video{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function validateYouTubeUrl(input) {
+            const url = input.value;
+            const youtubePattern = /(youtube\.com|youtu\.be)/;
+            const previewBox = document.getElementById('urlPreview');
+            const thumbnailPreview = document.getElementById('thumbnailPreview');
+            
+            if (youtubePattern.test(url)) {
+                // Extract video ID
+                const videoId = extractVideoId(url);
+                if (videoId) {
+                    previewBox.classList.add('show');
+                    thumbnailPreview.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                    input.setCustomValidity('');
+                } else {
+                    previewBox.classList.remove('show');
+                    input.setCustomValidity('Invalid YouTube URL format');
+                }
+            } else {
+                previewBox.classList.remove('show');
+                if (url) {
+                    input.setCustomValidity('Please enter a valid YouTube URL');
+                }
+            }
+        }
+
+        function extractVideoId(url) {
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+                /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
+                /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) {
+                    return match[1];
+                }
+            }
+            return null;
+        }
+
+        // Validate on page load if editing
+        window.addEventListener('load', function() {
+            const urlInput = document.getElementById('youtubeUrl');
+            if (urlInput.value) {
+                validateYouTubeUrl(urlInput);
+            }
+        });
+
+        // Form submission validation
+        document.getElementById('videoForm').addEventListener('submit', function(e) {
+            const urlInput = document.getElementById('youtubeUrl');
+            const url = urlInput.value;
+            const youtubePattern = /(youtube\.com|youtu\.be)/;
+            
+            if (!youtubePattern.test(url)) {
+                e.preventDefault();
+                alert('Please enter a valid YouTube URL');
+                urlInput.focus();
+                return false;
+            }
+            
+            // Check if video ID can be extracted
+            const videoId = extractVideoId(url);
+            if (!videoId) {
+                e.preventDefault();
+                alert('Could not extract video ID from the YouTube URL. Please check the format.\n\nSupported formats:\n- youtube.com/watch?v=...\n- youtu.be/...\n- youtube.com/shorts/...');
+                urlInput.focus();
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>
