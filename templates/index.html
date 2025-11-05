@@ -1437,6 +1437,15 @@
                   <i class="fas fa-plus"></i>
                   <span>Add</span>
                 </button>
+                <button
+                  id="export-vitals-btn"
+                  class="toolbar-btn"
+                  title="Export Vitals to Excel"
+                  onclick="exportVitalsToExcel()"
+                >
+                  <i class="fas fa-download"></i>
+                  <span>Export</span>
+                </button>
               </div>
             </div>
             <div class="scrollable">
@@ -4218,6 +4227,32 @@
       numericFields.forEach((field) => {
         addNumericValidation(field.id, field.min, field.max, field.unit);
       });
+
+      // Function to export vitals to Excel
+      function exportVitalsToExcel() {
+        const patientId = "{{ patient.id }}";
+        
+        if (!patientId) {
+          showNotification("Patient ID not found", "error");
+          return;
+        }
+        
+        // Show loading state
+        const exportBtn = document.getElementById('export-vitals-btn');
+        const originalContent = exportBtn.innerHTML;
+        exportBtn.disabled = true;
+        exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Exporting...</span>';
+        
+        // Trigger download
+        window.location.href = `/reports/export-vitals/${patientId}/`;
+        
+        // Reset button after a short delay
+        setTimeout(() => {
+          exportBtn.disabled = false;
+          exportBtn.innerHTML = originalContent;
+          showNotification("Vitals exported successfully!", "success");
+        }, 2000);
+      }
     </script>
 
     <!-- Edit Report Modal -->

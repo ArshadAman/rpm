@@ -6,7 +6,7 @@ from .models import Reports, Documentation
 from rpm_users.models import Patient, Moderator
 from .serializers import ReportSerializer
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from .forms import DocumentationForm  # Ensure you have a Django form for validation
@@ -23,6 +23,9 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from openpyxl.utils import get_column_letter
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -835,3 +838,162 @@ def get_recent_reports(request, patient_id):
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+def export_vitals_excel(request, patient_id):
+    """
+    Export patient vitals data to Excel format with proper formatting
+    """
+    user = request.user
+    
+    # Check if user is a moderator or the patient themselves or superuser
+    is_moderator = Moderator.objects.filter(user=user).exists()
+    is_patient = Patient.objects.filter(user=user, id=patient_id).exists()
+    
+    if not is_moderator and not is_patient and not user.is_superuser:
+        return JsonResponse({"error": "Not authorized to export this patient's data"}, status=403)
+    
+    try:
+        patient = get_object_or_404(Patient, id=patient_id)
+        reports = Reports.objects.filter(patient=patient).order_by('-created_at')
+        
+        if not reports.exists():
+            return JsonResponse({"error": "No vitals data available to export"}, status=404)
+        
+        # Create workbook and worksheet
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Vitals Data"
+        
+        # Define styles
+        header_fill = PatternFill(start_color="7928CA", end_color="7928CA", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF", size=12)
+        patient_info_fill = PatternFill(start_color="E0C3FC", end_color="E0C3FC", fill_type="solid")
+        patient_info_font = Font(bold=True, size=11)
+        border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        
+        # Patient Information Section
+        ws.merge_cells('A1:F1')
+        ws['A1'] = 'PATIENT VITALS REPORT'
+        ws['A1'].font = Font(bold=True, size=16, color="7928CA")
+        ws['A1'].alignment = Alignment(horizontal='center', vertical='center')
+        
+        ws['A3'] = 'Patient Name:'
+        ws['A3'].font = patient_info_font
+        ws['B3'] = f"{patient.user.first_name} {patient.user.last_name}"
+        
+        ws['A4'] = 'Date of Birth:'
+        ws['A4'].font = patient_info_font
+        ws['B4'] = str(patient.date_of_birth) if patient.date_of_birth else 'N/A'
+        
+        ws['A5'] = 'Email:'
+        ws['A5'].font = patient_info_font
+        ws['B5'] = patient.user.email
+        
+        ws['A6'] = 'Phone:'
+        ws['A6'].font = patient_info_font
+        ws['B6'] = patient.phone_number if patient.phone_number else 'N/A'
+        
+        ws['A7'] = 'Report Generated:'
+        ws['A7'].font = patient_info_font
+        ws['B7'] = timezone.now().strftime('%m/%d/%Y %H:%M')
+        
+        # Headers for vitals data (starting at row 9)
+        headers = [
+            'Date/Time',
+            'Systolic BP (mmHg)',
+            'Diastolic BP (mmHg)',
+            'Heart Rate (bpm)',
+            'SpO2 (%)',
+            'Temperature (°F)',
+            'Blood Glucose',
+            'Irregular Heartbeat',
+            'Symptoms'
+        ]
+        
+        header_row = 9
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=header_row, column=col_num)
+            cell.value = header
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.border = border
+        
+        # Data rows
+        row_num = header_row + 1
+        for report in reports:
+            # Date/Time
+            ws.cell(row=row_num, column=1).value = report.created_at.strftime('%m/%d/%Y %H:%M')
+            
+            # Systolic BP
+            systolic = report.systolic_blood_pressure or ''
+            if not systolic and report.blood_pressure and '/' in report.blood_pressure:
+                systolic = report.blood_pressure.split('/')[0]
+            ws.cell(row=row_num, column=2).value = systolic
+            
+            # Diastolic BP
+            diastolic = report.diastolic_blood_pressure or ''
+            if not diastolic and report.blood_pressure and '/' in report.blood_pressure:
+                diastolic = report.blood_pressure.split('/')[1]
+            ws.cell(row=row_num, column=3).value = diastolic
+            
+            # Heart Rate
+            heart_rate = report.pulse or report.heart_rate or ''
+            ws.cell(row=row_num, column=4).value = heart_rate
+            
+            # SpO2
+            ws.cell(row=row_num, column=5).value = report.spo2 or ''
+            
+            # Temperature
+            ws.cell(row=row_num, column=6).value = report.temperature or ''
+            
+            # Blood Glucose
+            ws.cell(row=row_num, column=7).value = report.blood_glucose or ''
+            
+            # Irregular Heartbeat
+            ws.cell(row=row_num, column=8).value = report.irregular_heartbeat or ''
+            
+            # Symptoms
+            ws.cell(row=row_num, column=9).value = report.symptoms or ''
+            
+            # Apply borders and alignment to data cells
+            for col_num in range(1, 10):
+                cell = ws.cell(row=row_num, column=col_num)
+                cell.border = border
+                cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+            
+            row_num += 1
+        
+        # Adjust column widths
+        ws.column_dimensions['A'].width = 18
+        ws.column_dimensions['B'].width = 18
+        ws.column_dimensions['C'].width = 20
+        ws.column_dimensions['D'].width = 18
+        ws.column_dimensions['E'].width = 12
+        ws.column_dimensions['F'].width = 18
+        ws.column_dimensions['G'].width = 15
+        ws.column_dimensions['H'].width = 18
+        ws.column_dimensions['I'].width = 30
+        
+        # Freeze header row
+        ws.freeze_panes = ws['A10']
+        
+        # Create HTTP response with Excel file
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        filename = f"vitals_{patient.user.last_name}_{patient.user.first_name}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        wb.save(response)
+        return response
+        
+    except Exception as e:
+        print(f"Error exporting vitals: {str(e)}")
+        return JsonResponse({"error": f"Failed to export vitals: {str(e)}"}, status=500)
