@@ -1010,8 +1010,9 @@ def export_vitals_excel(request, patient_id):
         ws.column_dimensions['H'].width = 18
         ws.column_dimensions['I'].width = 30
         
-        # Freeze header row
-        ws.freeze_panes = ws['A10']
+        # Freeze header row (freeze at the row after headers)
+        freeze_row = header_row + 1
+        ws.freeze_panes = ws[f'A{freeze_row}']
         
         # Create HTTP response with Excel file
         response = HttpResponse(

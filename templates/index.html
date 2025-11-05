@@ -4230,7 +4230,7 @@
 
       // Function to export vitals to Excel
       function exportVitalsToExcel() {
-        const patientId = "{{ patient.id }}";
+        const patientId = "{{ patient.id|escapejs }}";
         
         if (!patientId) {
           showNotification("Patient ID not found", "error");
