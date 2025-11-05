@@ -1030,5 +1030,6 @@ def export_vitals_excel(request, patient_id):
         return response
         
     except Exception as e:
-        logger.error(f"Error exporting vitals for patient {patient_id}: {str(e)}", exc_info=True)
-        return JsonResponse({"error": f"Failed to export vitals: {str(e)}"}, status=500)
+        # Log error with full details but don't expose to user
+        logger.error(f"Error exporting vitals for patient: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "Failed to export vitals. Please contact support if the issue persists."}, status=500)
