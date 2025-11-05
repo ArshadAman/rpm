@@ -20,4 +20,7 @@ urlpatterns = [
     path('update-report/<int:report_id>/', views.update_report, name='update_report'),
     path('create-report-manual/', views.create_report_manual, name='create_report_manual'),
     path('get-recent-reports/<uuid:patient_id>/', views.get_recent_reports, name='get_recent_reports'),
+    
+    # Export vitals endpoint
+    path('export-vitals/<uuid:patient_id>/', views.export_vitals_excel, name='export_vitals_excel'),
 ]
