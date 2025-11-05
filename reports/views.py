@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import date
 from django.forms.models import model_to_dict
+import re
 
 # from rpm.customPermission import CustomSSOAuthentication
 
@@ -26,6 +27,11 @@ from datetime import timedelta
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
+
+# Excel styling constants
+EXCEL_HEADER_COLOR = "7928CA"
+EXCEL_HEADER_FONT_COLOR = "FFFFFF"
+EXCEL_PATIENT_INFO_COLOR = "E0C3FC"
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -865,10 +871,10 @@ def export_vitals_excel(request, patient_id):
         ws = wb.active
         ws.title = "Vitals Data"
         
-        # Define styles
-        header_fill = PatternFill(start_color="7928CA", end_color="7928CA", fill_type="solid")
-        header_font = Font(bold=True, color="FFFFFF", size=12)
-        patient_info_fill = PatternFill(start_color="E0C3FC", end_color="E0C3FC", fill_type="solid")
+        # Define styles using constants
+        header_fill = PatternFill(start_color=EXCEL_HEADER_COLOR, end_color=EXCEL_HEADER_COLOR, fill_type="solid")
+        header_font = Font(bold=True, color=EXCEL_HEADER_FONT_COLOR, size=12)
+        patient_info_fill = PatternFill(start_color=EXCEL_PATIENT_INFO_COLOR, end_color=EXCEL_PATIENT_INFO_COLOR, fill_type="solid")
         patient_info_font = Font(bold=True, size=11)
         border = Border(
             left=Side(style='thin'),
@@ -931,16 +937,26 @@ def export_vitals_excel(request, patient_id):
             # Date/Time
             ws.cell(row=row_num, column=1).value = report.created_at.strftime('%m/%d/%Y %H:%M')
             
-            # Systolic BP
+            # Systolic BP - with safe parsing
             systolic = report.systolic_blood_pressure or ''
             if not systolic and report.blood_pressure and '/' in report.blood_pressure:
-                systolic = report.blood_pressure.split('/')[0]
+                try:
+                    bp_parts = report.blood_pressure.split('/')
+                    if len(bp_parts) >= 2:
+                        systolic = bp_parts[0].strip()
+                except (AttributeError, IndexError):
+                    systolic = ''
             ws.cell(row=row_num, column=2).value = systolic
             
-            # Diastolic BP
+            # Diastolic BP - with safe parsing
             diastolic = report.diastolic_blood_pressure or ''
             if not diastolic and report.blood_pressure and '/' in report.blood_pressure:
-                diastolic = report.blood_pressure.split('/')[1]
+                try:
+                    bp_parts = report.blood_pressure.split('/')
+                    if len(bp_parts) >= 2:
+                        diastolic = bp_parts[1].strip()
+                except (AttributeError, IndexError):
+                    diastolic = ''
             ws.cell(row=row_num, column=3).value = diastolic
             
             # Heart Rate
@@ -988,7 +1004,13 @@ def export_vitals_excel(request, patient_id):
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-        filename = f"vitals_{patient.user.last_name}_{patient.user.first_name}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        
+        # Sanitize filename to prevent path traversal and special character issues
+        safe_last_name = re.sub(r'[^\w\s-]', '', patient.user.last_name)[:50]
+        safe_first_name = re.sub(r'[^\w\s-]', '', patient.user.first_name)[:50]
+        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"vitals_{safe_last_name}_{safe_first_name}_{timestamp}.xlsx"
+        
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
         wb.save(response)
