@@ -4243,36 +4243,22 @@
         exportBtn.disabled = true;
         exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Exporting...</span>';
         
-        // Use fetch to check for errors before triggering download
-        fetch(`/reports/export-vitals/${patientId}/`, {
-          method: 'GET',
-          credentials: 'same-origin'
-        })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.error || 'Export failed');
-            });
-          }
-          // If successful, trigger download using a link
-          const link = document.createElement('a');
-          link.href = `/reports/export-vitals/${patientId}/`;
-          link.download = '';
-          document.body.appendChild(link);
-          link.click();
+        // Create a hidden link and trigger download
+        const link = document.createElement('a');
+        link.href = `/reports/export-vitals/${patientId}/`;
+        link.download = '';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up and show success message after a short delay
+        setTimeout(() => {
           document.body.removeChild(link);
-          
-          showNotification("Vitals exported successfully!", "success");
-        })
-        .catch(error => {
-          console.error('Export error:', error);
-          showNotification(error.message || "Failed to export vitals", "error");
-        })
-        .finally(() => {
-          // Reset button state
           exportBtn.disabled = false;
           exportBtn.innerHTML = originalContent;
-        });
+          showNotification("Vitals export started!", "success");
+        }, 1000);
+      }
       }
     </script>
 

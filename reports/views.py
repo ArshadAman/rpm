@@ -16,6 +16,7 @@ import json
 from datetime import date
 from django.forms.models import model_to_dict
 import re
+import logging
 
 # from rpm.customPermission import CustomSSOAuthentication
 
@@ -32,6 +33,9 @@ from openpyxl.utils import get_column_letter
 EXCEL_HEADER_COLOR = "7928CA"
 EXCEL_HEADER_FONT_COLOR = "FFFFFF"
 EXCEL_PATIENT_INFO_COLOR = "E0C3FC"
+
+# Get logger for this module
+logger = logging.getLogger(__name__)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -845,6 +849,29 @@ def get_recent_reports(request, patient_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
+def _parse_blood_pressure(bp_string, index):
+    """
+    Helper function to safely parse blood pressure values
+    
+    Args:
+        bp_string: Blood pressure string in format "systolic/diastolic"
+        index: 0 for systolic, 1 for diastolic
+    
+    Returns:
+        Parsed BP value or empty string if parsing fails
+    """
+    if not bp_string or '/' not in bp_string:
+        return ''
+    
+    try:
+        bp_parts = bp_string.split('/')
+        if len(bp_parts) >= 2:
+            return bp_parts[index].strip()
+    except (AttributeError, IndexError):
+        pass
+    
+    return ''
+
 @login_required
 def export_vitals_excel(request, patient_id):
     """
@@ -937,26 +964,12 @@ def export_vitals_excel(request, patient_id):
             # Date/Time
             ws.cell(row=row_num, column=1).value = report.created_at.strftime('%m/%d/%Y %H:%M')
             
-            # Systolic BP - with safe parsing
-            systolic = report.systolic_blood_pressure or ''
-            if not systolic and report.blood_pressure and '/' in report.blood_pressure:
-                try:
-                    bp_parts = report.blood_pressure.split('/')
-                    if len(bp_parts) >= 2:
-                        systolic = bp_parts[0].strip()
-                except (AttributeError, IndexError):
-                    systolic = ''
+            # Systolic BP - using helper function
+            systolic = report.systolic_blood_pressure or _parse_blood_pressure(report.blood_pressure, 0)
             ws.cell(row=row_num, column=2).value = systolic
             
-            # Diastolic BP - with safe parsing
-            diastolic = report.diastolic_blood_pressure or ''
-            if not diastolic and report.blood_pressure and '/' in report.blood_pressure:
-                try:
-                    bp_parts = report.blood_pressure.split('/')
-                    if len(bp_parts) >= 2:
-                        diastolic = bp_parts[1].strip()
-                except (AttributeError, IndexError):
-                    diastolic = ''
+            # Diastolic BP - using helper function
+            diastolic = report.diastolic_blood_pressure or _parse_blood_pressure(report.blood_pressure, 1)
             ws.cell(row=row_num, column=3).value = diastolic
             
             # Heart Rate
@@ -1006,8 +1019,8 @@ def export_vitals_excel(request, patient_id):
         )
         
         # Sanitize filename to prevent path traversal and special character issues
-        safe_last_name = re.sub(r'[^\w\s-]', '', patient.user.last_name)[:50]
-        safe_first_name = re.sub(r'[^\w\s-]', '', patient.user.first_name)[:50]
+        safe_last_name = re.sub(r'[^\w\s-]', '', patient.user.last_name)[:50] or 'Unknown'
+        safe_first_name = re.sub(r'[^\w\s-]', '', patient.user.first_name)[:50] or 'Patient'
         timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
         filename = f"vitals_{safe_last_name}_{safe_first_name}_{timestamp}.xlsx"
         
@@ -1017,5 +1030,5 @@ def export_vitals_excel(request, patient_id):
         return response
         
     except Exception as e:
-        print(f"Error exporting vitals: {str(e)}")
+        logger.error(f"Error exporting vitals for patient {patient_id}: {str(e)}", exc_info=True)
         return JsonResponse({"error": f"Failed to export vitals: {str(e)}"}, status=500)
