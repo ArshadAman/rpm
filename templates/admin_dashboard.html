@@ -459,6 +459,27 @@
             </div>
             <a href="{% url 'referral:list' %}" class="action-button">Manage Referrals</a>
         </div>
+
+        <div class="action-card">
+            <div>
+                <div class="action-icon">🎥</div>
+                <h2 class="action-title">Video Management</h2>
+                <p class="action-description">
+                    Upload and manage YouTube video links to display on the landing page as "Instructions from Dr. Jilani". Control video order and visibility.
+                </p>
+                <div class="action-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ video_count|default:0 }}</span>
+                        <span class="stat-label">Total Videos</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ active_videos|default:0 }}</span>
+                        <span class="stat-label">Active Videos</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'video_list' %}" class="action-button">Manage Videos</a>
+        </div>
     </div>
 </body>
 </html>

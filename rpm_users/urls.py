@@ -82,4 +82,15 @@ urlpatterns = [
     path('api/shortcuts/<int:shortcut_id>/update/', views.update_shortcut, name='update_shortcut'),
     path('api/shortcuts/<int:shortcut_id>/delete/', views.delete_shortcut, name='delete_shortcut'),
     path('api/shortcuts/search/', views.search_shortcuts, name='search_shortcuts'),
+    
+    # Video management
+    path('dashboard/videos/', views.video_list, name='video_list'),
+    path('dashboard/videos/create/', views.video_create, name='video_create'),
+    path('dashboard/videos/<uuid:video_id>/edit/', views.video_edit, name='video_edit'),
+    path('dashboard/videos/<uuid:video_id>/delete/', views.video_delete, name='video_delete'),
+    path('dashboard/videos/<uuid:video_id>/toggle-active/', views.video_toggle_active, name='video_toggle_active'),
+    path('dashboard/videos/reorder/', views.video_reorder, name='video_reorder'),
+    
+    # Public API for videos
+    path('api/videos/active/', views.get_active_videos, name='get_active_videos'),
 ]
