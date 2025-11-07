@@ -610,13 +610,13 @@
     /* Video-specific styles for handling Shorts */
     .video-card.is-short {
       max-width: 400px;
-      margin: 0 auto;
+      margin: 0;
     }
 
     .video-embed-wrapper {
       position: relative;
       width: 100%;
-      border-radius: 16px;
+      border-radius: 4px;
       overflow: hidden;
       margin-bottom: 20px;
       background: #000; /* Black background while loading */
@@ -1049,7 +1049,7 @@
         <p class="section-subtitle">Expert guidance on health monitoring and wellness practices</p>
       </div>
       
-      <div id="videosContainer" class="grid grid-2">
+      <div id="videosContainer" class="">
         <!-- Videos will be loaded dynamically -->
         <div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 60px 0;">
           <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
@@ -1471,26 +1471,31 @@
 
     function createVideoCard(video, index) {
       const card = document.createElement('div');
-      card.className = 'card video-card fade-in-up';
+      card.className = 'video-card fade-in-up';
       card.style.animationDelay = `${index * 0.1}s`;
       
       // Determine if it's a Short
       const isShort = video.is_short;
       const aspectClass = isShort ? 'aspect-9-16' : 'aspect-16-9';
       
+      // Ensure embed_url is valid and handle potential issues
+      const embedUrl = video.embed_url || '';
+      const youtubeUrl = video.youtube_url || '';
+      console.log('Creating video card:', { title: video.title, embedUrl, youtubeUrl, isShort });
+      
       card.innerHTML = `
         <div class="video-embed-wrapper ${aspectClass}">
           <iframe
-            src="${video.embed_url}"
+            src="${embedUrl}"
+            title="${video.title}"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
             allowfullscreen
             loading="lazy"
+            onerror="console.error('Failed to load video:', '${video.title}')"
           ></iframe>
         </div>
-        <h3 class="card-title">${video.title}</h3>
-        ${video.description ? `<p class="card-description">${video.description}</p>` : ''}
-        ${isShort ? '<span style="display: inline-block; background: linear-gradient(135deg, #FF0080, #7928CA); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 10px;">📱 YouTube Short</span>' : ''}
       `;
       
       return card;

@@ -453,19 +453,23 @@ class Video(models.Model):
         if not self.youtube_url:
             return None
         
+        # Clean the URL - remove any extra parameters that might cause issues
+        url = self.youtube_url.strip()
+        
         # Extract video ID from all YouTube URL formats (including Shorts)
         patterns = [
             r'youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})',  # Shorts
             r'(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})',  # Regular
-            r'youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})',  # Watch with params
+            r'youtube\.com\/watch\?.*[?&]v=([a-zA-Z0-9_-]{11})',  # Watch with params
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, self.youtube_url)
+            match = re.search(pattern, url)
             if match:
                 video_id = match.group(1)
-                # Simple embed URL - works for both regular videos and Shorts
-                return f"https://www.youtube.com/embed/{video_id}"
+                # Use youtube-nocookie.com for better privacy and fewer restrictions
+                # This sometimes helps with embedding issues
+                return f"https://www.youtube-nocookie.com/embed/{video_id}"
         
         return None
     
