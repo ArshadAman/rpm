@@ -3326,17 +3326,22 @@ def get_active_videos(request):
     """Public API endpoint to get active videos for landing page"""
     try:
         from .models import Video
+        import logging
+        logger = logging.getLogger(__name__)
         
         videos = Video.objects.filter(is_active=True).order_by('order', '-created_at')
         
         video_list = []
         for video in videos:
+            embed_url = video.get_embed_url()
+            logger.info(f"Video: {video.title}, YouTube URL: {video.youtube_url}, Embed URL: {embed_url}")
+            
             video_list.append({
                 'id': str(video.id),
                 'title': video.title,
                 'description': video.description,
                 'youtube_url': video.youtube_url,
-                'embed_url': video.get_embed_url(),
+                'embed_url': embed_url,
                 'thumbnail_url': video.get_thumbnail_url(),
                 'order': video.order,
                 'is_short': video.is_youtube_short(),
@@ -3349,6 +3354,9 @@ def get_active_videos(request):
         })
         
     except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_active_videos: {str(e)}")
         return Response({
             'success': False,
             'error': str(e)
