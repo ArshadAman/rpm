@@ -426,3 +426,72 @@ class EmailOTP(models.Model):
     def is_expired(self):
         from django.utils import timezone
         return timezone.now() > self.expires_at
+
+
+class Video(models.Model):
+    """Model to store YouTube video links for landing page display"""
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    title = models.CharField(max_length=255, help_text="Video title to display")
+    youtube_url = models.URLField(max_length=500, help_text="YouTube video URL (watch, embed, or short link)")
+    description = models.TextField(blank=True, null=True, help_text="Brief description of the video")
+    order = models.IntegerField(default=0, help_text="Display order (lower numbers appear first)")
+    is_active = models.BooleanField(default=True, help_text="Whether to show on landing page")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='videos_created')
+    
+    class Meta:
+        ordering = ['order', '-created_at']
+    
+    def __str__(self):
+        return self.title
+    
+    def get_embed_url(self):
+        """Convert various YouTube URL formats to embed URL (W3Schools simple approach)"""
+        import re
+        
+        if not self.youtube_url:
+            return None
+        
+        # Clean the URL - remove any extra parameters that might cause issues
+        url = self.youtube_url.strip()
+        
+        # Extract video ID from all YouTube URL formats (including Shorts)
+        patterns = [
+            r'youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})',  # Shorts
+            r'(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})',  # Regular
+            r'youtube\.com\/watch\?.*[?&]v=([a-zA-Z0-9_-]{11})',  # Watch with params
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, url)
+            if match:
+                video_id = match.group(1)
+                # Use youtube-nocookie.com for better privacy and fewer restrictions
+                # This sometimes helps with embedding issues
+                return f"https://www.youtube-nocookie.com/embed/{video_id}"
+        
+        return None
+    
+    def get_thumbnail_url(self):
+        """Get YouTube video thumbnail URL"""
+        import re
+        
+        patterns = [
+            r'(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})',
+            r'youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})',
+            r'youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})',  # YouTube Shorts
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, self.youtube_url)
+            if match:
+                video_id = match.group(1)
+                return f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+        
+        return None
+    
+    def is_youtube_short(self):
+        """Check if the video is a YouTube Short"""
+        import re
+        return bool(re.search(r'youtube\.com\/shorts\/', self.youtube_url))

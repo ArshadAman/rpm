@@ -392,7 +392,8 @@
     }
 
     .grid-2 {
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      align-items: start; /* Align items to the top for better Shorts layout */
     }
 
     .grid-3 {
@@ -565,6 +566,15 @@
       .section {
         padding: 60px 0;
       }
+
+      /* Mobile adjustments for Shorts */
+      .video-embed-wrapper.aspect-9-16 {
+        max-width: 280px; /* Smaller on mobile for better fit */
+      }
+
+      .video-card:has(.aspect-9-16) {
+        max-width: 280px;
+      }
     }
 
     /* Scroll Animations */
@@ -595,6 +605,47 @@
       filter: blur(20px);
       opacity: 0.3;
       z-index: -1;
+    }
+
+    /* Video-specific styles for handling Shorts */
+    .video-card.is-short {
+      max-width: 400px;
+      margin: 0;
+    }
+
+    .video-embed-wrapper {
+      position: relative;
+      width: 100%;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      background: #000; /* Black background while loading */
+    }
+
+    .video-embed-wrapper.aspect-16-9 {
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    }
+
+    .video-embed-wrapper.aspect-9-16 {
+      padding-bottom: 177.78%; /* 9:16 aspect ratio for Shorts */
+      max-width: 350px; /* Reduced from 400px for better space management */
+      margin: 0 auto 20px auto;
+    }
+
+    .video-embed-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Ensure video cards with Shorts don't stretch the grid */
+    .video-card:has(.aspect-9-16) {
+      max-width: 350px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     /* Modal Styles */
@@ -990,6 +1041,24 @@
     </div>
   </section>
 
+  <!-- Instructions from Dr. Jilani -->
+  <section id="instructions" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Instructions from Dr. Jilani</h2>
+        <p class="section-subtitle">Expert guidance on health monitoring and wellness practices</p>
+      </div>
+      
+      <div id="videosContainer" class="">
+        <!-- Videos will be loaded dynamically -->
+        <div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 60px 0;">
+          <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
+          <p style="color: var(--text-muted);">Loading videos...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
@@ -1362,6 +1431,79 @@
         console.error('Referral submission error:', error);
         alert('Sorry, there was an error submitting your referral. Please try again.');
       }
+    });
+
+    // ==================== Load and Display Videos from Dr. Jilani ====================
+    async function loadVideos() {
+      const section = document.getElementById('instructions');
+      const container = document.getElementById('videosContainer');
+      
+      try {
+        const response = await fetch('/api/videos/active/');
+        const data = await response.json();
+        
+        if (data.success && data.videos && data.videos.length > 0) {
+          container.innerHTML = '';
+          section.style.display = 'block';
+          
+          data.videos.forEach((video, index) => {
+            const videoCard = createVideoCard(video, index);
+            container.appendChild(videoCard);
+          });
+          
+          // Apply fade-in animation to video cards
+          const cards = container.querySelectorAll('.video-card');
+          cards.forEach((card, index) => {
+            setTimeout(() => {
+              card.classList.add('visible');
+            }, index * 100);
+          });
+        } else {
+          // No videos available - hide the entire section
+          section.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error loading videos:', error);
+        // Hide section on error
+        section.style.display = 'none';
+      }
+    }
+
+    function createVideoCard(video, index) {
+      const card = document.createElement('div');
+      card.className = 'video-card fade-in-up';
+      card.style.animationDelay = `${index * 0.1}s`;
+      
+      // Determine if it's a Short
+      const isShort = video.is_short;
+      const aspectClass = isShort ? 'aspect-9-16' : 'aspect-16-9';
+      
+      // Ensure embed_url is valid and handle potential issues
+      const embedUrl = video.embed_url || '';
+      const youtubeUrl = video.youtube_url || '';
+      console.log('Creating video card:', { title: video.title, embedUrl, youtubeUrl, isShort });
+      
+      card.innerHTML = `
+        <div class="video-embed-wrapper ${aspectClass}">
+          <iframe
+            src="${embedUrl}"
+            title="${video.title}"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+            loading="lazy"
+            onerror="console.error('Failed to load video:', '${video.title}')"
+          ></iframe>
+        </div>
+      `;
+      
+      return card;
+    }
+
+    // Load videos when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      loadVideos();
     });
   </script>
 </body>

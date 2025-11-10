@@ -137,6 +137,8 @@ def admin_access(request):
 def admin_dashboard(request):
     """Admin dashboard with three main action sections"""
     try:
+        from .models import Video
+        
         # Get counts for dashboard display
         moderator_count = Moderator.objects.count()
         doctor_count = Doctor.objects.count()
@@ -158,6 +160,10 @@ def admin_dashboard(request):
         total_referrals = Referral.objects.count()
         pending_referrals = Referral.objects.filter(contacted=False).count()
         
+        # Get video statistics
+        video_count = Video.objects.count()
+        active_videos = Video.objects.filter(is_active=True).count()
+        
         context = {
             'moderator_count': moderator_count,
             'doctor_count': doctor_count,
@@ -170,6 +176,8 @@ def admin_dashboard(request):
             'leads_with_calls_count': leads_with_calls_count,
             'total_referrals': total_referrals,
             'pending_referrals': pending_referrals,
+            'video_count': video_count,
+            'active_videos': active_videos,
         }
         
         return render(request, 'admin_dashboard.html', context)
@@ -3039,3 +3047,317 @@ def leads_call_summaries_list(request):
     except Exception as e:
         messages.error(request, f'Error loading leads call summaries: {str(e)}')
         return redirect('admin_dashboard')
+
+
+# ==================== Video Management Views ====================
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def video_list(request):
+    """Display list of all videos for admin management"""
+    try:
+        from .models import Video
+        
+        # Get search query
+        search_query = request.GET.get('search', '').strip()
+        status_filter = request.GET.get('status', 'all')
+        
+        # Base queryset
+        videos = Video.objects.all()
+        
+        # Apply search filter
+        if search_query:
+            videos = videos.filter(
+                models.Q(title__icontains=search_query) |
+                models.Q(description__icontains=search_query)
+            )
+        
+        # Apply status filter
+        if status_filter == 'active':
+            videos = videos.filter(is_active=True)
+        elif status_filter == 'inactive':
+            videos = videos.filter(is_active=False)
+        
+        # Order by custom order field
+        videos = videos.order_by('order', '-created_at')
+        
+        context = {
+            'videos': videos,
+            'total_videos': Video.objects.count(),
+            'active_videos': Video.objects.filter(is_active=True).count(),
+            'inactive_videos': Video.objects.filter(is_active=False).count(),
+            'search_query': search_query,
+            'status_filter': status_filter,
+        }
+        
+        return render(request, 'videos/video_list.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading videos: {str(e)}')
+        return redirect('admin_dashboard')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def video_create(request):
+    """Create a new video"""
+    try:
+        from .models import Video
+        
+        if request.method == 'POST':
+            title = request.POST.get('title', '').strip()
+            youtube_url = request.POST.get('youtube_url', '').strip()
+            description = request.POST.get('description', '').strip()
+            order = request.POST.get('order', 0)
+            is_active = request.POST.get('is_active') == 'on'
+            
+            # Validation
+            if not title:
+                messages.error(request, 'Video title is required.')
+                return redirect('video_create')
+            
+            if not youtube_url:
+                messages.error(request, 'YouTube URL is required.')
+                return redirect('video_create')
+            
+            # Validate YouTube URL format
+            import re
+            youtube_pattern = r'(youtube\.com|youtu\.be)'
+            if not re.search(youtube_pattern, youtube_url):
+                messages.error(request, 'Please enter a valid YouTube URL.')
+                return redirect('video_create')
+            
+            # Verify it can extract a video ID
+            video_id_patterns = [
+                r'(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})',
+                r'youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})',
+                r'youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})',
+            ]
+            
+            video_id_found = False
+            for pattern in video_id_patterns:
+                if re.search(pattern, youtube_url):
+                    video_id_found = True
+                    break
+            
+            if not video_id_found:
+                messages.error(request, 'Could not extract video ID from the YouTube URL. Please check the URL format.')
+                return redirect('video_create')
+            
+            # Create video
+            video = Video.objects.create(
+                title=title,
+                youtube_url=youtube_url,
+                description=description,
+                order=int(order) if order else 0,
+                is_active=is_active,
+                created_by=request.user
+            )
+            
+            messages.success(request, f'Video "{title}" created successfully!')
+            return redirect('video_list')
+        
+        # GET request - show form
+        context = {
+            'max_order': Video.objects.count(),
+        }
+        return render(request, 'videos/video_form.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error creating video: {str(e)}')
+        return redirect('video_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def video_edit(request, video_id):
+    """Edit an existing video"""
+    try:
+        from .models import Video
+        
+        video = get_object_or_404(Video, id=video_id)
+        
+        if request.method == 'POST':
+            title = request.POST.get('title', '').strip()
+            youtube_url = request.POST.get('youtube_url', '').strip()
+            description = request.POST.get('description', '').strip()
+            order = request.POST.get('order', 0)
+            is_active = request.POST.get('is_active') == 'on'
+            
+            # Validation
+            if not title:
+                messages.error(request, 'Video title is required.')
+                return redirect('video_edit', video_id=video_id)
+            
+            if not youtube_url:
+                messages.error(request, 'YouTube URL is required.')
+                return redirect('video_edit', video_id=video_id)
+            
+            # Validate YouTube URL format
+            import re
+            youtube_pattern = r'(youtube\.com|youtu\.be)'
+            if not re.search(youtube_pattern, youtube_url):
+                messages.error(request, 'Please enter a valid YouTube URL.')
+                return redirect('video_edit', video_id=video_id)
+            
+            # Verify it can extract a video ID
+            video_id_patterns = [
+                r'(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})',
+                r'youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})',
+                r'youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})',
+            ]
+            
+            video_id_found = False
+            for pattern in video_id_patterns:
+                if re.search(pattern, youtube_url):
+                    video_id_found = True
+                    break
+            
+            if not video_id_found:
+                messages.error(request, 'Could not extract video ID from the YouTube URL. Please check the URL format.')
+                return redirect('video_edit', video_id=video_id)
+            
+            # Update video
+            video.title = title
+            video.youtube_url = youtube_url
+            video.description = description
+            video.order = int(order) if order else 0
+            video.is_active = is_active
+            video.save()
+            
+            messages.success(request, f'Video "{title}" updated successfully!')
+            return redirect('video_list')
+        
+        # GET request - show form
+        context = {
+            'video': video,
+            'is_edit': True,
+            'max_order': Video.objects.count(),
+        }
+        return render(request, 'videos/video_form.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error editing video: {str(e)}')
+        return redirect('video_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def video_delete(request, video_id):
+    """Delete a video"""
+    try:
+        from .models import Video
+        
+        video = get_object_or_404(Video, id=video_id)
+        
+        if request.method == 'POST':
+            title = video.title
+            video.delete()
+            messages.success(request, f'Video "{title}" deleted successfully!')
+            return redirect('video_list')
+        
+        # GET request - show confirmation
+        context = {
+            'video': video,
+        }
+        return render(request, 'videos/video_confirm_delete.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error deleting video: {str(e)}')
+        return redirect('video_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+@csrf_exempt
+def video_toggle_active(request, video_id):
+    """Toggle video active status via AJAX"""
+    try:
+        from .models import Video
+        
+        if request.method == 'POST':
+            video = get_object_or_404(Video, id=video_id)
+            video.is_active = not video.is_active
+            video.save()
+            
+            return JsonResponse({
+                'success': True,
+                'is_active': video.is_active,
+                'message': f'Video is now {"active" if video.is_active else "inactive"}'
+            })
+        
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+@csrf_exempt
+def video_reorder(request):
+    """Update video order via AJAX"""
+    try:
+        from .models import Video
+        
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            video_orders = data.get('video_orders', [])
+            
+            # Update each video's order
+            for item in video_orders:
+                video_id = item.get('id')
+                new_order = item.get('order')
+                
+                video = Video.objects.get(id=video_id)
+                video.order = new_order
+                video.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Video order updated successfully'
+            })
+        
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+# Public API for landing page
+@api_view(['GET'])
+@permission_classes([])
+@authentication_classes([])
+def get_active_videos(request):
+    """Public API endpoint to get active videos for landing page"""
+    try:
+        from .models import Video
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        videos = Video.objects.filter(is_active=True).order_by('order', '-created_at')
+        
+        video_list = []
+        for video in videos:
+            embed_url = video.get_embed_url()
+            logger.info(f"Video: {video.title}, YouTube URL: {video.youtube_url}, Embed URL: {embed_url}")
+            
+            video_list.append({
+                'id': str(video.id),
+                'title': video.title,
+                'description': video.description,
+                'youtube_url': video.youtube_url,
+                'embed_url': embed_url,
+                'thumbnail_url': video.get_thumbnail_url(),
+                'order': video.order,
+                'is_short': video.is_youtube_short(),
+            })
+        
+        return Response({
+            'success': True,
+            'videos': video_list,
+            'count': len(video_list)
+        })
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_active_videos: {str(e)}")
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
