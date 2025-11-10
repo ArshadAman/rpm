@@ -1086,7 +1086,7 @@
                         <div class="editor-title">Documentation Editor</div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label for="inline_doc_report_date" style="color: var(--text); font-size: 14px; font-weight: 500;">Date of Service:</label>
-                                <input type="date" id="inline_doc_report_date" name="doc_report_date" value="{{ form.initial.doc_report_date|date:'Y-m-d' }}" style="background: var(--container); color: #fff; border: 1px solid var(--primary); border-radius: 8px; padding: 4px 8px; font-size: 14px;" required form="documentationForm">
+                                <input type="date" id="inline_doc_report_date" name="doc_report_date" value="{% if form.initial.doc_report_date %}{{ form.initial.doc_report_date|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}" style="background: var(--container); color: #fff; border: 1px solid var(--primary); border-radius: 8px; padding: 4px 8px; font-size: 14px;" required form="documentationForm">
                             </div>
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <button type="button" class="manage-shortcuts-btn" onclick="openShortcutModal()">
