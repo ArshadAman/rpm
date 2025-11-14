@@ -269,8 +269,8 @@
             <tr>
               <th>Name</th>
               <th>Date of Birth</th>
-              <th>Height (inches)</th>
-              <th>Weight (pounds)</th>
+              <th>Last Documentation</th>
+              <th>Last Vital</th>
               <th>Insurance</th>
             </tr>
           </thead>
@@ -284,8 +284,8 @@
                   </a>
                 </td>
                 <td>{{ patient.date_of_birth }}</td>
-                <td>{{ patient.height }}</td>
-                <td>{{ patient.weight }}</td>
+                <td>{{ entry.last_documentation|default:"No documentation yet" }}</td>
+                <td>{{ entry.last_vital|default:"No vital recorded" }}</td>
                 <td>{{ patient.insurance }}</td>
               </tr>
               {% endwith %}

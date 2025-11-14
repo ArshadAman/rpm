@@ -1003,12 +1003,39 @@ def view_assigned_patient(request):
                 if line.strip():
                     family_history.append(line.strip())
 
+        # Get last documentation for this patient
+        last_documentation = Documentation.objects.filter(patient=patient).order_by('-created_at').first()
+        last_doc_text = None
+        if last_documentation:
+            last_doc_text = f"{last_documentation.title} - {last_documentation.created_at.strftime('%m/%d/%Y %I:%M %p')}"
+        
+        # Get last vital (report) for this patient
+        last_vital = Reports.objects.filter(patient=patient).order_by('-created_at').first()
+        last_vital_text = None
+        if last_vital:
+            vital_parts = []
+            if last_vital.systolic_blood_pressure and last_vital.diastolic_blood_pressure:
+                vital_parts.append(f"BP: {last_vital.systolic_blood_pressure}/{last_vital.diastolic_blood_pressure}")
+            if last_vital.pulse:
+                vital_parts.append(f"HR: {last_vital.pulse}")
+            if last_vital.blood_glucose:
+                vital_parts.append(f"BG: {last_vital.blood_glucose}")
+            if last_vital.spo2:
+                vital_parts.append(f"SpO2: {last_vital.spo2}%")
+            
+            if vital_parts:
+                last_vital_text = f"{', '.join(vital_parts)} - {last_vital.created_at.strftime('%m/%d/%Y %I:%M %p')}"
+            else:
+                last_vital_text = f"Vital recorded - {last_vital.created_at.strftime('%m/%d/%Y %I:%M %p')}"
+
         formatted_patient = {
             'patient': patient,
             'formatted_medications': medications,
             'formatted_pharmacy': pharmacy_info,
             'formatted_allergies': allergies,
-            'formatted_family_history': family_history
+            'formatted_family_history': family_history,
+            'last_documentation': last_doc_text,
+            'last_vital': last_vital_text
         }
         formatted_patients.append(formatted_patient)
 
