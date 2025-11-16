@@ -129,6 +129,7 @@ class Documentation(models.Model):
         ('E-Visit Followup Note MD NP/PA', 'E-Visit Followup Note MD NP/PA'),
         ('E-Visit Followup Note NP/PA', 'E-Visit Followup Note NP/PA'), 
         ('Inpatient Hospital H&P Physician', 'Inpatient Hospital H&P Physician'),
+        ('In Home Visit Note', 'In Home Visit Note'),
         ('Occupation Therapy Note', 'Occupation Therapy Note'),
         ('Office Visit Note MD', 'Office Visit Note MD'),
         ('Office Visit Note NP/PA', 'Office Visit Note NP/PA'),
