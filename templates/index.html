@@ -1235,6 +1235,35 @@
         transform: none !important;
         pointer-events: none;
       }
+
+      /* Delete Modal Animations */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+      
+      @keyframes slideIn {
+        from { 
+          opacity: 0;
+          transform: scale(0.9) translateY(-20px);
+        }
+        to { 
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      /* Delete button hover effect */
+      .delete-doc-btn:hover {
+        background: #ff3333 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 78, 78, 0.4);
+      }
     </style>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
@@ -2994,7 +3023,8 @@
                     </div>
                   </div>
                 </div>
-                <button onclick="window.location.href='/reports/edit-documentation/${doc.id}/'" style="background: #FF0080; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease;">Edit</button>
+                <button onclick="window.location.href='/reports/edit-documentation/${doc.id}/'" style="background: #FF0080; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease;"><i class="fas fa-edit" style="margin-right: 5px;"></i>Edit</button>
+                <button onclick="confirmDeleteDocumentation(${doc.id}, '${doc.title.replace(/'/g, "\\'")}')" style="background: #FF4E4E; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease;"><i class="fas fa-trash-alt" style="margin-right: 5px;"></i>Delete</button>
               </div>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 15px; color: rgba(255, 255, 255, 0.7); font-size: 14px; margin-bottom: 15px;">
@@ -3210,6 +3240,128 @@
         const patientDOB = dobElement ? dobElement.textContent : "Unknown DOB";
 
         return { name: patientName, dob: patientDOB };
+      }
+
+      // Delete Documentation Functions
+      function confirmDeleteDocumentation(docId, docTitle) {
+        // Create confirmation modal
+        const modalOverlay = document.createElement('div');
+        modalOverlay.id = 'delete-doc-modal';
+        modalOverlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(5px);
+          z-index: 10000;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          animation: fadeIn 0.2s ease;
+        `;
+        
+        modalOverlay.innerHTML = `
+          <div style="background: linear-gradient(145deg, #1a1a2e, #16213e); border-radius: 16px; padding: 30px; max-width: 450px; width: 90%; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); animation: slideIn 0.3s ease;">
+            <div style="text-align: center; margin-bottom: 25px;">
+              <div style="width: 70px; height: 70px; background: rgba(255, 78, 78, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #FF4E4E;"></i>
+              </div>
+              <h3 style="color: white; font-size: 22px; margin-bottom: 10px;">Delete Documentation?</h3>
+              <p style="color: rgba(255, 255, 255, 0.7); font-size: 14px; line-height: 1.6;">
+                You are about to delete:<br>
+                <strong style="color: #FF0080;">"${docTitle}"</strong><br><br>
+                This action cannot be undone. Are you sure you want to proceed?
+              </p>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+              <button onclick="closeDeleteModal()" style="background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 12px 28px; font-size: 14px; cursor: pointer; transition: all 0.2s ease; font-weight: 500;">
+                <i class="fas fa-times" style="margin-right: 8px;"></i>Cancel
+              </button>
+              <button onclick="executeDeleteDocumentation(${docId})" id="confirm-delete-btn" style="background: linear-gradient(135deg, #FF4E4E, #ff6b6b); color: white; border: none; border-radius: 8px; padding: 12px 28px; font-size: 14px; cursor: pointer; transition: all 0.2s ease; font-weight: 500; box-shadow: 0 4px 15px rgba(255, 78, 78, 0.3);">
+                <i class="fas fa-trash-alt" style="margin-right: 8px;"></i>Delete
+              </button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modalOverlay);
+        
+        // Close on background click
+        modalOverlay.addEventListener('click', function(e) {
+          if (e.target === modalOverlay) {
+            closeDeleteModal();
+          }
+        });
+        
+        // Close on Escape key
+        document.addEventListener('keydown', function escHandler(e) {
+          if (e.key === 'Escape') {
+            closeDeleteModal();
+            document.removeEventListener('keydown', escHandler);
+          }
+        });
+      }
+      
+      function closeDeleteModal() {
+        const modal = document.getElementById('delete-doc-modal');
+        if (modal) {
+          modal.style.animation = 'fadeOut 0.2s ease';
+          setTimeout(() => modal.remove(), 200);
+        }
+      }
+      
+      async function executeDeleteDocumentation(docId) {
+        const deleteBtn = document.getElementById('confirm-delete-btn');
+        const originalContent = deleteBtn.innerHTML;
+        
+        // Show loading state
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Deleting...';
+        deleteBtn.style.opacity = '0.7';
+        
+        try {
+          const response = await fetch(`/reports/delete-documentation/${docId}/`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken()
+            }
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            closeDeleteModal();
+            showNotification(data.message || 'Documentation deleted successfully!', 'success');
+            
+            // Refresh the documentation list
+            fetchDocumentation();
+            
+            // Clear the details panel
+            const docDetailsContainer = document.getElementById('documentation-details');
+            if (docDetailsContainer) {
+              docDetailsContainer.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.5); padding: 40px;">
+                  <i class="fas fa-file-medical" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                  <p>Select a document to view details</p>
+                </div>
+              `;
+            }
+          } else {
+            showNotification(data.error || 'Failed to delete documentation', 'error');
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = originalContent;
+            deleteBtn.style.opacity = '1';
+          }
+        } catch (error) {
+          console.error('Error deleting documentation:', error);
+          showNotification('Error deleting documentation. Please try again.', 'error');
+          deleteBtn.disabled = false;
+          deleteBtn.innerHTML = originalContent;
+          deleteBtn.style.opacity = '1';
+        }
       }
 
       // Show notification to user
