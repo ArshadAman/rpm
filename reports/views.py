@@ -638,6 +638,34 @@ def edit_documentation(request, doc_id):
 def documentation_share_view(request, doc_id):
     doc = get_object_or_404(Documentation, id=doc_id)
     return render(request, 'documentation_share.html', {'doc': doc, 'now': timezone.now()})
+
+
+@login_required
+@csrf_exempt
+def delete_documentation(request, doc_id):
+    """Delete a documentation - Moderator only"""
+    if request.method != 'DELETE':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    
+    # Check if user is a moderator
+    if not Moderator.objects.filter(user=request.user).exists():
+        return JsonResponse({'success': False, 'error': 'Only moderators can delete documentation'}, status=403)
+    
+    try:
+        documentation = get_object_or_404(Documentation, id=doc_id)
+        patient_id = str(documentation.patient.id) if documentation.patient else None
+        doc_title = documentation.title
+        
+        # Delete the documentation
+        documentation.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Documentation "{doc_title}" deleted successfully',
+            'patient_id': patient_id
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 # Ne
 
 @login_required
