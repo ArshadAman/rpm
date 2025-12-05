@@ -1007,7 +1007,7 @@ def view_assigned_patient(request):
         last_documentation = Documentation.objects.filter(patient=patient).order_by('-created_at').first()
         last_doc_text = None
         if last_documentation:
-            last_doc_text = f"{last_documentation.title} - {last_documentation.created_at.strftime('%m/%d/%Y %I:%M %p')}"
+            last_doc_text = f"{last_documentation.title} - {timezone.localtime(last_documentation.created_at).strftime('%m/%d/%Y %I:%M %p')}"
         
         # Get last vital (report) for this patient
         last_vital = Reports.objects.filter(patient=patient).order_by('-created_at').first()
@@ -1024,9 +1024,9 @@ def view_assigned_patient(request):
                 vital_parts.append(f"SpO2: {last_vital.spo2}%")
             
             if vital_parts:
-                last_vital_text = f"{', '.join(vital_parts)} - {last_vital.created_at.strftime('%m/%d/%Y %I:%M %p')}"
+                last_vital_text = f"{', '.join(vital_parts)} - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
             else:
-                last_vital_text = f"Vital recorded - {last_vital.created_at.strftime('%m/%d/%Y %I:%M %p')}"
+                last_vital_text = f"Vital recorded - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
 
         formatted_patient = {
             'patient': patient,
@@ -1097,8 +1097,8 @@ def view_documentation(request, patient_id):
             'assessment': doc.assessment,
             'plan': doc.plan,
             'written_by': doc.written_by,
-            'created_at': doc.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            'updated_at': doc.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'created_at': timezone.localtime(doc.created_at).strftime("%Y-%m-%d %H:%M:%S"),
+            'updated_at': timezone.localtime(doc.updated_at).strftime("%Y-%m-%d %H:%M:%S"),
             'doc_report_date': doc.doc_report_date.strftime("%m/%d/%Y") if doc.doc_report_date else None,
         }
         
