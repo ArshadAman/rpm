@@ -133,9 +133,10 @@ def get_all_reports(request, patient_id):
         return JsonResponse({"reports": []}, safe=False)
 
     # Prepare JSON response with all fields
+    # Convert UTC datetime to local timezone before formatting
     data = {
         "reports": [
-            {**model_to_dict(report), "created_at": report.created_at.strftime("%Y-%m-%d %H:%M:%S")} for report in reports
+            {**model_to_dict(report), "created_at": timezone.localtime(report.created_at).strftime("%Y-%m-%d %H:%M:%S")} for report in reports
         ]
     }
 
@@ -864,7 +865,7 @@ def get_recent_reports(request, patient_id):
             
             reports_data.append({
                 'id': report.id,
-                'created_at': report.created_at.strftime('%m/%d/%Y %H:%M'),
+                'created_at': timezone.localtime(report.created_at).strftime('%m/%d/%Y %H:%M'),
                 'vitals_summary': ', '.join(vitals_summary) if vitals_summary else 'No vitals recorded',
                 'data': model_to_dict(report)
             })
@@ -990,7 +991,7 @@ def export_vitals_excel(request, patient_id):
         row_num = header_row + 1
         for report in reports:
             # Date/Time
-            ws.cell(row=row_num, column=1).value = report.created_at.strftime('%m/%d/%Y %H:%M')
+            ws.cell(row=row_num, column=1).value = timezone.localtime(report.created_at).strftime('%m/%d/%Y %H:%M')
             
             # Systolic BP - using helper function
             systolic = report.systolic_blood_pressure or _parse_blood_pressure(report.blood_pressure, 0)
