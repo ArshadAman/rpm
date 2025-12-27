@@ -16,7 +16,7 @@ from reports.models import Reports
 from rpm_users.models import  PastMedicalHistory
 from django.utils import timezone
 from datetime import timedelta
-from .services import RetellCallService, GeminiSummaryService
+from .services import RetellCallService, GeminiSummaryService, PatientAnalysisService
 from reports.models import Documentation
 from .models import RetellCallSession, CallSummary, LeadCallSession, LeadCallSummary, BulkCallSession
 
@@ -151,6 +151,88 @@ def trigger_call(request):
         return Response({
             'error': f'Internal server error: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def initiate_checkup_call(request):
+    """
+    Initiate a comprehensive checkup call with AI analysis of patient history.
+    """
+    try:
+        data = request.data
+        patient_id = data.get('patient_id')
+        agent_id = "agent_a4f7ac3b588897bbf4bf8d3e26"
+        
+        if not patient_id:
+            return Response({'error': 'patient_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            patient = Patient.objects.get(id=patient_id)
+        except Patient.DoesNotExist:
+            return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+        logger.info(f"Initiating checkup call analysis for patient: {patient.user.email}")
+        
+        # 1. Analyze Patient History
+        analysis_service = PatientAnalysisService()
+        analysis_result = analysis_service.analyze_patient_history(patient)
+        
+        # 2. Gather Vitals Stats (reusing logic from trigger_call)
+        recent_reports = Reports.objects.filter(patient=patient).order_by('-created_at')[:20]
+        systolic_values = []
+        diastolic_values = []
+        for r in recent_reports:
+            try:
+                if r.systolic_blood_pressure:
+                    systolic_values.append(int(r.systolic_blood_pressure))
+                if r.diastolic_blood_pressure:
+                    diastolic_values.append(int(r.diastolic_blood_pressure))
+            except Exception:
+                pass
+        
+        avg_systolic = round(sum(systolic_values) / len(systolic_values)) if systolic_values else None
+        avg_diastolic = round(sum(diastolic_values) / len(diastolic_values)) if diastolic_values else None
+        
+        # 3. Prepare Dynamic Variables
+        pmh_list = list(PastMedicalHistory.objects.filter(patient=patient).values_list('pmh', flat=True))
+        
+        # Extract analysis data safely
+        analysis_data = analysis_result if isinstance(analysis_result, dict) else {}
+        
+        raw_dynamic_variables = {
+            'patient_id': str(patient.id),
+            'patient_name': f"{patient.user.first_name} {patient.user.last_name}".strip(),
+            'patient_email': patient.user.email or '',
+            'patient_phone': patient.phone_number or '',
+            'age': str(patient.age) if hasattr(patient, 'age') else '',
+            'conditions': ", ".join(pmh_list),
+            'avg_systolic': str(avg_systolic) if avg_systolic else '',
+            'avg_diastolic': str(avg_diastolic) if avg_diastolic else '',
+            
+            # AI Analysis Injection
+            'health_patterns': analysis_data.get('patterns', 'Not available'),
+            'risk_flags': ", ".join(analysis_data.get('risk_flags', [])) if isinstance(analysis_data.get('risk_flags'), list) else str(analysis_data.get('risk_flags', '')),
+            'suggested_questions': ", ".join(analysis_data.get('suggested_questions', [])) if isinstance(analysis_data.get('suggested_questions'), list) else str(analysis_data.get('suggested_questions', '')),
+            'call_context': analysis_data.get('call_context', 'Standard checkup call.')
+        }
+        
+        # Ensure strings for Retell
+        dynamic_variables = {k: str(v) if v is not None else "" for k, v in raw_dynamic_variables.items()}
+        
+        # 4. Initiate Call
+        call_service = RetellCallService()
+        result = call_service.create_phone_call(patient, agent_id, dynamic_variables)
+        
+        return Response({
+            'success': True,
+            'message': 'Checkup call initiated successfully',
+            'analysis': analysis_result,
+            'call_id': result['call_id']
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        logger.error(f"Error initiating checkup call: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
