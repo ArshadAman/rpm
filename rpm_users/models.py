@@ -134,6 +134,7 @@ class PastMedicalHistory(models.Model):
         ('Const', 'Constipation'),
         ('CAD', 'Coronary Artery Disease'),
         ('DKA', 'Diabetic Ketoacidosis'),
+        ('DJD', 'Degenerative Joint Disease'),
         ('DMK',' Diabetic nephropathy (kidney)'),
         ('DMN','Diabetic neuropathy'),
         ('DMR','Diabetic retinopathy'),
@@ -153,12 +154,16 @@ class PastMedicalHistory(models.Model):
         ('HIV', 'Human Immunodeficiency Virus'),
         ('Hyca', 'Hypercapnea'),
         ('Hypo', 'Hypotension'),
+        ('HpTh', 'Hypothyroidism'),
         ('HLD', 'Hyperlipidemia'),
         ('Hpxa', 'Hypoxia'),
         ('HTN', 'Hypertension'),
+        ('Insm', 'Insomnia'),
+        ('ILUS', 'Ileus'),
         ('ITP', 'Idiopathic Thrombocytopenic Purpura'),
         ('LCa', 'Lung Cancer'),
         ('MDD', 'Major Depressive Disorder'),
+        ('MOB', 'Morbid Obesity'),
         ('MI', 'Myocardial Infarction'),
         ('MG', 'Myasthenia Gravis'),
         ('MVP', 'Mitral Valve Prolapse'),
@@ -166,6 +171,7 @@ class PastMedicalHistory(models.Model):
         ('NMO', 'Neuromyelitis Optica'),
         ('Npathy','Neuropathy'),
         ('OA', 'Osteoarthritis'),
+        ('ORTSTATES', 'Orthostatic Hypotension'),
         ('OvCa', 'Ovarian Cancer'),
         ('PCa', 'Pancreatic Cancer'),
         ('PKU', 'Phenylketonuria'),
@@ -181,6 +187,7 @@ class PastMedicalHistory(models.Model):
         ('OSA','Sleep apnea'),
         ('SMA', 'Spinal Muscular Atrophy'),
         ('SLE', 'Systemic Lupus Erythematosus'),
+        ('SP STEN', 'Spinal Stenosis'), 
         ('TeCa', 'Testicular Cancer'),
         ('TCa', 'Thyroid Cancer'),
         ('TTP', 'Thrombotic Thrombocytopenic Purpura'),
@@ -497,3 +504,30 @@ class Video(models.Model):
         """Check if the video is a YouTube Short"""
         import re
         return bool(re.search(r'youtube\.com\/shorts\/', self.youtube_url))
+
+
+class Testimonial(models.Model):
+    """Model to store customer testimonials/reviews for landing page display"""
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    customer_name = models.CharField(max_length=255, help_text="Customer's name to display")
+    customer_image = models.ImageField(upload_to='testimonials/', blank=True, null=True, help_text="Customer's photo")
+    review_text = models.TextField(help_text="Customer's review/testimonial text")
+    rating = models.IntegerField(default=5, choices=[(i, f"{i} Stars") for i in range(1, 6)], help_text="Rating out of 5 stars")
+    location = models.CharField(max_length=100, blank=True, null=True, help_text="Customer's location (e.g., 'New York, NY')")
+    order = models.IntegerField(default=0, help_text="Display order (lower numbers appear first)")
+    is_active = models.BooleanField(default=True, help_text="Whether to show on landing page")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='testimonials_created')
+    
+    class Meta:
+        ordering = ['order', '-created_at']
+    
+    def __str__(self):
+        return f"{self.customer_name} - {self.rating} stars"
+    
+    def get_image_url(self):
+        """Get the image URL or return a default placeholder"""
+        if self.customer_image:
+            return self.customer_image.url
+        return None

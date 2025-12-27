@@ -164,6 +164,15 @@ def admin_dashboard(request):
         video_count = Video.objects.count()
         active_videos = Video.objects.filter(is_active=True).count()
         
+        # Get testimonial statistics (with fallback if table doesn't exist)
+        try:
+            from .models import Testimonial
+            testimonial_count = Testimonial.objects.count()
+            active_testimonials = Testimonial.objects.filter(is_active=True).count()
+        except Exception:
+            testimonial_count = 0
+            active_testimonials = 0
+        
         context = {
             'moderator_count': moderator_count,
             'doctor_count': doctor_count,
@@ -178,6 +187,8 @@ def admin_dashboard(request):
             'pending_referrals': pending_referrals,
             'video_count': video_count,
             'active_videos': active_videos,
+            'testimonial_count': testimonial_count,
+            'active_testimonials': active_testimonials,
         }
         
         return render(request, 'admin_dashboard.html', context)
@@ -3384,6 +3395,291 @@ def get_active_videos(request):
         import logging
         logger = logging.getLogger(__name__)
         logger.error(f"Error in get_active_videos: {str(e)}")
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================== TESTIMONIAL MANAGEMENT ====================
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def testimonial_list(request):
+    """Display list of all testimonials for admin management"""
+    try:
+        from .models import Testimonial
+        
+        # Get search query
+        search_query = request.GET.get('search', '').strip()
+        status_filter = request.GET.get('status', 'all')
+        
+        # Base queryset
+        testimonials = Testimonial.objects.all()
+        
+        # Apply search filter
+        if search_query:
+            testimonials = testimonials.filter(
+                models.Q(customer_name__icontains=search_query) |
+                models.Q(review_text__icontains=search_query) |
+                models.Q(location__icontains=search_query)
+            )
+        
+        # Apply status filter
+        if status_filter == 'active':
+            testimonials = testimonials.filter(is_active=True)
+        elif status_filter == 'inactive':
+            testimonials = testimonials.filter(is_active=False)
+        
+        # Order by custom order field
+        testimonials = testimonials.order_by('order', '-created_at')
+        
+        context = {
+            'testimonials': testimonials,
+            'total_testimonials': Testimonial.objects.count(),
+            'active_testimonials': Testimonial.objects.filter(is_active=True).count(),
+            'inactive_testimonials': Testimonial.objects.filter(is_active=False).count(),
+            'search_query': search_query,
+            'status_filter': status_filter,
+        }
+        
+        return render(request, 'testimonials/testimonial_list.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading testimonials: {str(e)}')
+        return redirect('admin_dashboard')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def testimonial_create(request):
+    """Create a new testimonial"""
+    try:
+        from .models import Testimonial
+        
+        if request.method == 'POST':
+            customer_name = request.POST.get('customer_name', '').strip()
+            review_text = request.POST.get('review_text', '').strip()
+            rating = request.POST.get('rating', 5)
+            location = request.POST.get('location', '').strip()
+            order = request.POST.get('order', 0)
+            is_active = request.POST.get('is_active') == 'on'
+            customer_image = request.FILES.get('customer_image')
+            
+            # Validation
+            if not customer_name:
+                messages.error(request, 'Customer name is required.')
+                return redirect('testimonial_create')
+            
+            if not review_text:
+                messages.error(request, 'Review text is required.')
+                return redirect('testimonial_create')
+            
+            # Create testimonial
+            testimonial = Testimonial.objects.create(
+                customer_name=customer_name,
+                review_text=review_text,
+                rating=int(rating) if rating else 5,
+                location=location if location else None,
+                order=int(order) if order else 0,
+                is_active=is_active,
+                customer_image=customer_image,
+                created_by=request.user
+            )
+            
+            messages.success(request, f'Testimonial from "{customer_name}" created successfully!')
+            return redirect('testimonial_list')
+        
+        # GET request - show form
+        context = {
+            'max_order': Testimonial.objects.count(),
+        }
+        return render(request, 'testimonials/testimonial_form.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error creating testimonial: {str(e)}')
+        return redirect('testimonial_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def testimonial_edit(request, testimonial_id):
+    """Edit an existing testimonial"""
+    try:
+        from .models import Testimonial
+        
+        testimonial = get_object_or_404(Testimonial, id=testimonial_id)
+        
+        if request.method == 'POST':
+            customer_name = request.POST.get('customer_name', '').strip()
+            review_text = request.POST.get('review_text', '').strip()
+            rating = request.POST.get('rating', 5)
+            location = request.POST.get('location', '').strip()
+            order = request.POST.get('order', 0)
+            is_active = request.POST.get('is_active') == 'on'
+            customer_image = request.FILES.get('customer_image')
+            remove_image = request.POST.get('remove_image') == 'on'
+            
+            # Validation
+            if not customer_name:
+                messages.error(request, 'Customer name is required.')
+                return redirect('testimonial_edit', testimonial_id=testimonial_id)
+            
+            if not review_text:
+                messages.error(request, 'Review text is required.')
+                return redirect('testimonial_edit', testimonial_id=testimonial_id)
+            
+            # Update testimonial
+            testimonial.customer_name = customer_name
+            testimonial.review_text = review_text
+            testimonial.rating = int(rating) if rating else 5
+            testimonial.location = location if location else None
+            testimonial.order = int(order) if order else 0
+            testimonial.is_active = is_active
+            
+            # Handle image
+            if remove_image and testimonial.customer_image:
+                testimonial.customer_image.delete(save=False)
+                testimonial.customer_image = None
+            elif customer_image:
+                # Delete old image if exists
+                if testimonial.customer_image:
+                    testimonial.customer_image.delete(save=False)
+                testimonial.customer_image = customer_image
+            
+            testimonial.save()
+            
+            messages.success(request, f'Testimonial from "{customer_name}" updated successfully!')
+            return redirect('testimonial_list')
+        
+        # GET request - show form
+        context = {
+            'testimonial': testimonial,
+            'is_edit': True,
+            'max_order': Testimonial.objects.count(),
+        }
+        return render(request, 'testimonials/testimonial_form.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error editing testimonial: {str(e)}')
+        return redirect('testimonial_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def testimonial_delete(request, testimonial_id):
+    """Delete a testimonial"""
+    try:
+        from .models import Testimonial
+        
+        testimonial = get_object_or_404(Testimonial, id=testimonial_id)
+        
+        if request.method == 'POST':
+            name = testimonial.customer_name
+            # Delete image file if exists
+            if testimonial.customer_image:
+                testimonial.customer_image.delete(save=False)
+            testimonial.delete()
+            messages.success(request, f'Testimonial from "{name}" deleted successfully!')
+            return redirect('testimonial_list')
+        
+        # GET request - show confirmation
+        context = {
+            'testimonial': testimonial,
+        }
+        return render(request, 'testimonials/testimonial_confirm_delete.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error deleting testimonial: {str(e)}')
+        return redirect('testimonial_list')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+@csrf_exempt
+def testimonial_toggle_active(request, testimonial_id):
+    """Toggle testimonial active status via AJAX"""
+    try:
+        from .models import Testimonial
+        
+        if request.method == 'POST':
+            testimonial = get_object_or_404(Testimonial, id=testimonial_id)
+            testimonial.is_active = not testimonial.is_active
+            testimonial.save()
+            
+            return JsonResponse({
+                'success': True,
+                'is_active': testimonial.is_active,
+                'message': f'Testimonial is now {"active" if testimonial.is_active else "inactive"}'
+            })
+        
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+@csrf_exempt
+def testimonial_reorder(request):
+    """Update testimonial order via AJAX"""
+    try:
+        from .models import Testimonial
+        
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            testimonial_orders = data.get('testimonial_orders', [])
+            
+            # Update each testimonial's order
+            for item in testimonial_orders:
+                testimonial_id = item.get('id')
+                new_order = item.get('order')
+                
+                testimonial = Testimonial.objects.get(id=testimonial_id)
+                testimonial.order = new_order
+                testimonial.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Testimonial order updated successfully'
+            })
+        
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+# Public API for landing page testimonials
+@api_view(['GET'])
+@permission_classes([])
+@authentication_classes([])
+def get_active_testimonials(request):
+    """Public API endpoint to get active testimonials for landing page carousel"""
+    try:
+        from .models import Testimonial
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        testimonials = Testimonial.objects.filter(is_active=True).order_by('order', '-created_at')
+        
+        testimonial_list = []
+        for testimonial in testimonials:
+            testimonial_list.append({
+                'id': str(testimonial.id),
+                'customer_name': testimonial.customer_name,
+                'review_text': testimonial.review_text,
+                'rating': testimonial.rating,
+                'location': testimonial.location,
+                'image_url': testimonial.customer_image.url if testimonial.customer_image else None,
+                'order': testimonial.order,
+            })
+        
+        return Response({
+            'success': True,
+            'testimonials': testimonial_list,
+            'count': len(testimonial_list)
+        })
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_active_testimonials: {str(e)}")
         return Response({
             'success': False,
             'error': str(e)

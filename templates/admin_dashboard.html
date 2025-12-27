@@ -480,6 +480,27 @@
             </div>
             <a href="{% url 'video_list' %}" class="action-button">Manage Videos</a>
         </div>
+
+        <div class="action-card">
+            <div>
+                <div class="action-icon">⭐</div>
+                <h2 class="action-title">Customer Reviews</h2>
+                <p class="action-description">
+                    Manage customer testimonials and reviews displayed in the carousel on the landing page. Add photos, ratings, and review text.
+                </p>
+                <div class="action-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ testimonial_count|default:0 }}</span>
+                        <span class="stat-label">Total Reviews</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ active_testimonials|default:0 }}</span>
+                        <span class="stat-label">Active Reviews</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'testimonial_list' %}" class="action-button">Manage Reviews</a>
+        </div>
     </div>
 </body>
 </html>
