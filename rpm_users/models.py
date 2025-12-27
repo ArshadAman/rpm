@@ -187,7 +187,7 @@ class PastMedicalHistory(models.Model):
         ('OSA','Sleep apnea'),
         ('SMA', 'Spinal Muscular Atrophy'),
         ('SLE', 'Systemic Lupus Erythematosus'),
-        ('SP STEN', 'Spinal Stenosis'),
+        ('SP STEN', 'Spinal Stenosis'), 
         ('TeCa', 'Testicular Cancer'),
         ('TCa', 'Thyroid Cancer'),
         ('TTP', 'Thrombotic Thrombocytopenic Purpura'),
