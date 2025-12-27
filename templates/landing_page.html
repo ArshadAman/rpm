@@ -789,6 +789,296 @@
       border-color: var(--text-muted);
       color: var(--text-primary);
     }
+
+    /* ==================== Testimonial Carousel Styles ==================== */
+    .testimonial-carousel-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .testimonial-carousel {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .testimonial-track {
+      display: flex;
+      gap: 24px;
+      transition: transform 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+      will-change: transform;
+    }
+
+    .testimonial-card {
+      flex: 0 0 calc(33.333% - 16px);
+      min-width: 320px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      position: relative;
+      transition: var(--transition);
+    }
+
+    .testimonial-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: var(--radius) var(--radius) 0 0;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .testimonial-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-primary);
+    }
+
+    .testimonial-card:hover::before {
+      opacity: 1;
+    }
+
+    .testimonial-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .testimonial-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid transparent;
+      background: linear-gradient(var(--background), var(--background)) padding-box,
+                  linear-gradient(135deg, var(--primary), var(--secondary)) border-box;
+      flex-shrink: 0;
+    }
+
+    .testimonial-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .testimonial-avatar-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .testimonial-info {
+      flex: 1;
+    }
+
+    .testimonial-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .testimonial-location {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .testimonial-rating {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .testimonial-rating .star {
+      color: #FFD700;
+      font-size: 16px;
+    }
+
+    .testimonial-rating .star.empty {
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    .testimonial-quote {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      font-size: 48px;
+      color: var(--primary);
+      opacity: 0.3;
+      font-family: Georgia, serif;
+      line-height: 1;
+    }
+
+    .testimonial-text {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.8;
+      font-style: italic;
+      position: relative;
+      padding-left: 0;
+    }
+
+    .carousel-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .carousel-btn:hover {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-color: transparent;
+      transform: scale(1.1);
+      box-shadow: var(--shadow-primary);
+    }
+
+    .carousel-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .carousel-btn:disabled:hover {
+      transform: none;
+      background: var(--glass-bg);
+      border-color: var(--card-border);
+      box-shadow: none;
+    }
+
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .carousel-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--card-border);
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+    }
+
+    .carousel-dot:hover {
+      background: var(--primary-light);
+      transform: scale(1.2);
+    }
+
+    .carousel-dot.active {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      transform: scale(1.3);
+      box-shadow: 0 0 20px rgba(121, 40, 202, 0.5);
+    }
+
+    .testimonial-empty {
+      text-align: center;
+      padding: 60px 40px;
+      background: var(--glass-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+    }
+
+    .testimonial-empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    .testimonial-empty h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    .testimonial-empty p {
+      color: var(--text-muted);
+    }
+
+    /* Responsive Testimonial Carousel */
+    @media (max-width: 1200px) {
+      .testimonial-card {
+        flex: 0 0 calc(50% - 12px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .testimonial-carousel-wrapper {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .testimonial-card {
+        flex: 0 0 100%;
+        min-width: 280px;
+      }
+
+      .carousel-btn {
+        display: none;
+      }
+
+      .testimonial-track {
+        gap: 16px;
+      }
+
+      .testimonial-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .testimonial-info {
+        text-align: center;
+      }
+
+      .testimonial-rating {
+        justify-content: center;
+      }
+
+      .testimonial-quote {
+        display: none;
+      }
+
+      /* Enable touch swipe on mobile */
+      .testimonial-carousel {
+        touch-action: pan-x;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .carousel-dots {
+        margin-top: 24px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1002,6 +1292,40 @@
         </div>
       </div>
       <div class="note" style="margin-top:24px; text-align: center;">* Pricing subject to change without notice. Medicare setup fees not included in cash plans. Availability is limited across all tiers.</div>
+    </div>
+  </section>
+
+  <!-- Customer Reviews Carousel -->
+  <section id="reviews" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">What Our Patients Say</h2>
+        <p class="section-subtitle">Real experiences from our valued patients</p>
+      </div>
+      
+      <div class="testimonial-carousel-wrapper">
+        <button class="carousel-btn carousel-btn-prev" onclick="slideTestimonials(-1)" aria-label="Previous testimonials">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15,18 9,12 15,6"></polyline>
+          </svg>
+        </button>
+        
+        <div class="testimonial-carousel" id="testimonialCarousel">
+          <div class="testimonial-track" id="testimonialTrack">
+            <!-- Testimonials will be loaded dynamically -->
+          </div>
+        </div>
+        
+        <button class="carousel-btn carousel-btn-next" onclick="slideTestimonials(1)" aria-label="Next testimonials">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9,18 15,12 9,6"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="carousel-dots" id="carouselDots">
+        <!-- Dots will be generated dynamically -->
+      </div>
     </div>
   </section>
 
@@ -1504,6 +1828,235 @@
     // Load videos when DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
       loadVideos();
+    });
+
+    // ==================== Testimonial Carousel System ====================
+    let testimonials = [];
+    let currentSlide = 0;
+    let cardsPerView = 3;
+    let totalSlides = 0;
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    // Responsive cards per view
+    function updateCardsPerView() {
+      const width = window.innerWidth;
+      if (width <= 768) {
+        cardsPerView = 1;
+      } else if (width <= 1200) {
+        cardsPerView = 2;
+      } else {
+        cardsPerView = 3;
+      }
+      updateCarousel();
+    }
+
+    async function loadTestimonials() {
+      const section = document.getElementById('reviews');
+      const track = document.getElementById('testimonialTrack');
+      const dotsContainer = document.getElementById('carouselDots');
+      
+      try {
+        const response = await fetch('/api/testimonials/active/');
+        const data = await response.json();
+        
+        if (data.success && data.testimonials && data.testimonials.length > 0) {
+          testimonials = data.testimonials;
+          section.style.display = 'block';
+          track.innerHTML = '';
+          
+          // Create testimonial cards
+          testimonials.forEach((testimonial, index) => {
+            const card = createTestimonialCard(testimonial, index);
+            track.appendChild(card);
+          });
+          
+          // Calculate total slides
+          totalSlides = Math.max(0, testimonials.length - cardsPerView + 1);
+          
+          // Generate dots
+          generateDots();
+          
+          // Initialize carousel position
+          updateCarousel();
+          
+          // Add touch events for mobile
+          setupTouchEvents();
+          
+        } else {
+          // No testimonials - hide section
+          section.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error loading testimonials:', error);
+        section.style.display = 'none';
+      }
+    }
+
+    function createTestimonialCard(testimonial, index) {
+      const card = document.createElement('div');
+      card.className = 'testimonial-card';
+      card.style.animationDelay = `${index * 0.1}s`;
+      
+      // Generate stars
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        starsHtml += `<span class="star${i > testimonial.rating ? ' empty' : ''}">★</span>`;
+      }
+      
+      // Avatar HTML
+      let avatarHtml = '';
+      if (testimonial.image_url) {
+        avatarHtml = `<img src="${testimonial.image_url}" alt="${testimonial.customer_name}">`;
+      } else {
+        const initial = testimonial.customer_name.charAt(0).toUpperCase();
+        avatarHtml = `<div class="testimonial-avatar-placeholder">${initial}</div>`;
+      }
+      
+      // Location HTML
+      let locationHtml = '';
+      if (testimonial.location) {
+        locationHtml = `<div class="testimonial-location">📍 ${testimonial.location}</div>`;
+      }
+      
+      card.innerHTML = `
+        <span class="testimonial-quote">"</span>
+        <div class="testimonial-header">
+          <div class="testimonial-avatar">
+            ${avatarHtml}
+          </div>
+          <div class="testimonial-info">
+            <div class="testimonial-name">${testimonial.customer_name}</div>
+            ${locationHtml}
+            <div class="testimonial-rating">
+              ${starsHtml}
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-text">"${testimonial.review_text}"</div>
+      `;
+      
+      return card;
+    }
+
+    function generateDots() {
+      const dotsContainer = document.getElementById('carouselDots');
+      dotsContainer.innerHTML = '';
+      
+      const numDots = Math.max(1, totalSlides);
+      
+      for (let i = 0; i < numDots; i++) {
+        const dot = document.createElement('button');
+        dot.className = `carousel-dot${i === currentSlide ? ' active' : ''}`;
+        dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+      }
+    }
+
+    function updateCarousel() {
+      const track = document.getElementById('testimonialTrack');
+      const cards = track.querySelectorAll('.testimonial-card');
+      
+      if (cards.length === 0) return;
+      
+      // Calculate card width including gap
+      const cardWidth = cards[0].offsetWidth + 24; // 24px is the gap
+      const offset = currentSlide * cardWidth;
+      
+      track.style.transform = `translateX(-${offset}px)`;
+      
+      // Update dots
+      const dots = document.querySelectorAll('.carousel-dot');
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentSlide);
+      });
+      
+      // Update button states
+      const prevBtn = document.querySelector('.carousel-btn-prev');
+      const nextBtn = document.querySelector('.carousel-btn-next');
+      
+      if (prevBtn && nextBtn) {
+        prevBtn.disabled = currentSlide === 0;
+        nextBtn.disabled = currentSlide >= totalSlides - 1;
+      }
+    }
+
+    function slideTestimonials(direction) {
+      const newSlide = currentSlide + direction;
+      
+      if (newSlide >= 0 && newSlide < totalSlides) {
+        currentSlide = newSlide;
+        updateCarousel();
+      }
+    }
+
+    function goToSlide(index) {
+      if (index >= 0 && index < totalSlides) {
+        currentSlide = index;
+        updateCarousel();
+      }
+    }
+
+    function setupTouchEvents() {
+      const carousel = document.getElementById('testimonialCarousel');
+      
+      carousel.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      
+      carousel.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      }, { passive: true });
+    }
+
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const diff = touchStartX - touchEndX;
+      
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          // Swipe left - next slide
+          slideTestimonials(1);
+        } else {
+          // Swipe right - previous slide
+          slideTestimonials(-1);
+        }
+      }
+    }
+
+    // Auto-play carousel (optional - uncomment to enable)
+    // let autoPlayInterval;
+    // function startAutoPlay() {
+    //   autoPlayInterval = setInterval(() => {
+    //     if (currentSlide >= totalSlides - 1) {
+    //       currentSlide = 0;
+    //     } else {
+    //       currentSlide++;
+    //     }
+    //     updateCarousel();
+    //   }, 5000);
+    // }
+    // 
+    // function stopAutoPlay() {
+    //   clearInterval(autoPlayInterval);
+    // }
+
+    // Load testimonials when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTestimonials();
+      
+      // Update on window resize
+      window.addEventListener('resize', () => {
+        updateCardsPerView();
+        totalSlides = Math.max(0, testimonials.length - cardsPerView + 1);
+        if (currentSlide >= totalSlides) {
+          currentSlide = Math.max(0, totalSlides - 1);
+        }
+        generateDots();
+        updateCarousel();
+      });
     });
   </script>
 </body>

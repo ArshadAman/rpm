@@ -93,4 +93,15 @@ urlpatterns = [
     
     # Public API for videos
     path('api/videos/active/', views.get_active_videos, name='get_active_videos'),
+    
+    # Testimonial management
+    path('dashboard/testimonials/', views.testimonial_list, name='testimonial_list'),
+    path('dashboard/testimonials/create/', views.testimonial_create, name='testimonial_create'),
+    path('dashboard/testimonials/<uuid:testimonial_id>/edit/', views.testimonial_edit, name='testimonial_edit'),
+    path('dashboard/testimonials/<uuid:testimonial_id>/delete/', views.testimonial_delete, name='testimonial_delete'),
+    path('dashboard/testimonials/<uuid:testimonial_id>/toggle-active/', views.testimonial_toggle_active, name='testimonial_toggle_active'),
+    path('dashboard/testimonials/reorder/', views.testimonial_reorder, name='testimonial_reorder'),
+    
+    # Public API for testimonials
+    path('api/testimonials/active/', views.get_active_testimonials, name='get_active_testimonials'),
 ]

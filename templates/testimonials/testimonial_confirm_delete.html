@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Testimonial - RPM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7928CA;
+            --primary-dark: #6A0DAD;
+            --secondary: #FF0080;
+            --text: #E0C3FC;
+            --background: #0F1116;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --error: #FF4E4E;
+            --success: #00CC88;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .delete-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 78, 78, 0.3);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .delete-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .delete-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .delete-message {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .testimonial-preview {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .preview-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        .preview-image-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .preview-name {
+            font-weight: 600;
+            color: white;
+        }
+
+        .preview-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #FF6B6B);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 78, 78, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .warning-text {
+            color: var(--error);
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="delete-card">
+            <div class="delete-icon">⚠️</div>
+            <h1 class="delete-title">Delete Testimonial?</h1>
+            <p class="delete-message">
+                You are about to delete this testimonial. This action cannot be undone.
+            </p>
+
+            <div class="testimonial-preview">
+                <div class="preview-header">
+                    {% if testimonial.customer_image %}
+                    <img src="{{ testimonial.customer_image.url }}" alt="{{ testimonial.customer_name }}" class="preview-image">
+                    {% else %}
+                    <div class="preview-image-placeholder">
+                        {{ testimonial.customer_name|slice:":1"|upper }}
+                    </div>
+                    {% endif %}
+                    <span class="preview-name">{{ testimonial.customer_name }}</span>
+                </div>
+                <p class="preview-text">"{{ testimonial.review_text|truncatewords:30 }}"</p>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <a href="{% url 'testimonial_list' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-danger">🗑️ Delete Testimonial</button>
+                </div>
+            </form>
+
+            <p class="warning-text">This will permanently remove the testimonial and its image.</p>
+        </div>
+    </div>
+</body>
+</html>
