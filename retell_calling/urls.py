@@ -6,6 +6,7 @@ app_name = 'retell_calling'
 urlpatterns = [
     # Call Management
     path('trigger-call/', views.trigger_call, name='trigger_call'),
+    path('initiate-checkup-call/', views.initiate_checkup_call, name='initiate_checkup_call'),
     path('patients/', views.list_patients, name='list_patients'),
     path('call-status/<int:call_session_id>/', views.call_status, name='call_status'),
     

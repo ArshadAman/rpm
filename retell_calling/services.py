@@ -694,3 +694,103 @@ If no concerning flags are identified, return an empty array: []
         except Exception as e:
             logger.error(f"Error identifying concerning flags: {str(e)}")
             return [f"Error in AI analysis: {str(e)} - manual review recommended"]
+
+
+class PatientAnalysisService:
+    """Service for analyzing patient documentation and preparing call context"""
+    
+    def __init__(self):
+        self.gemini_service = GeminiSummaryService()
+        
+    def analyze_patient_history(self, patient: Patient) -> Dict[str, Any]:
+        """
+        Analyze patient's documentation history to identify patterns and prepare call context.
+        
+        Args:
+            patient: The patient to analyze
+            
+        Returns:
+            Dictionary containing analysis results and context for Retell
+        """
+        from reports.models import Documentation
+        
+        logger.info(f"Analyzing documentation for patient: {patient.user.email}")
+        
+        # Fetch last 5 documentations to avoid context window limits
+        docs = Documentation.objects.filter(patient=patient).order_by('-created_at')[:5]
+        
+        if not docs.exists():
+            logger.info("No documentation found for patient")
+            return {
+                "has_history": False,
+                "analysis": "No prior documentation available.",
+                "suggested_questions": ["How are you feeling today?", "Do you have any new symptoms?"],
+                "risk_flags": []
+            }
+            
+        # Compile documentation history
+        history_text = f"Patient: {patient.user.first_name} {patient.user.last_name}\n"
+        history_text += f"Age: {patient.age}\n"
+        # history_text += f"Conditions: {patient.medical_history.all() if hasattr(patient, 'medical_history') else 'Unknown'}\n\n"
+        
+        for doc in docs:
+            history_text += f"--- Date: {doc.created_at.strftime('%Y-%m-%d')} ---\n"
+            history_text += f"Type: {doc.title}\n"
+            if doc.history_of_present_illness:
+                history_text += f"HPI: {doc.history_of_present_illness}\n"
+            if doc.assessment:
+                history_text += f"Assessment: {doc.assessment}\n"
+            if doc.plan:
+                history_text += f"Plan: {doc.plan}\n"
+            history_text += "\n"
+            
+        # Analyze with Gemini
+        prompt = f"""
+        Analyze the following patient medical documentation history and prepare a briefing for a checkup call agent.
+        
+        Patient History:
+        {history_text}
+        
+        Please provide a JSON response with the following structure:
+        {{
+            "patterns": "Brief summary of health patterns (improving, deteriorating, stable)",
+            "risk_flags": ["List of specific risks or red flags to check on"],
+            "medication_issues": "Any noted medication compliance issues or changes",
+            "suggested_questions": ["3-5 specific questions to ask the patient based on their history"],
+            "call_context": "A concise paragraph to brief the calling agent on the patient's status"
+        }}
+        """
+        
+        try:
+            response = self.gemini_service.model.generate_content(prompt)
+            
+            if not response.text:
+                raise Exception("Empty response from Gemini")
+                
+            # Clean and parse JSON
+            response_text = response.text.strip()
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]
+            if response_text.startswith('```'):
+                response_text = response_text[3:]
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]
+                
+            analysis = json.loads(response_text.strip())
+            
+            # Add metadata
+            analysis['has_history'] = True
+            analysis['analyzed_param_count'] = len(docs)
+            
+            logger.info("Patient history analysis completed successfully")
+            return analysis
+            
+        except Exception as e:
+            logger.error(f"Error analyzing patient history: {str(e)}")
+            return {
+                "has_history": True,
+                "analysis": "Error analyzing history.",
+                "error": str(e),
+                "suggested_questions": ["How have you been since our last visit?", "Any changes in your condition?"],
+                "risk_flags": []
+            }
