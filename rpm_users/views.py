@@ -1046,7 +1046,9 @@ def view_assigned_patient(request):
             'formatted_allergies': allergies,
             'formatted_family_history': family_history,
             'last_documentation': last_doc_text,
-            'last_vital': last_vital_text
+            'last_vital': last_vital_text,
+            'status': patient.status or 'green',
+            'sticky_note': patient.sticky_note or ''
         }
         formatted_patients.append(formatted_patient)
 
@@ -3684,3 +3686,57 @@ def get_active_testimonials(request):
             'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@login_required
+@require_POST
+def update_patient_status(request, patient_id):
+    """Update patient status (green, orange, red)"""
+    try:
+        data = json.loads(request.body)
+        status_value = data.get('status')
+        
+        if status_value not in ['green', 'orange', 'red']:
+            return JsonResponse({'success': False, 'error': 'Invalid status value'}, status=400)
+        
+        patient = get_object_or_404(Patient, id=patient_id)
+        patient.status = status_value
+        patient.save()
+        
+        return JsonResponse({'success': True, 'status': status_value})
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def update_patient_sticky_note(request, patient_id):
+    """Update patient sticky note"""
+    try:
+        data = json.loads(request.body)
+        sticky_note = data.get('sticky_note', '')
+        
+        if len(sticky_note) > 500:
+            return JsonResponse({'success': False, 'error': 'Sticky note too long (max 500 characters)'}, status=400)
+        
+        patient = get_object_or_404(Patient, id=patient_id)
+        patient.sticky_note = sticky_note
+        patient.save()
+        
+        return JsonResponse({'success': True, 'sticky_note': sticky_note})
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def get_patient_sticky_note(request, patient_id):
+    """Get patient sticky note"""
+    try:
+        patient = get_object_or_404(Patient, id=patient_id)
+        return JsonResponse({'success': True, 'sticky_note': patient.sticky_note or ''})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

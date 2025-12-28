@@ -104,4 +104,9 @@ urlpatterns = [
     
     # Public API for testimonials
     path('api/testimonials/active/', views.get_active_testimonials, name='get_active_testimonials'),
+    
+    # Patient status and sticky notes API
+    path('api/patient/<uuid:patient_id>/status/', views.update_patient_status, name='update_patient_status'),
+    path('api/patient/<uuid:patient_id>/sticky-note/', views.update_patient_sticky_note, name='update_patient_sticky_note'),
+    path('api/patient/<uuid:patient_id>/get-sticky-note/', views.get_patient_sticky_note, name='get_patient_sticky_note'),
 ]

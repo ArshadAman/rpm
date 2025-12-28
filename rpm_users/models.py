@@ -46,6 +46,15 @@ class Patient(models.Model):
     doctor_escalated = models.ForeignKey('Doctor', blank=True, null=True, on_delete=models.SET_NULL, related_name='escalated_patients')
     is_escalated = models.BooleanField(default=False)
     
+    # Status and Sticky Notes for moderator/doctor tracking
+    STATUS_CHOICES = (
+        ('green', 'Green'),
+        ('orange', 'Orange'),
+        ('red', 'Red'),
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='green', blank=True, null=True)
+    sticky_note = models.TextField(max_length=500, blank=True, null=True, help_text="Reminder notes for this patient (max 500 chars)")
+    
     def __str__(self):
         return self.user.email
     

@@ -4133,6 +4133,7 @@
 
             const formData = {
               patient_id: patientId,
+              manual_datetime: document.getElementById("add-datetime").value || null,
               systolic_blood_pressure: parseNumericValue(
                 document.getElementById("add-systolic").value,
                 true
@@ -4621,6 +4622,18 @@
 
         <form id="add-report-form">
           <div class="form-grid">
+            <!-- Date and Time -->
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Date & Time (when vitals were taken)</label>
+              <input
+                type="datetime-local"
+                id="add-datetime"
+                class="form-input"
+              />
+              <small style="color: rgba(224, 195, 252, 0.6); font-size: 12px;">Leave empty to use current date/time</small>
+              <div class="error-message" id="add-datetime-error"></div>
+            </div>
+
             <!-- Blood Pressure -->
             <div class="form-group">
               <label class="form-label">Systolic BP (mmHg)</label>
