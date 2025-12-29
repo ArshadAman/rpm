@@ -121,7 +121,12 @@ def get_all_reports(request, patient_id):
     is_patient = Patient.objects.filter(user=user, id=patient_id).exists()
     
     if is_moderator or is_patient:
-        reports = Reports.objects.filter(patient=patient).order_by("-created_at")
+        # Get all reports and sort by effective datetime (manual_datetime if set, else created_at)
+        from django.db.models.functions import Coalesce
+        
+        reports = Reports.objects.filter(patient=patient).annotate(
+            sort_datetime=Coalesce('manual_datetime', 'created_at')
+        ).order_by("-sort_datetime")
         print("reports", reports)
     else:
         print(f"DEBUG: User {user} is not authorized to view reports for patient {patient_id}")
@@ -133,10 +138,15 @@ def get_all_reports(request, patient_id):
         return JsonResponse({"reports": []}, safe=False)
 
     # Prepare JSON response with all fields
-    # Convert UTC datetime to local timezone before formatting
+    # Use effective_datetime (manual_datetime if set, else created_at) for display
     data = {
         "reports": [
-            {**model_to_dict(report), "created_at": timezone.localtime(report.created_at).strftime("%Y-%m-%d %H:%M:%S")} for report in reports
+            {
+                **model_to_dict(report), 
+                "created_at": timezone.localtime(report.manual_datetime if report.manual_datetime else report.created_at).strftime("%Y-%m-%d %H:%M:%S"),
+                "manual_datetime": timezone.localtime(report.manual_datetime).strftime("%Y-%m-%d %H:%M:%S") if report.manual_datetime else None,
+                "is_manual_entry": report.data_type == 'manual_entry'
+            } for report in reports
         ]
     }
 
@@ -805,10 +815,25 @@ def create_report_manual(request):
         if 'systolic_blood_pressure' in report_fields and 'diastolic_blood_pressure' in report_fields:
             report_fields['blood_pressure'] = f"{report_fields['systolic_blood_pressure']}/{report_fields['diastolic_blood_pressure']}"
         
-        # Set default values for required fields
+        # Handle manual datetime if provided
+        manual_datetime = data.get('manual_datetime')
+        if manual_datetime:
+            try:
+                from datetime import datetime
+                # Parse the datetime string (expected format: YYYY-MM-DDTHH:MM from HTML datetime-local input)
+                parsed_datetime = datetime.strptime(manual_datetime, '%Y-%m-%dT%H:%M')
+                # Make it timezone aware
+                report_fields['manual_datetime'] = timezone.make_aware(parsed_datetime)
+                report_fields['measurement_timestamp'] = parsed_datetime.strftime('%Y-%m-%d %H:%M:%S')
+                report_fields['created_at_device'] = parsed_datetime.strftime('%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                return JsonResponse({'success': False, 'error': 'Invalid datetime format'}, status=400)
+        else:
+            # Set default values for required fields
+            report_fields['measurement_timestamp'] = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+            report_fields['created_at_device'] = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+        
         report_fields.update({
-            'measurement_timestamp': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'created_at_device': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
             'data_type': 'manual_entry',
             'is_test': 'false'
         })
