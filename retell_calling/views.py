@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import models
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -667,6 +668,82 @@ def retell_webhook(request):
                 logger.info(f"Lead call {call_id} is not part of a bulk session (bulk_session_id: {getattr(call_session, 'bulk_session_id', 'not set')})")
         
         logger.info(f"Call session updated successfully for call {call_id}, event: {event_type}")
+        
+        # Handle sequential calling for patient bulk sessions
+        if event_type == 'call_ended' and call_type == 'patient':
+            logger.info(f"Processing call_ended for patient call {call_id}")
+            
+            # Check if this call is part of a patient bulk session (stored in ai_summary)
+            bulk_session_id = None
+            if call_session.ai_summary:
+                try:
+                    ai_summary_data = call_session.ai_summary if isinstance(call_session.ai_summary, dict) else json.loads(call_session.ai_summary)
+                    bulk_session_id = ai_summary_data.get('bulk_session_id')
+                except:
+                    pass
+            
+            if bulk_session_id:
+                logger.info(f"Patient call {call_id} is part of bulk session {bulk_session_id}")
+                try:
+                    bulk_session = BulkCallSession.objects.get(id=bulk_session_id)
+                    logger.info(f"Found patient bulk session {bulk_session.id} with status {bulk_session.status}")
+                    
+                    # Determine if this call was successful
+                    call_was_successful = (
+                        call_session.call_status == 'completed' and 
+                        call_session.transcript and 
+                        call_session.transcript.strip()
+                    )
+                    
+                    # Mark this call as completed in the bulk session
+                    bulk_session.mark_call_completed(
+                        success=call_was_successful,
+                        call_data={
+                            'patient_id': str(call_session.patient.id),
+                            'call_id': call_id,
+                            'call_session_id': str(call_session.id),
+                            'status': call_session.call_status,
+                            'duration_seconds': call_session.duration_seconds,
+                            'has_transcript': bool(call_session.transcript and call_session.transcript.strip()),
+                            'disconnection_reason': call_session.disconnection_reason or '',
+                            'timestamp': timezone.now().isoformat(),
+                            'answered': call_was_successful
+                        }
+                    )
+                    
+                    # Increment index to move to the next patient
+                    bulk_session.current_index += 1
+                    bulk_session.save()
+                    
+                    logger.info(f"Patient bulk session {bulk_session.id}: Call completed, moved to index {bulk_session.current_index}")
+                    
+                    # Initiate next call if there are more patients
+                    if bulk_session.current_index < len(bulk_session.leads_data) and bulk_session.status != 'completed':
+                        logger.info(f"Initiating next patient call in bulk session {bulk_session.id}")
+                        
+                        import time
+                        time.sleep(2)
+                        
+                        next_result = initiate_next_patient_call(bulk_session)
+                        if next_result['success']:
+                            logger.info(f"Next patient call initiated successfully: {next_result['call_id']}")
+                        else:
+                            logger.error(f"Failed to initiate next patient call: {next_result.get('error')}")
+                            bulk_session.current_index += 1
+                            bulk_session.save()
+                            
+                            if bulk_session.current_index < len(bulk_session.leads_data):
+                                next_result = initiate_next_patient_call(bulk_session)
+                    else:
+                        logger.info(f"Patient bulk session {bulk_session.id} completed")
+                        bulk_session.status = 'completed'
+                        bulk_session.completed_at = timezone.now()
+                        bulk_session.save()
+                        
+                except BulkCallSession.DoesNotExist:
+                    logger.warning(f"Patient bulk session {bulk_session_id} not found")
+                except Exception as e:
+                    logger.error(f"Error handling patient sequential calling: {str(e)}")
         
         # Return success response (Retell expects 2xx status)
         return JsonResponse({
@@ -1687,3 +1764,285 @@ def test_summary_generation(request):
         return Response({
             'error': f'Test failed: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================== PATIENT BULK CALLING ====================
+
+@api_view(['POST'])
+def trigger_bulk_patient_calls(request):
+    """
+    Trigger sequential calls to all assigned patients.
+    This returns immediately and starts a background process to handle calls sequentially.
+    """
+    try:
+        from rpm_users.models import Moderator
+        
+        # Get the moderator making the request
+        if not Moderator.objects.filter(user=request.user).exists():
+            return Response({
+                'error': 'Only moderators can trigger bulk patient calls'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        moderator = Moderator.objects.get(user=request.user)
+        
+        agent_id = "agent_f1e1852a2a6b90b39d997f95b5"
+        
+        logger.info("Starting bulk patient calling process")
+        
+        # Get patients assigned to this moderator with phone numbers
+        patients = Patient.objects.filter(
+            moderator_assigned=moderator,
+            phone_number__isnull=False
+        ).exclude(phone_number='').order_by('created_at')
+        
+        if not patients.exists():
+            return Response({
+                'success': True,
+                'message': 'No patients available for calling',
+                'patients_to_call': 0,
+                'patients': []
+            }, status=status.HTTP_200_OK)
+        
+        patient_count = patients.count()
+        patient_list = []
+        for patient in patients:
+            patient_list.append({
+                'id': str(patient.id),
+                'name': f"{patient.user.first_name or ''} {patient.user.last_name or ''}".strip(),
+                'phone': patient.phone_number
+            })
+        
+        try:
+            # Create a bulk calling session to track progress
+            bulk_session = BulkCallSession.objects.create(
+                session_type='patient_calls',
+                total_leads=patient_count,
+                leads_data=patient_list,
+                agent_id=agent_id,
+                status='initiated'
+            )
+            
+            # Start the first call
+            result = initiate_next_patient_call(bulk_session)
+            
+            if result['success']:
+                return Response({
+                    'success': True,
+                    'message': f'Bulk calling process started for {patient_count} patients',
+                    'bulk_session_id': str(bulk_session.id),
+                    'patients_to_call': patient_count,
+                    'first_call_initiated': True,
+                    'first_call_id': result.get('call_id'),
+                    'patients': patient_list
+                }, status=status.HTTP_201_CREATED)
+            else:
+                bulk_session.status = 'failed'
+                bulk_session.error_message = result.get('error', 'Failed to start first call')
+                bulk_session.save()
+                
+                return Response({
+                    'success': False,
+                    'error': f'Failed to start bulk calling: {result.get("error")}',
+                    'bulk_session_id': str(bulk_session.id)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+        except Exception as e:
+            logger.error(f"Error starting bulk patient calling process: {str(e)}")
+            return Response({
+                'error': f'Failed to start bulk calling process: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in trigger_bulk_patient_calls: {str(e)}")
+        return Response({
+            'error': f'Internal server error: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def initiate_next_patient_call(bulk_session):
+    """
+    Initiate the next call in a bulk patient calling session.
+    """
+    try:
+        if bulk_session.current_index >= len(bulk_session.leads_data):
+            logger.info(f"No more patients to call in bulk session {bulk_session.id}")
+            bulk_session.status = 'completed'
+            bulk_session.completed_at = timezone.now()
+            bulk_session.save()
+            return {'success': False, 'message': 'No more patients to call'}
+        
+        # Get patient data from the session using current_index
+        patient_data = bulk_session.leads_data[bulk_session.current_index]
+        logger.info(f"Attempting to call patient at index {bulk_session.current_index}: {patient_data}")
+        
+        try:
+            current_patient = Patient.objects.get(id=patient_data['id'])
+        except Patient.DoesNotExist:
+            logger.error(f"Patient {patient_data['id']} at index {bulk_session.current_index} not found")
+            bulk_session.mark_call_completed(
+                success=False, 
+                call_data={
+                    'patient_id': patient_data['id'],
+                    'error': 'Patient not found',
+                    'timestamp': timezone.now().isoformat(),
+                    'index': bulk_session.current_index
+                }
+            )
+            return {'success': False, 'error': 'Patient not found, will try next'}
+        
+        # Initialize the call service
+        call_service = RetellCallService()
+        
+        logger.info(f"Initiating call to patient {current_patient.id} at index {bulk_session.current_index}")
+        
+        # Build dynamic variables for the agent flow
+        dynamic_variables = {
+            'patient_id': str(current_patient.id),
+            'patient_name': f"{current_patient.user.first_name or ''} {current_patient.user.last_name or ''}".strip(),
+            'patient_first_name': current_patient.user.first_name or '',
+            'patient_last_name': current_patient.user.last_name or '',
+            'patient_email': current_patient.user.email or '',
+            'patient_phone': current_patient.phone_number or '',
+        }
+        
+        # Create the call using the patient call method
+        result = call_service.create_phone_call(current_patient, bulk_session.agent_id, dynamic_variables)
+        
+        call_session = result['call_session']
+        call_id = result['call_id']
+        
+        # Store bulk_session_id in ai_summary field as JSON since RetellCallSession doesn't have bulk_session_id
+        if call_session.ai_summary:
+            call_session.ai_summary['bulk_session_id'] = str(bulk_session.id)
+        else:
+            call_session.ai_summary = {'bulk_session_id': str(bulk_session.id)}
+        call_session.save()
+        
+        logger.info(f"Call successfully initiated for patient {current_patient.id}, call_id: {call_id}")
+        
+        # Update bulk session status
+        bulk_session.status = 'in_progress'
+        bulk_session.save()
+        
+        return {
+            'success': True,
+            'call_id': call_id,
+            'call_session_id': str(call_session.id),
+            'patient_id': str(current_patient.id),
+            'patient_name': f"{current_patient.user.first_name or ''} {current_patient.user.last_name or ''}".strip(),
+            'bulk_session_id': str(bulk_session.id),
+            'current_index': bulk_session.current_index
+        }
+        
+    except Exception as e:
+        logger.error(f"Error initiating patient call at index {bulk_session.current_index}: {str(e)}")
+        bulk_session.mark_call_completed(
+            success=False,
+            call_data={
+                'patient_id': 'unknown',
+                'error': str(e),
+                'timestamp': timezone.now().isoformat(),
+                'index': bulk_session.current_index
+            }
+        )
+        return {'success': False, 'error': str(e)}
+
+
+@api_view(['GET'])
+def patient_bulk_call_status(request, bulk_session_id):
+    """Get the status of a bulk patient calling session"""
+    try:
+        bulk_session = BulkCallSession.objects.get(id=bulk_session_id)
+        
+        return Response({
+            'success': True,
+            'bulk_session_id': str(bulk_session.id),
+            'status': bulk_session.status,
+            'total_patients': bulk_session.total_leads,
+            'completed_calls': bulk_session.completed_calls,
+            'successful_calls': bulk_session.successful_calls,
+            'failed_calls': bulk_session.failed_calls,
+            'no_answer_calls': bulk_session.no_answer_calls,
+            'progress_percentage': bulk_session.progress_percentage,
+            'remaining_calls': bulk_session.remaining_calls,
+            'current_index': bulk_session.current_index,
+            'started_at': bulk_session.started_at.isoformat() if bulk_session.started_at else None,
+            'completed_at': bulk_session.completed_at.isoformat() if bulk_session.completed_at else None
+        }, status=status.HTTP_200_OK)
+        
+    except BulkCallSession.DoesNotExist:
+        return Response({
+            'error': 'Bulk session not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@login_required
+def all_patient_call_summaries(request):
+    """View all patient call summaries for the logged-in moderator's patients"""
+    from rpm_users.models import Moderator
+    
+    if not Moderator.objects.filter(user=request.user).exists():
+        return render(request, 'errors/403.html', {'error': 'Only moderators can access this page'}, status=403)
+    
+    moderator = Moderator.objects.get(user=request.user)
+    
+    # Get all patients assigned to this moderator
+    patients = Patient.objects.filter(moderator_assigned=moderator).order_by('created_at')
+    
+    # Get call summaries for these patients
+    summaries = CallSummary.objects.filter(
+        patient__in=patients
+    ).select_related('patient', 'call_session').order_by('-generated_at')
+    
+    # Get latest call status for each patient
+    patient_call_data = []
+    for idx, patient in enumerate(patients, 1):
+        latest_call = RetellCallSession.objects.filter(patient=patient).order_by('-created_at').first()
+        summary_count = CallSummary.objects.filter(patient=patient).count()
+        
+        patient_call_data.append({
+            'serial_number': idx,
+            'patient': patient,
+            'latest_call': latest_call,
+            'summary_count': summary_count,
+            'has_calls': latest_call is not None
+        })
+    
+    context = {
+        'patient_call_data': patient_call_data,
+        'summaries': summaries,
+        'total_summaries': summaries.count(),
+        'total_patients': patients.count()
+    }
+    
+    return render(request, 'retell_calling/all_patient_call_summaries.html', context)
+
+
+@api_view(['GET'])
+def get_patient_call_status(request, patient_id):
+    """Get the latest call status for a specific patient"""
+    try:
+        patient = Patient.objects.get(id=patient_id)
+        latest_call = RetellCallSession.objects.filter(patient=patient).order_by('-created_at').first()
+        
+        if latest_call:
+            return Response({
+                'success': True,
+                'has_call': True,
+                'call_status': latest_call.call_status,
+                'call_id': latest_call.retell_call_id,
+                'duration_seconds': latest_call.duration_seconds,
+                'created_at': latest_call.created_at.isoformat(),
+                'disconnection_reason': latest_call.disconnection_reason or ''
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'success': True,
+                'has_call': False,
+                'call_status': 'no_calls'
+            }, status=status.HTTP_200_OK)
+            
+    except Patient.DoesNotExist:
+        return Response({
+            'error': 'Patient not found'
+        }, status=status.HTTP_404_NOT_FOUND)

@@ -983,6 +983,9 @@ def view_assigned_patient(request):
     # Order patients by signup date (created_at)
     patient_obj = Patient.objects.filter(moderator_assigned=moderator).order_by('created_at')
     
+    # Import models for call status
+    from retell_calling.models import RetellCallSession, CallSummary
+    
     formatted_patients = []
     serial_number = 1  # Start serial number from 1
     for patient in patient_obj:
@@ -1041,6 +1044,13 @@ def view_assigned_patient(request):
             else:
                 last_vital_text = f"Vital recorded - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
 
+        # Get latest call status for this patient
+        latest_call = RetellCallSession.objects.filter(patient=patient).order_by('-created_at').first()
+        call_status = latest_call.call_status if latest_call else None
+        
+        # Get summary count for this patient
+        summary_count = CallSummary.objects.filter(patient=patient).count()
+
         formatted_patient = {
             'serial_number': serial_number,
             'patient': patient,
@@ -1051,7 +1061,9 @@ def view_assigned_patient(request):
             'last_documentation': last_doc_text,
             'last_vital': last_vital_text,
             'status': patient.status or 'green',
-            'sticky_note': patient.sticky_note or ''
+            'sticky_note': patient.sticky_note or '',
+            'call_status': call_status,
+            'summary_count': summary_count
         }
         formatted_patients.append(formatted_patient)
         serial_number += 1  # Increment serial number
