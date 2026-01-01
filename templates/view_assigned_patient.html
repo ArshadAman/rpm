@@ -267,6 +267,7 @@
         <table>
           <thead>
             <tr>
+              <th>S.No</th>
               <th>Name</th>
               <th>Date of Birth</th>
               <th>Last Documentation</th>
@@ -281,6 +282,7 @@
             {% for entry in patient_obj %}
               {% with entry.patient as patient %}
               <tr>
+                <td style="text-align: center; font-weight: 600;">{{ entry.serial_number }}</td>
                 <td>
                   <a href="{% url 'moderator_actions' patient.id %}?action=access" class="table-link">
                     {{ patient.user.first_name }} {{ patient.user.last_name }}
