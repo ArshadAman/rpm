@@ -36,7 +36,7 @@
       /* Container */
       .container {
         width: 100%;
-        max-width: 1200px;
+        max-width: 1600px;
         background: var(--card-bg);
         backdrop-filter: blur(20px);
         padding: 40px;
@@ -254,12 +254,29 @@
           Register Patient
         </a>
         <h2>Assigned Patients</h2>
-        <a href="{% url 'moderator_logout' %}" class="btn logout-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-          </svg>
-          Logout
-        </a>
+        <div class="header-actions">
+          <a href="{% url 'retell_calling:all_patient_call_summaries' %}" class="btn summaries-btn" title="View All Call Summaries">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            All Summaries
+          </a>
+          <button id="bulkCallBtn" class="btn bulk-call-btn" onclick="initiateBulkPatientCalls()" title="Call all patients sequentially">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            Bulk Call All
+          </button>
+          <a href="{% url 'moderator_logout' %}" class="btn logout-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+            </svg>
+            Logout
+          </a>
+        </div>
       </div>
 
       {% if patient_obj %}
@@ -274,6 +291,8 @@
               <th>Last Vital</th>
               <th>Insurance</th>
               <th>Checkup Call</th>
+              <th>Call Status</th>
+              <th>Summaries</th>
               <th>Status</th>
               <th>Notes</th>
             </tr>
@@ -299,6 +318,22 @@
                     </svg>
                     Call
                   </button>
+                </td>
+                <td>
+                  <span class="call-status-badge status-{{ entry.call_status|default:'no_calls' }}" data-patient-id="{{ patient.id }}">
+                    {{ entry.call_status|default:"No Calls"|title }}
+                  </span>
+                </td>
+                <td>
+                  <a href="{% url 'retell_calling:patient_call_summaries' patient.id %}" class="btn summary-btn" title="View call summaries">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    {% if entry.summary_count > 0 %}<span class="summary-count">{{ entry.summary_count }}</span>{% endif %}
+                  </a>
                 </td>
                 <td>
                   <div class="status-selector" data-patient-id="{{ patient.id }}">
@@ -549,10 +584,418 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeStickyNoteModal();
+                closeBulkCallModal();
             }
         });
+
+        // Bulk Patient Calling functionality
+        let currentBulkSessionId = null;
+        let bulkCallPollingInterval = null;
+
+        async function initiateBulkPatientCalls() {
+            const patientCount = {{ patient_obj|length }};
+            
+            if (patientCount === 0) {
+                alert('No patients available for calling.');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to initiate calls to all ${patientCount} patients? This will call each patient one by one sequentially.`)) {
+                return;
+            }
+
+            const bulkCallBtn = document.getElementById('bulkCallBtn');
+            const originalText = bulkCallBtn.innerHTML;
+            
+            // Show loading state
+            bulkCallBtn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                </svg>
+                Initiating...
+            `;
+            bulkCallBtn.disabled = true;
+
+            try {
+                const response = await fetch('/retell_calling/trigger-bulk-patient-calls/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentBulkSessionId = data.bulk_session_id;
+                    showBulkCallProgressModal(data);
+                    startBulkCallPolling();
+                } else {
+                    alert('Error initiating bulk calls: ' + (data.error || 'Unknown error'));
+                    bulkCallBtn.innerHTML = originalText;
+                    bulkCallBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while initiating bulk calls.');
+                bulkCallBtn.innerHTML = originalText;
+                bulkCallBtn.disabled = false;
+            }
+        }
+
+        function showBulkCallProgressModal(data) {
+            const modal = document.getElementById('bulkCallModal');
+            document.getElementById('bulkCallTotal').textContent = data.total_patients || 0;
+            document.getElementById('bulkCallCompleted').textContent = data.calls_completed || 0;
+            document.getElementById('bulkCallFailed').textContent = data.calls_failed || 0;
+            document.getElementById('bulkCallProgress').style.width = '0%';
+            document.getElementById('bulkCallStatusText').textContent = 'Starting bulk calls...';
+            modal.classList.add('show');
+        }
+
+        function closeBulkCallModal() {
+            const modal = document.getElementById('bulkCallModal');
+            modal.classList.remove('show');
+            stopBulkCallPolling();
+            
+            // Reset the bulk call button
+            const bulkCallBtn = document.getElementById('bulkCallBtn');
+            bulkCallBtn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                Bulk Call All
+            `;
+            bulkCallBtn.disabled = false;
+        }
+
+        function startBulkCallPolling() {
+            if (bulkCallPollingInterval) {
+                clearInterval(bulkCallPollingInterval);
+            }
+            
+            bulkCallPollingInterval = setInterval(async () => {
+                if (!currentBulkSessionId) {
+                    stopBulkCallPolling();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/retell_calling/patient-bulk-call-status/${currentBulkSessionId}/`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        updateBulkCallProgress(data);
+                        
+                        // Check if completed
+                        if (data.status === 'completed' || data.status === 'failed') {
+                            stopBulkCallPolling();
+                            showBulkCallCompleteMessage(data);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling bulk call status:', error);
+                }
+            }, 3000); // Poll every 3 seconds
+        }
+
+        function stopBulkCallPolling() {
+            if (bulkCallPollingInterval) {
+                clearInterval(bulkCallPollingInterval);
+                bulkCallPollingInterval = null;
+            }
+        }
+
+        function updateBulkCallProgress(data) {
+            const total = data.total_patients || 0;
+            const completed = data.calls_completed || 0;
+            const failed = data.calls_failed || 0;
+            const progress = total > 0 ? ((completed + failed) / total * 100) : 0;
+
+            document.getElementById('bulkCallTotal').textContent = total;
+            document.getElementById('bulkCallCompleted').textContent = completed;
+            document.getElementById('bulkCallFailed').textContent = failed;
+            document.getElementById('bulkCallProgress').style.width = `${progress}%`;
+            
+            if (data.current_patient_name) {
+                document.getElementById('bulkCallStatusText').textContent = `Calling: ${data.current_patient_name}`;
+            } else if (data.status === 'completed') {
+                document.getElementById('bulkCallStatusText').textContent = 'All calls completed!';
+            } else {
+                document.getElementById('bulkCallStatusText').textContent = `Processing... (${completed + failed}/${total})`;
+            }
+
+            // Update call status badges on the page
+            updateCallStatusBadges();
+        }
+
+        function showBulkCallCompleteMessage(data) {
+            const statusText = document.getElementById('bulkCallStatusText');
+            if (data.status === 'completed') {
+                statusText.innerHTML = `<span style="color: var(--success);">✅ All calls completed!</span> Successful: ${data.calls_completed}, Failed: ${data.calls_failed}`;
+            } else {
+                statusText.innerHTML = `<span style="color: var(--error);">❌ Bulk calling ended.</span> Completed: ${data.calls_completed}, Failed: ${data.calls_failed}`;
+            }
+        }
+
+        async function updateCallStatusBadges() {
+            // Fetch and update individual call statuses
+            const badges = document.querySelectorAll('.call-status-badge');
+            for (const badge of badges) {
+                const patientId = badge.getAttribute('data-patient-id');
+                try {
+                    const response = await fetch(`/retell_calling/patient-call-status/${patientId}/`);
+                    const data = await response.json();
+                    if (data.success && data.call_status) {
+                        badge.textContent = data.call_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        badge.className = `call-status-badge status-${data.call_status}`;
+                    }
+                } catch (error) {
+                    console.error('Error updating call status:', error);
+                }
+            }
+        }
       </script>
       <style>
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .summaries-btn {
+            background: rgba(121, 40, 202, 0.2);
+            color: var(--primary);
+            border: 1px solid rgba(121, 40, 202, 0.3);
+            padding: 10px 16px;
+            font-size: 13px;
+        }
+
+        .summaries-btn:hover {
+            background: rgba(121, 40, 202, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .bulk-call-btn {
+            background: linear-gradient(135deg, #FF0080, #7928CA);
+            color: white;
+            padding: 10px 16px;
+            font-size: 13px;
+        }
+
+        .bulk-call-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 0, 128, 0.4);
+        }
+
+        .bulk-call-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Call Status Badge Styles */
+        .call-status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .call-status-badge.status-no_calls {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .call-status-badge.status-completed {
+            background: rgba(0, 204, 136, 0.2);
+            color: #00CC88;
+        }
+
+        .call-status-badge.status-ended {
+            background: rgba(0, 204, 136, 0.2);
+            color: #00CC88;
+        }
+
+        .call-status-badge.status-initiated {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+        }
+
+        .call-status-badge.status-in_progress {
+            background: rgba(0, 201, 255, 0.2);
+            color: #00C9FF;
+        }
+
+        .call-status-badge.status-no_answer {
+            background: rgba(255, 149, 0, 0.2);
+            color: #FF9500;
+        }
+
+        .call-status-badge.status-failed {
+            background: rgba(255, 78, 78, 0.2);
+            color: #FF4E4E;
+        }
+
+        .call-status-badge.status-busy {
+            background: rgba(255, 149, 0, 0.2);
+            color: #FF9500;
+        }
+
+        /* Summary Button Styles */
+        .summary-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            padding: 6px 10px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .summary-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .summary-count {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+
+        /* Bulk Call Progress Modal */
+        .bulk-call-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .bulk-call-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .bulk-call-modal-content {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .bulk-call-modal.show .bulk-call-modal-content {
+            transform: scale(1);
+        }
+
+        .bulk-call-modal h3 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bulk-call-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .bulk-call-stat {
+            text-align: center;
+        }
+
+        .bulk-call-stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .bulk-call-stat-value.total { color: var(--text); }
+        .bulk-call-stat-value.completed { color: var(--success); }
+        .bulk-call-stat-value.failed { color: var(--error); }
+
+        .bulk-call-stat-label {
+            font-size: 12px;
+            color: rgba(224, 195, 252, 0.7);
+        }
+
+        .bulk-call-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .bulk-call-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .bulk-call-status-text {
+            color: var(--text);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .bulk-call-close-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
+
+        .bulk-call-close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Spinning animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
         .checkup-btn {
             background: linear-gradient(135deg, #00C9FF, #92FE9D);
             color: #0F1116;
@@ -870,6 +1313,32 @@
             <button class="modal-btn modal-btn-cancel" onclick="closeStickyNoteModal()">Cancel</button>
             <button class="modal-btn modal-btn-save" onclick="saveStickyNote()">Save Note</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Bulk Call Progress Modal -->
+      <div id="bulkCallModal" class="bulk-call-modal" onclick="if(event.target === this) closeBulkCallModal()">
+        <div class="bulk-call-modal-content">
+          <h3>📞 Bulk Patient Calling</h3>
+          <div class="bulk-call-stats">
+            <div class="bulk-call-stat">
+              <span class="bulk-call-stat-value total" id="bulkCallTotal">0</span>
+              <span class="bulk-call-stat-label">Total</span>
+            </div>
+            <div class="bulk-call-stat">
+              <span class="bulk-call-stat-value completed" id="bulkCallCompleted">0</span>
+              <span class="bulk-call-stat-label">Completed</span>
+            </div>
+            <div class="bulk-call-stat">
+              <span class="bulk-call-stat-value failed" id="bulkCallFailed">0</span>
+              <span class="bulk-call-stat-label">Failed</span>
+            </div>
+          </div>
+          <div class="bulk-call-progress-bar">
+            <div class="bulk-call-progress-fill" id="bulkCallProgress" style="width: 0%"></div>
+          </div>
+          <div class="bulk-call-status-text" id="bulkCallStatusText">Starting bulk calls...</div>
+          <button class="bulk-call-close-btn" onclick="closeBulkCallModal()">Close</button>
         </div>
       </div>
       {% else %}

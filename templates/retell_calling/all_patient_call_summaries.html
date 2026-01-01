@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All Patient Call Summaries</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #7928CA;
+        --primary-dark: #6A0DAD;
+        --secondary: #FF0080;
+        --text: #E0C3FC;
+        --background: #0F1116;
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --error: #FF4E4E;
+        --success: #00CC88;
+      }
+
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: radial-gradient(circle at top right, #1a1a2e, var(--background));
+        min-height: 100vh;
+        color: var(--text);
+        padding: 20px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1400px;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin: 40px auto;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        z-index: 1;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        padding: 0 20px;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      h2 {
+        color: white;
+        font-size: 28px;
+        font-weight: 600;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .stats-bar {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .stat-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 12px 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .stat-item span {
+        color: var(--secondary);
+        font-weight: 600;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      .btn-back {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .btn-back:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .table-container {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 40px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+
+      th {
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        color: white;
+        font-weight: 500;
+        font-size: 14px;
+        padding: 16px 20px;
+        text-align: left;
+      }
+
+      td {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 14px;
+      }
+
+      tr {
+        background: rgba(255, 255, 255, 0.03);
+        transition: all 0.3s ease;
+      }
+
+      tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .call-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status-completed {
+        background: rgba(0, 204, 136, 0.2);
+        color: #00CC88;
+      }
+
+      .status-no_answer {
+        background: rgba(255, 149, 0, 0.2);
+        color: #FF9500;
+      }
+
+      .status-failed {
+        background: rgba(255, 78, 78, 0.2);
+        color: #FF4E4E;
+      }
+
+      .status-initiated, .status-in_progress {
+        background: rgba(0, 201, 255, 0.2);
+        color: #00C9FF;
+      }
+
+      .status-no_calls {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .summary-card {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .summary-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .summary-patient {
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+      }
+
+      .summary-date {
+        font-size: 12px;
+        color: rgba(224, 195, 252, 0.6);
+      }
+
+      .summary-text {
+        color: var(--text);
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+
+      .key-points {
+        margin-top: 12px;
+      }
+
+      .key-points h4 {
+        color: var(--secondary);
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      .key-points ul {
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .key-points li {
+        padding: 6px 0;
+        padding-left: 20px;
+        position: relative;
+        font-size: 13px;
+      }
+
+      .key-points li::before {
+        content: '•';
+        color: var(--primary);
+        position: absolute;
+        left: 0;
+      }
+
+      .concerning-flags {
+        margin-top: 12px;
+        padding: 12px;
+        background: rgba(255, 78, 78, 0.1);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 78, 78, 0.3);
+      }
+
+      .concerning-flags h4 {
+        color: var(--error);
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      .view-summary-btn {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s ease;
+        text-decoration: none;
+      }
+
+      .view-summary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(121, 40, 202, 0.4);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px;
+        color: rgba(224, 195, 252, 0.5);
+      }
+
+      .section-title {
+        color: white;
+        font-size: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px;
+          margin: 10px;
+        }
+
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .table-container {
+          overflow-x: auto;
+        }
+
+        td, th {
+          padding: 12px 16px;
+          white-space: nowrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>📞 All Patient Call Summaries</h2>
+        <div class="stats-bar">
+          <div class="stat-item">Total Patients: <span>{{ total_patients }}</span></div>
+          <div class="stat-item">Total Summaries: <span>{{ total_summaries }}</span></div>
+        </div>
+        <a href="{% url 'view_all_assigned_patient' %}" class="btn btn-back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back to Patients
+        </a>
+      </div>
+
+      <!-- Patients Call Status Table -->
+      <h3 class="section-title">Patient Call Status</h3>
+      {% if patient_call_data %}
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Patient Name</th>
+              <th>Phone</th>
+              <th>Latest Call Status</th>
+              <th>Summaries</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for data in patient_call_data %}
+            <tr>
+              <td>{{ data.serial_number }}</td>
+              <td>{{ data.patient.user.first_name }} {{ data.patient.user.last_name }}</td>
+              <td>{{ data.patient.phone_number|default:"-" }}</td>
+              <td>
+                {% if data.latest_call %}
+                <span class="call-status status-{{ data.latest_call.call_status }}">
+                  {{ data.latest_call.call_status|title }}
+                </span>
+                {% else %}
+                <span class="call-status status-no_calls">No Calls</span>
+                {% endif %}
+              </td>
+              <td>{{ data.summary_count }}</td>
+              <td>
+                <a href="{% url 'retell_calling:patient_call_summaries' data.patient.id %}" class="view-summary-btn">
+                  View Summaries
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>No patients found.</p>
+      </div>
+      {% endif %}
+
+      <!-- Recent Summaries -->
+      <h3 class="section-title">Recent Call Summaries</h3>
+      {% if summaries %}
+        {% for summary in summaries|slice:":10" %}
+        <div class="summary-card">
+          <div class="summary-header">
+            <div>
+              <div class="summary-patient">{{ summary.patient.user.first_name }} {{ summary.patient.user.last_name }}</div>
+              <div class="summary-date">{{ summary.generated_at|date:"M d, Y h:i A" }}</div>
+            </div>
+            <span class="call-status status-{{ summary.call_session.call_status }}">
+              {{ summary.call_session.call_status|title }}
+            </span>
+          </div>
+          <div class="summary-text">{{ summary.summary_text }}</div>
+          
+          {% if summary.key_points %}
+          <div class="key-points">
+            <h4>Key Points</h4>
+            <ul>
+              {% for point in summary.key_points %}
+              <li>{{ point }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          
+          {% if summary.concerning_flags %}
+          <div class="concerning-flags">
+            <h4>⚠️ Concerning Flags</h4>
+            <ul>
+              {% for flag in summary.concerning_flags %}
+              <li>{{ flag }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="empty-state">
+        <p>No call summaries yet.</p>
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>

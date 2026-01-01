@@ -160,12 +160,99 @@
         }
 
         .title-selector {
-            background: rgba(255, 255, 255, 0.05);
+            background: #1a1a2e;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             color: white;
             padding: 8px 12px;
             font-size: 14px;
+            cursor: pointer;
+        }
+
+        .title-selector option {
+            background: #1a1a2e;
+            color: white;
+            padding: 10px;
+        }
+
+        .title-selector option:hover,
+        .title-selector option:checked {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        /* Custom Select Dropdown Styles */
+        .custom-select-wrapper {
+            position: relative;
+            min-width: 200px;
+        }
+
+        .custom-select {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .custom-select-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #1a1a2e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-select-trigger:hover {
+            border-color: var(--primary);
+        }
+
+        .custom-select.open .custom-select-trigger {
+            border-color: var(--primary);
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .custom-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1a1a2e;
+            border: 1px solid var(--primary);
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .custom-select.open .custom-options {
+            max-height: 300px;
+            opacity: 1;
+            overflow-y: auto;
+        }
+
+        .custom-option {
+            padding: 10px 12px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .custom-option:hover {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .custom-option.selected {
+            background: rgba(121, 40, 202, 0.3);
         }
 
         .editor-content {
@@ -1091,11 +1178,25 @@
                             <button type="button" class="manage-shortcuts-btn" onclick="openShortcutModal()">
                                 ⚡ Manage Shortcuts
                             </button>
-                            <select class="title-selector" id="id_title" name="title" form="documentationForm">
-                                <option value="Progress Note">Progress Note</option>
-                                <option value="RPM Progress Note">RPM Progress Note</option>
-                                <option value="CCN-HTN Progress Note">CCN-HTN Progress Note</option>
-                            </select>
+                            <!-- Custom Dropdown for Note Type -->
+                            <div class="custom-select-wrapper">
+                                <div class="custom-select" id="customTitleSelect">
+                                    <div class="custom-select-trigger">
+                                        <span id="selectedTitle">{{ documentation.title|default:"CCM Initial Note" }}</span>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 9l6 6 6-6"/>
+                                        </svg>
+                                    </div>
+                                    <div class="custom-options">
+                                        <div class="custom-option" data-value="CCM Initial Note">CCM Initial Note</div>
+                                        <div class="custom-option" data-value="Behavioural note">Behavioural note</div>
+                                        <div class="custom-option" data-value="Progress Note">Progress Note</div>
+                                        <div class="custom-option" data-value="RPM Progress Note">RPM Progress Note</div>
+                                        <div class="custom-option" data-value="CCN-HTN Progress Note">CCN-HTN Progress Note</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="id_title" name="title" value="{{ documentation.title|default:'CCM Initial Note' }}" form="documentationForm">
+                            </div>
                         </div>
                     </div>
                     <div class="editor-content">
@@ -1341,6 +1442,46 @@
     
     <script>
                 document.addEventListener('DOMContentLoaded', function() {
+            // Custom Select Dropdown functionality
+            const customSelect = document.getElementById('customTitleSelect');
+            const selectedTitle = document.getElementById('selectedTitle');
+            const hiddenInput = document.getElementById('id_title');
+            const options = customSelect.querySelectorAll('.custom-option');
+
+            // Toggle dropdown
+            customSelect.querySelector('.custom-select-trigger').addEventListener('click', function(e) {
+                e.stopPropagation();
+                customSelect.classList.toggle('open');
+            });
+
+            // Select option
+            options.forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const value = this.getAttribute('data-value');
+                    selectedTitle.textContent = value;
+                    hiddenInput.value = value;
+                    
+                    // Update selected state
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    customSelect.classList.remove('open');
+                });
+
+                // Mark current selection
+                if (option.getAttribute('data-value') === hiddenInput.value) {
+                    option.classList.add('selected');
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!customSelect.contains(e.target)) {
+                    customSelect.classList.remove('open');
+                }
+            });
+
             var inlineDateInput = document.getElementById('inline_doc_report_date');
             var hiddenDateInput = document.getElementById('hidden_doc_report_date');
             if (inlineDateInput && hiddenDateInput) {
