@@ -980,9 +980,11 @@ def moderator_logout(request):
 @login_required
 def view_assigned_patient(request):
     moderator = Moderator.objects.get(user=request.user)
-    patient_obj = Patient.objects.filter(moderator_assigned=moderator)
+    # Order patients by signup date (created_at)
+    patient_obj = Patient.objects.filter(moderator_assigned=moderator).order_by('created_at')
     
     formatted_patients = []
+    serial_number = 1  # Start serial number from 1
     for patient in patient_obj:
         # Format medications into a list if they exist
         medications = []
@@ -1040,6 +1042,7 @@ def view_assigned_patient(request):
                 last_vital_text = f"Vital recorded - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
 
         formatted_patient = {
+            'serial_number': serial_number,
             'patient': patient,
             'formatted_medications': medications,
             'formatted_pharmacy': pharmacy_info,
@@ -1051,6 +1054,7 @@ def view_assigned_patient(request):
             'sticky_note': patient.sticky_note or ''
         }
         formatted_patients.append(formatted_patient)
+        serial_number += 1  # Increment serial number
 
     context = {
         'patient_obj': formatted_patients,
