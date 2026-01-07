@@ -1092,6 +1092,7 @@
                                 ⚡ Manage Shortcuts
                             </button>
                             <select class="title-selector" id="id_title" name="title" form="documentationForm">
+                                <option value="Behavioural note" {% if form.initial.title == "Behavioural note" %}selected{% endif %}>Behavioural note</option>
                                 <option value="CCM Initial Note" {% if form.initial.title == "CCM Initial Note" %}selected{% endif %}>CCM Initial Note</option>
                                 <option value="CCM Note Clinical Staff" {% if form.initial.title == "CCM Note Clinical Staff" %}selected{% endif %}>CCM Note Clinical Staff</option>
                                 <option value="CCM Note NP/PA" {% if form.initial.title == "CCM Note NP/PA" %}selected{% endif %}>CCM Note NP/PA</option>

@@ -45,6 +45,13 @@ class Reports(models.Model):
     symptoms = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Manual datetime field - for manually entered reports with custom date/time
+    manual_datetime = models.DateTimeField(blank=True, null=True, help_text="Manual date/time for when vitals were taken")
+    
+    @property
+    def effective_datetime(self):
+        """Returns manual_datetime if set, otherwise created_at - used for sorting"""
+        return self.manual_datetime if self.manual_datetime else self.created_at
     
     def __str__(self):
         return f'{self.patient.user.first_name} {self.patient.user.last_name} - {self.created_at.strftime("%Y-%m-%d %H:%M:%S")}'
@@ -120,6 +127,7 @@ class Reports(models.Model):
     
 class Documentation(models.Model):
     TITLE_CHOICES = (
+        ('Behavioural note', 'Behavioural note'),
         ('CCM Initial Note', 'CCM Initial Note'),
         ('CCM Note Clinical Staff', 'CCM Note Clinical Staff'),
         ('CCM Note NP/PA', 'CCM Note NP/PA'),

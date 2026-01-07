@@ -980,9 +980,14 @@ def moderator_logout(request):
 @login_required
 def view_assigned_patient(request):
     moderator = Moderator.objects.get(user=request.user)
-    patient_obj = Patient.objects.filter(moderator_assigned=moderator)
+    # Order patients by signup date (created_at)
+    patient_obj = Patient.objects.filter(moderator_assigned=moderator).order_by('created_at')
+    
+    # Import models for call status
+    from retell_calling.models import RetellCallSession, CallSummary
     
     formatted_patients = []
+    serial_number = 1  # Start serial number from 1
     for patient in patient_obj:
         # Format medications into a list if they exist
         medications = []
@@ -1039,16 +1044,29 @@ def view_assigned_patient(request):
             else:
                 last_vital_text = f"Vital recorded - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
 
+        # Get latest call status for this patient
+        latest_call = RetellCallSession.objects.filter(patient=patient).order_by('-created_at').first()
+        call_status = latest_call.call_status if latest_call else None
+        
+        # Get summary count for this patient
+        summary_count = CallSummary.objects.filter(patient=patient).count()
+
         formatted_patient = {
+            'serial_number': serial_number,
             'patient': patient,
             'formatted_medications': medications,
             'formatted_pharmacy': pharmacy_info,
             'formatted_allergies': allergies,
             'formatted_family_history': family_history,
             'last_documentation': last_doc_text,
-            'last_vital': last_vital_text
+            'last_vital': last_vital_text,
+            'status': patient.status or 'green',
+            'sticky_note': patient.sticky_note or '',
+            'call_status': call_status,
+            'summary_count': summary_count
         }
         formatted_patients.append(formatted_patient)
+        serial_number += 1  # Increment serial number
 
     context = {
         'patient_obj': formatted_patients,
@@ -3684,3 +3702,57 @@ def get_active_testimonials(request):
             'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@login_required
+@require_POST
+def update_patient_status(request, patient_id):
+    """Update patient status (green, orange, red)"""
+    try:
+        data = json.loads(request.body)
+        status_value = data.get('status')
+        
+        if status_value not in ['green', 'orange', 'red']:
+            return JsonResponse({'success': False, 'error': 'Invalid status value'}, status=400)
+        
+        patient = get_object_or_404(Patient, id=patient_id)
+        patient.status = status_value
+        patient.save()
+        
+        return JsonResponse({'success': True, 'status': status_value})
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def update_patient_sticky_note(request, patient_id):
+    """Update patient sticky note"""
+    try:
+        data = json.loads(request.body)
+        sticky_note = data.get('sticky_note', '')
+        
+        if len(sticky_note) > 500:
+            return JsonResponse({'success': False, 'error': 'Sticky note too long (max 500 characters)'}, status=400)
+        
+        patient = get_object_or_404(Patient, id=patient_id)
+        patient.sticky_note = sticky_note
+        patient.save()
+        
+        return JsonResponse({'success': True, 'sticky_note': sticky_note})
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def get_patient_sticky_note(request, patient_id):
+    """Get patient sticky note"""
+    try:
+        patient = get_object_or_404(Patient, id=patient_id)
+        return JsonResponse({'success': True, 'sticky_note': patient.sticky_note or ''})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
