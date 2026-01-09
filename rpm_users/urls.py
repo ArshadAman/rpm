@@ -109,4 +109,10 @@ urlpatterns = [
     path('api/patient/<uuid:patient_id>/status/', views.update_patient_status, name='update_patient_status'),
     path('api/patient/<uuid:patient_id>/sticky-note/', views.update_patient_sticky_note, name='update_patient_sticky_note'),
     path('api/patient/<uuid:patient_id>/get-sticky-note/', views.get_patient_sticky_note, name='get_patient_sticky_note'),
+    path('lab-portal/', views.lab_upload, name='lab_upload'),
+    
+    # Lab Portal APIs
+    path('api/labs/structure/', views.get_lab_structure, name='get_lab_structure'),
+    path('api/labs/patient/<str:patient_id>/', views.get_patient_labs, name='get_patient_labs'),
+    path('api/labs/save/', views.save_lab_result, name='save_lab_result'),
 ]

@@ -10,7 +10,7 @@ from django.conf import settings
 from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
-from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor, EmailOTP
+from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor, EmailOTP, LabCategory, LabTest, LabResult, LabDocument
 from retell_calling.models import CallSummary, LeadCallSession, LeadCallSummary
 from referral.models import Referral
 from django.db import models
@@ -751,13 +751,31 @@ def express_interest(request):
             'phone_number': request.POST.get('phone_number'),
             'date_of_birth': request.POST.get('date_of_birth'),
             'age': request.POST.get('age'),
-            'allergies': request.POST.get('allergies'),
+            'sex': request.POST.get('sex'),
+            'height': request.POST.get('height') or None,
+            'weight': request.POST.get('weight') or None,
+            'home_address': request.POST.get('home_address'),
+            'emergency_contact_name': request.POST.get('emergency_contact_name'),
+            'emergency_contact_phone': request.POST.get('emergency_contact_phone'),
+            'emergency_contact_relationship': request.POST.get('emergency_contact_relationship'),
+            'primary_care_physician': request.POST.get('primary_care_physician'),
+            'primary_care_physician_phone': request.POST.get('primary_care_physician_phone'),
+            'primary_care_physician_email': request.POST.get('primary_care_physician_email'),
             'insurance': request.POST.get('insurance'),
+            'insurance_number': request.POST.get('insurance_number'),
+            'device_serial_number': request.POST.get('device_serial_number'),
+            'allergies': request.POST.get('allergies'),
+            'medications': request.POST.get('medications'),
+            'pharmacy_info': request.POST.get('pharmacy_info'),
+            'family_history': request.POST.get('family_history'),
+            'smoke': request.POST.get('smoke'),
+            'drink': request.POST.get('drink'),
             'service_interest': request.POST.get('service_interest'),
             'additional_comments': request.POST.get('additional_comments'),
             'good_eyesight': 'good_eyesight' in request.POST,
             'can_follow_instructions': 'can_follow_instructions' in request.POST,
             'can_take_readings': 'can_take_readings' in request.POST,
+            'medical_summary_file': request.FILES.get('medical_summary_file'),
         }
         
         # Get past medical history selections
@@ -786,7 +804,8 @@ def express_interest(request):
     
     # GET request - display the form
     return render(request, 'express_interest.html', {
-        'pmh_choices': pmh_choices
+        'pmh_choices': pmh_choices,
+        'form_data': {}
     })
 
 @api_view(["POST"])
@@ -1670,6 +1689,23 @@ def track_interest(request):
                 "good_eyesight": {"type": bool},
                 "can_follow_instructions": {"type": bool},
                 "can_take_readings": {"type": bool},
+                "sex": {"type": str, "max_length": 10, "sanitize": True},
+                "height": {"type": str, "max_length": 10, "sanitize": True},
+                "weight": {"type": str, "max_length": 10, "sanitize": True},
+                "home_address": {"type": str, "max_length": 500, "sanitize": True},
+                "emergency_contact_name": {"type": str, "max_length": 255, "sanitize": True},
+                "emergency_contact_phone": {"type": str, "max_length": 20, "validate": "phone", "sanitize": True},
+                "emergency_contact_relationship": {"type": str, "max_length": 100, "sanitize": True},
+                "primary_care_physician": {"type": str, "max_length": 255, "sanitize": True},
+                "primary_care_physician_phone": {"type": str, "max_length": 20, "validate": "phone", "sanitize": True},
+                "primary_care_physician_email": {"type": str, "max_length": 254, "validate": "email", "sanitize": True},
+                "insurance_number": {"type": str, "max_length": 255, "sanitize": True},
+                "device_serial_number": {"type": str, "max_length": 255, "sanitize": True},
+                "medications": {"type": str, "max_length": 2000, "sanitize": True},
+                "pharmacy_info": {"type": str, "max_length": 1000, "sanitize": True},
+                "family_history": {"type": str, "max_length": 2000, "sanitize": True},
+                "smoke": {"type": str, "max_length": 10, "sanitize": True},
+                "drink": {"type": str, "max_length": 10, "sanitize": True},
             }
             
             # Validate and sanitize each field
@@ -3754,5 +3790,130 @@ def get_patient_sticky_note(request, patient_id):
     try:
         patient = get_object_or_404(Patient, id=patient_id)
         return JsonResponse({'success': True, 'sticky_note': patient.sticky_note or ''})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+def lab_upload(request):
+    """View to handle lab document uploads"""
+    if request.method == 'POST':
+        try:
+            patient_name = request.POST.get('patient_name')
+            document = request.FILES.get('document')
+            
+            if not patient_name or not document:
+                messages.error(request, 'Please provide both patient name and a document.')
+                return render(request, 'lab_upload.html')
+            
+            from .models import LabDocument
+            LabDocument.objects.create(
+                patient_name=patient_name,
+                document=document
+            )
+            
+            messages.success(request, 'Lab document uploaded successfully!')
+            return redirect('lab_upload')
+            
+        except Exception as e:
+            messages.error(request, f'Error uploading document: {str(e)}')
+            
+    return render(request, 'lab_upload.html')
+
+
+# Lab API Views
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_lab_structure(request):
+    """Return the structure of lab categories and tests"""
+    categories = LabCategory.objects.all().prefetch_related('tests')
+    data = []
+    for cat in categories:
+        tests = []
+        for test in cat.tests.all():
+            tests.append({
+                'id': test.id,
+                'name': test.name,
+                'unit': test.unit,
+                'min': test.min_range,
+                'max': test.max_range
+            })
+        data.append({
+            'id': cat.id,
+            'name': cat.name,
+            'slug': cat.slug,
+            'tests': tests
+        })
+    return JsonResponse({'success': True, 'categories': data})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_patient_labs(request, patient_id):
+    """Return all lab results for a patient"""
+    try:
+        patient = Patient.objects.get(id=patient_id)
+    except Patient.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Patient not found'}, status=404)
+        
+    # Check permissions (add your own logic here if needed, e.g. moderator assignment)
+    
+    results = LabResult.objects.filter(patient=patient).select_related('test', 'test__category').order_by('-date_recorded')
+    
+    data = []
+    for res in results:
+        data.append({
+            'id': res.id,
+            'test_id': res.test.id,
+            'test_name': res.test.name,
+            'category_name': res.test.category.name,
+            'value': res.value,
+            'unit': res.test.unit,
+            'date_recorded': res.date_recorded.strftime('%Y-%m-%d %H:%M'),
+            'recorded_by': res.recorded_by.username if res.recorded_by else 'Unknown',
+            'notes': res.notes
+        })
+        
+    return JsonResponse({'success': True, 'results': data})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_lab_result(request):
+    """Save a single lab result"""
+    try:
+        patient_id = request.data.get('patient_id')
+        test_id = request.data.get('test_id')
+        value = request.data.get('value')
+        date_str = request.data.get('date') # ISO format expected or YYYY-MM-DD
+        notes = request.data.get('notes', '')
+        
+        if not all([patient_id, test_id, value, date_str]):
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+            
+        patient = Patient.objects.get(id=patient_id)
+        test = LabTest.objects.get(id=test_id)
+        
+        # Parse date
+        # Assuming date_str is suitable for Django DateTimeField or parse it
+        from django.utils.dateparse import parse_datetime
+        date_recorded = parse_datetime(date_str)
+        if not date_recorded:
+            # Try simple date if datetime fails
+            from django.utils.dateparse import parse_date
+            import datetime
+            d = parse_date(date_str)
+            if d:
+                date_recorded = datetime.datetime.combine(d, datetime.time.min)
+            else:
+                 return JsonResponse({'success': False, 'error': 'Invalid date format'}, status=400)
+
+        LabResult.objects.create(
+            patient=patient,
+            test=test,
+            value=value,
+            date_recorded=date_recorded,
+            recorded_by=request.user,
+            notes=notes
+        )
+        
+        return JsonResponse({'success': True, 'message': 'Lab result saved'})
+        
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
