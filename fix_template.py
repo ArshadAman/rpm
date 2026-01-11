@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+template_content = r'''<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -871,7 +872,8 @@
                 </div>
 
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label for="medical_summary_file">DC summary or any hospital summary
+                    <label for="medical_summary_file">DC summary or any hospital summary <span
+                            style="color: #6c757d; font-size: 0.9em; font-weight: normal;">(here is best)</span></label>
                     <input type="file" id="medical_summary_file" name="medical_summary_file" class="file-input">
                 </div>
 
@@ -1040,4 +1042,7 @@
     </script>
 </body>
 
-</html>
+</html>'''
+import os
+with open('templates/express_interest.html', 'w') as f:
+    f.write(template_content)
