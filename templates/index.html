@@ -4413,7 +4413,7 @@
   </div>
 
   <!-- Add Lab Modal (Moved to end) -->
-  <div id="add-lab-modal" class="modal-overlay" style="display: none;">
+  <div id="add-lab-modal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
         <h3 class="modal-title">Add Lab Result</h3>
@@ -4570,7 +4570,8 @@
     }
 
     function openAddLabModal() {
-      document.getElementById('add-lab-modal').style.display = 'flex';
+      console.log("Opening Add Lab Modal");
+      document.getElementById('add-lab-modal').classList.add('active');
       const catSelect = document.getElementById('lab-category');
       if (catSelect.options.length <= 1) {
         labCategories.forEach(cat => {
@@ -4583,7 +4584,7 @@
     }
 
     function closeAddLabModal() {
-      document.getElementById('add-lab-modal').style.display = 'none';
+      document.getElementById('add-lab-modal').classList.remove('active');
     }
 
     function updateTestOptions() {
