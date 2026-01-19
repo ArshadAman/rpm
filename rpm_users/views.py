@@ -3917,3 +3917,77 @@ def save_lab_result(request):
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def all_reviews(request):
+    """Public page to display all reviews with RPM information"""
+    return render(request, 'all_reviews.html')
+
+
+@login_required
+@require_POST
+def patient_submit_review(request):
+    """API endpoint for patients to submit their reviews"""
+    try:
+        from .models import Patient, Testimonial
+        import json
+        
+        # Get the logged-in patient
+        try:
+            patient = Patient.objects.get(user=request.user)
+        except Patient.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Patient profile not found'
+            }, status=404)
+        
+        # Parse request data
+        data = json.loads(request.body)
+        review_text = data.get('review_text', '').strip()
+        location = data.get('location', '').strip()
+        
+        if not review_text:
+            return JsonResponse({
+                'success': False,
+                'error': 'Review text is required'
+            }, status=400)
+        
+        if len(review_text) > 500:
+            return JsonResponse({
+                'success': False,
+                'error': 'Review text must be 500 characters or less'
+            }, status=400)
+        
+        # Create the testimonial (inactive by default, pending admin approval)
+        customer_name = f"{patient.user.first_name} {patient.user.last_name}".strip()
+        if not customer_name:
+            customer_name = patient.user.username
+        
+        testimonial = Testimonial.objects.create(
+            customer_name=customer_name,
+            review_text=review_text,
+            location=location if location else None,
+            rating=5,  # Default rating
+            is_active=False,  # Requires admin approval
+            created_by=request.user
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Review submitted successfully. It will be visible after admin approval.',
+            'review_id': str(testimonial.id)
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in patient_submit_review: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': 'An error occurred while submitting your review'
+        }, status=500)
