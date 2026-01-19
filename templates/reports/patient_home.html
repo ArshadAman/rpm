@@ -471,6 +471,10 @@
           transform: translateY(0);
         }
       }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
 
       /* Update the tabs styling */
       .tabs div {
@@ -828,6 +832,7 @@
           <div onclick="showTab('family_history')">Family History</div>
           <div onclick="showTab('medications')">Medications</div>
           <div onclick="showTab('pharmacy')">Pharmacy</div>
+          <div onclick="showTab('review')">Write Review</div>
         </div>
       </div>
 
@@ -1044,6 +1049,65 @@
                         <span>No pharmacy information recorded</span>
                     </div>
                 {% endif %}
+            </div>
+          </div>
+
+          <!-- Write Review Tab -->
+          <div id="review" class="table-container" style="display: none">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                Share Your Experience
+            </h3>
+            <div class="info-card">
+                <div id="reviewFormContainer">
+                    <p style="color: var(--text); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                        We value your feedback! Share your experience with our Remote Patient Monitoring services to help others understand the benefits of our healthcare program.
+                    </p>
+                    <form id="patientReviewForm" onsubmit="submitReview(event)">
+                        <div style="margin-bottom: 20px;">
+                            <label for="reviewText" style="display: block; color: var(--secondary); font-size: 13px; font-weight: 500; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Your Review</label>
+                            <textarea 
+                                id="reviewText" 
+                                name="review_text" 
+                                rows="6" 
+                                placeholder="Tell us about your experience with our RPM services..."
+                                required
+                                style="width: 100%; padding: 15px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: white; font-family: 'Poppins', sans-serif; font-size: 14px; resize: vertical; transition: all 0.3s ease;"
+                                onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(121, 40, 202, 0.2)';"
+                                onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.boxShadow='none';"
+                            ></textarea>
+                            <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
+                                <span id="charCount">0</span>/500 characters
+                            </p>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label for="reviewLocation" style="display: block; color: var(--secondary); font-size: 13px; font-weight: 500; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Your Location (Optional)</label>
+                            <input 
+                                type="text" 
+                                id="reviewLocation" 
+                                name="location" 
+                                placeholder="e.g., New York, NY"
+                                style="width: 100%; padding: 12px 15px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: white; font-family: 'Poppins', sans-serif; font-size: 14px; transition: all 0.3s ease;"
+                                onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(121, 40, 202, 0.2)';"
+                                onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.boxShadow='none';"
+                            />
+                        </div>
+                        <button type="submit" id="submitReviewBtn" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 14px 32px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: 15px; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+                <div id="reviewSuccessMessage" style="display: none; text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 64px; margin-bottom: 20px;">🎉</div>
+                    <h4 style="color: white; font-size: 22px; margin-bottom: 12px;">Thank You!</h4>
+                    <p style="color: var(--text); font-size: 15px; line-height: 1.6;">Your review has been submitted successfully. It will be visible on our website after approval.</p>
+                    <button onclick="resetReviewForm()" style="margin-top: 24px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 12px 24px; border: none; border-radius: 10px; font-weight: 500; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: 14px;">Write Another Review</button>
+                </div>
             </div>
           </div>
         </div>
@@ -1335,7 +1399,90 @@
         // Get the patient ID from the template
         const patientId = "{{ patient.id }}";
         fetchAndDisplayReports(patientId);
+        
+        // Character count for review textarea
+        const reviewTextarea = document.getElementById('reviewText');
+        if (reviewTextarea) {
+          reviewTextarea.addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+          });
+        }
       });
+
+      // Review submission functions
+      async function submitReview(event) {
+        event.preventDefault();
+        
+        const reviewText = document.getElementById('reviewText').value.trim();
+        const location = document.getElementById('reviewLocation').value.trim();
+        const submitBtn = document.getElementById('submitReviewBtn');
+        
+        if (!reviewText) {
+          alert('Please write a review before submitting.');
+          return;
+        }
+        
+        // Disable button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span style="display: inline-block; width: 18px; height: 18px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span> Submitting...';
+        
+        try {
+          const response = await fetch('/api/patient/submit-review/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({
+              review_text: reviewText,
+              location: location
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            document.getElementById('reviewFormContainer').style.display = 'none';
+            document.getElementById('reviewSuccessMessage').style.display = 'block';
+          } else {
+            alert(data.error || 'Failed to submit review. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submit Review';
+          }
+        } catch (error) {
+          console.error('Error submitting review:', error);
+          alert('An error occurred. Please try again.');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submit Review';
+        }
+      }
+      
+      function resetReviewForm() {
+        document.getElementById('reviewText').value = '';
+        document.getElementById('reviewLocation').value = '';
+        document.getElementById('charCount').textContent = '0';
+        document.getElementById('reviewFormContainer').style.display = 'block';
+        document.getElementById('reviewSuccessMessage').style.display = 'none';
+        
+        const submitBtn = document.getElementById('submitReviewBtn');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submit Review';
+      }
+      
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
     </script>
   </body>
 </html>

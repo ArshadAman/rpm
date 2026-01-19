@@ -105,6 +105,12 @@ urlpatterns = [
     # Public API for testimonials
     path('api/testimonials/active/', views.get_active_testimonials, name='get_active_testimonials'),
     
+    # All reviews public page
+    path('reviews/', views.all_reviews, name='all_reviews'),
+    
+    # Patient review submission API
+    path('api/patient/submit-review/', views.patient_submit_review, name='patient_submit_review'),
+    
     # Patient status and sticky notes API
     path('api/patient/<uuid:patient_id>/status/', views.update_patient_status, name='update_patient_status'),
     path('api/patient/<uuid:patient_id>/sticky-note/', views.update_patient_sticky_note, name='update_patient_sticky_note'),
