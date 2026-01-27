@@ -4444,6 +4444,17 @@
               <span id="lab-unit" style="color: rgba(255,255,255,0.7); font-size: 14px;"></span>
             </div>
           </div>
+          <div class="form-group">
+            <label class="form-label">Report File (Optional)</label>
+            <input type="file" id="lab-file" class="form-input" accept="image/*,.pdf" onchange="previewLabFile(this)">
+            <div id="file-preview-container" style="margin-top: 10px; display: none; border: 1px dashed rgba(255,255,255,0.2); padding: 10px; border-radius: 8px;">
+                <img id="image-preview" style="max-width: 100%; max-height: 200px; display: none; border-radius: 4px;">
+                <div id="pdf-preview" style="display: none; height: 200px; width: 100%;">
+                    <embed id="pdf-embed" type="application/pdf" width="100%" height="100%">
+                </div>
+                <div id="file-info" style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 5px;"></div>
+            </div>
+          </div>
           <!-- Range hints -->
           <div class="form-group full-width" id="range-info"
             style="display: none; grid-column: 1 / -1; margin-top: -10px; margin-bottom: 10px;">
@@ -4541,13 +4552,14 @@
                     <span style="font-weight: 600; color: var(--accent-light);">${cat}</span>
                     <i class="fas fa-chevron-down" style="font-size: 12px; opacity: 0.7;"></i>
                 </div>
-                <div class="category-content" style="display: none;">
-                    <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                <div class="category-content" style="display: none; overflow-x: auto;">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse; min-width: 600px;">
                         <thead style="background: rgba(0,0,0,0.2); font-size: 12px; text-transform: uppercase; color: rgba(255,255,255,0.5);">
                             <tr>
                                 <th style="padding: 10px 15px; text-align: left;">Test</th>
                                 <th style="padding: 10px 15px; text-align: left;">Value</th>
                                 <th style="padding: 10px 15px; text-align: left;">Date</th>
+                                <th style="padding: 10px 15px; text-align: left;">Report</th>
                                 <th style="padding: 10px 15px; text-align: left;">Notes</th>
                             </tr>
                         </thead>
@@ -4557,6 +4569,9 @@
                                     <td style="padding: 12px 15px;">${lab.test_name}</td>
                                     <td style="padding: 12px 15px;"><span style="font-weight: bold; color: var(--success);">${lab.value}</span> <small style="opacity:0.7;">${lab.unit || ''}</small></td>
                                     <td style="padding: 12px 15px; font-size: 13px; opacity: 0.8;">${lab.date_recorded}</td>
+                                    <td style="padding: 12px 15px;">
+                                        ${lab.file_url ? `<a href="${lab.file_url}" target="_blank" style="color: var(--primary);"><i class="fas fa-file-alt"></i> View</a>` : '-'}
+                                    </td>
                                     <td style="padding: 12px 15px; font-size: 13px; opacity: 0.8; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${lab.notes || ''}">${lab.notes || '-'}</td>
                                 </tr>
                             `).join('')}
@@ -4569,9 +4584,20 @@
       container.innerHTML = html;
     }
 
-    function openAddLabModal() {
+    async function openAddLabModal() {
       console.log("Opening Add Lab Modal");
       document.getElementById('add-lab-modal').classList.add('active');
+      
+      // Ensure categories are loaded
+      if (labCategories.length === 0) {
+        const catSelect = document.getElementById('lab-category');
+        catSelect.innerHTML = '<option>Loading...</option>';
+        catSelect.disabled = true;
+        await fetchLabStructure();
+        catSelect.innerHTML = '<option value="">Select Category...</option>';
+        catSelect.disabled = false;
+      }
+
       const catSelect = document.getElementById('lab-category');
       if (catSelect.options.length <= 1) {
         labCategories.forEach(cat => {
@@ -4623,28 +4649,67 @@
       }
     });
 
+    function previewLabFile(input) {
+        const previewContainer = document.getElementById('file-preview-container');
+        const imgPreview = document.getElementById('image-preview');
+        const pdfPreview = document.getElementById('pdf-preview');
+        const pdfEmbed = document.getElementById('pdf-embed');
+        const fileInfo = document.getElementById('file-info');
+        
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            fileInfo.textContent = `${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+            previewContainer.style.display = 'block';
+            
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imgPreview.src = e.target.result;
+                    imgPreview.style.display = 'block';
+                    pdfPreview.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            } else if (file.type === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                pdfEmbed.src = fileURL;
+                pdfPreview.style.display = 'block';
+                imgPreview.style.display = 'none';
+            } else {
+                imgPreview.style.display = 'none';
+                pdfPreview.style.display = 'none';
+                fileInfo.textContent += ' - Preview not available';
+            }
+        } else {
+            previewContainer.style.display = 'none';
+        }
+    }
+
     async function handleLabSubmit(e) {
       e.preventDefault();
       const btn = document.getElementById('save-lab-btn');
       btn.disabled = true;
       btn.textContent = 'Saving...';
 
-      const data = {
-        patient_id: "{{ patient.id }}",
-        test_id: document.getElementById('lab-test').value,
-        value: document.getElementById('lab-value').value,
-        date: document.getElementById('lab-date').value,
-        notes: document.getElementById('lab-notes').value
-      };
+      const formData = new FormData();
+      formData.append('patient_id', "{{ patient.id }}");
+      formData.append('test_id', document.getElementById('lab-test').value);
+      formData.append('value', document.getElementById('lab-value').value);
+      formData.append('date', document.getElementById('lab-date').value);
+      formData.append('notes', document.getElementById('lab-notes').value);
+      
+      const fileInput = document.getElementById('lab-file');
+      if (fileInput.files.length > 0) {
+        formData.append('file', fileInput.files[0]);
+      }
 
       try {
         const response = await fetch('/api/labs/save/', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            // 'Content-Type': 'multipart/form-data', // Let browser set boundary
             'X-CSRFToken': '{{ csrf_token }}'
           },
-          body: JSON.stringify(data)
+          body: formData
         });
         const res = await response.json();
         if (res.success) {
