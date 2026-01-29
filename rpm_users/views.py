@@ -3869,7 +3869,7 @@ def get_patient_labs(request, patient_id):
             'date_recorded': res.date_recorded.strftime('%Y-%m-%d %H:%M'),
             'recorded_by': res.recorded_by.username if res.recorded_by else 'Unknown',
             'notes': res.notes,
-            'file_url': res.file.url if res.file else None
+            'file_url': res.file_url  # Cloudinary URL
         })
         
     return JsonResponse({'success': True, 'results': data})
@@ -3877,7 +3877,7 @@ def get_patient_labs(request, patient_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_lab_result(request):
-    """Save a single lab result"""
+    """Save a single lab result with Cloudinary file storage"""
     try:
         patient_id = request.data.get('patient_id')
         test_id = request.data.get('test_id')
@@ -3892,7 +3892,6 @@ def save_lab_result(request):
         test = LabTest.objects.get(id=test_id)
         
         # Parse date
-        # Assuming date_str is suitable for Django DateTimeField or parse it
         from django.utils.dateparse import parse_datetime
         date_recorded = parse_datetime(date_str)
         if not date_recorded:
@@ -3905,6 +3904,64 @@ def save_lab_result(request):
             else:
                  return JsonResponse({'success': False, 'error': 'Invalid date format'}, status=400)
 
+        # Handle file upload to Cloudinary
+        cloudinary_url = None
+        uploaded_file = request.FILES.get('file')
+        if uploaded_file:
+            try:
+                import cloudinary
+                import cloudinary.uploader
+                from django.conf import settings
+                import uuid
+                
+                # Configure Cloudinary
+                cloudinary.config(
+                    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+                    api_key=settings.CLOUDINARY_API_KEY,
+                    api_secret=settings.CLOUDINARY_API_SECRET
+                )
+                
+                # Get file extension
+                file_ext = uploaded_file.name.split('.')[-1].lower()
+                
+                # Generate a unique filename to avoid special character issues
+                unique_id = str(uuid.uuid4())[:8]
+                safe_filename = f"{test.name.replace(' ', '_')}_{unique_id}"
+                
+                # PDFs are treated as images in Cloudinary (not raw)
+                # For other documents like doc, docx, use raw
+                if file_ext == 'pdf':
+                    # PDFs should be uploaded as images in Cloudinary
+                    upload_result = cloudinary.uploader.upload(
+                        uploaded_file,
+                        folder=f"lab_reports/{patient_id}",
+                        resource_type="image",  # PDF is treated as image type
+                        public_id=safe_filename,
+                        overwrite=True
+                    )
+                elif file_ext in ['doc', 'docx', 'txt', 'csv', 'xls', 'xlsx']:
+                    # Other documents use raw type
+                    upload_result = cloudinary.uploader.upload(
+                        uploaded_file,
+                        folder=f"lab_reports/{patient_id}",
+                        resource_type="raw",
+                        public_id=f"{safe_filename}.{file_ext}",
+                        overwrite=True
+                    )
+                else:
+                    # For images (jpg, png, etc.)
+                    upload_result = cloudinary.uploader.upload(
+                        uploaded_file,
+                        folder=f"lab_reports/{patient_id}",
+                        resource_type="image",
+                        public_id=safe_filename,
+                        overwrite=True
+                    )
+                
+                cloudinary_url = upload_result.get('secure_url')
+            except Exception as upload_error:
+                return JsonResponse({'success': False, 'error': f'File upload failed: {str(upload_error)}'}, status=500)
+
         LabResult.objects.create(
             patient=patient,
             test=test,
@@ -3912,7 +3969,7 @@ def save_lab_result(request):
             date_recorded=date_recorded,
             recorded_by=request.user,
             notes=notes,
-            file=request.FILES.get('file')
+            file_url=cloudinary_url  # Store Cloudinary URL
         )
         
         return JsonResponse({'success': True, 'message': 'Lab result saved'})
