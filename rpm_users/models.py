@@ -612,6 +612,7 @@ class LabResult(models.Model):
     date_recorded = models.DateTimeField()
     recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     file = models.FileField(upload_to='lab_reports/', blank=True, null=True)
+    file_url = models.URLField(max_length=500, blank=True, null=True)  # Cloudinary URL
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
