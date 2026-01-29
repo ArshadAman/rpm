@@ -3868,7 +3868,8 @@ def get_patient_labs(request, patient_id):
             'unit': res.test.unit,
             'date_recorded': res.date_recorded.strftime('%Y-%m-%d %H:%M'),
             'recorded_by': res.recorded_by.username if res.recorded_by else 'Unknown',
-            'notes': res.notes
+            'notes': res.notes,
+            'file_url': res.file.url if res.file else None
         })
         
     return JsonResponse({'success': True, 'results': data})
@@ -3910,7 +3911,8 @@ def save_lab_result(request):
             value=value,
             date_recorded=date_recorded,
             recorded_by=request.user,
-            notes=notes
+            notes=notes,
+            file=request.FILES.get('file')
         )
         
         return JsonResponse({'success': True, 'message': 'Lab result saved'})

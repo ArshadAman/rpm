@@ -17,7 +17,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4$7tarn#dic1f!i&7vmhg6+8%@w@!+_-$dkt2qs(6@%!aw*cd5')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     "strattonhealth.com",
