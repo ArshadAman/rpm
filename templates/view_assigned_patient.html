@@ -312,7 +312,7 @@
                 <td>{{ entry.last_vital|default:"No vital recorded" }}</td>
                 <td>{{ patient.insurance }}</td>
                 <td>
-                  <button class="btn checkup-btn" onclick="initiateCheckupCall('{{ patient.id }}', this)">
+                  <button class="btn checkup-btn" onclick="openCallModal('{{ patient.id }}', '{{ patient.user.first_name }} {{ patient.user.last_name }}')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                     </svg>
@@ -377,44 +377,75 @@
         </table>
       </div>
       <script>
-        async function initiateCheckupCall(patientId, btn) {
-            if (confirm('Are you sure you want to initiate an AI checkup call for this patient?')) {
-                const originalText = btn.innerHTML;
-                btn.innerHTML = 'Initiating...';
-                btn.disabled = true;
-                btn.style.opacity = '0.7';
+        // Call modal state
+        let callModalPatientId = null;
+        let callModalBtn = null;
 
-                try {
-                    const response = await fetch('/retell_calling/initiate-checkup-call/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        body: JSON.stringify({
-                            patient_id: patientId
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        alert('Checkup call initiated successfully!');
-                        btn.innerHTML = 'Call Initiated';
-                        btn.classList.add('success');
-                    } else {
-                        alert('Error: ' + (data.error || 'Failed to initiate call'));
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        btn.style.opacity = '1';
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('An error occurred while initiating the call.');
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
+        function openCallModal(patientId, patientName) {
+            callModalPatientId = patientId;
+            // Find the button that was clicked for this patient
+            const rows = document.querySelectorAll('tr');
+            rows.forEach(row => {
+                const btn = row.querySelector('.checkup-btn');
+                if (btn && btn.getAttribute('onclick')?.includes(patientId)) {
+                    callModalBtn = btn;
                 }
+            });
+            document.getElementById('callModalPatientName').textContent = patientName;
+            document.getElementById('doctorInstructions').value = '';
+            document.getElementById('callInstructionModal').classList.add('show');
+        }
+
+        function closeCallModal() {
+            document.getElementById('callInstructionModal').classList.remove('show');
+            callModalPatientId = null;
+            callModalBtn = null;
+        }
+
+        async function initiateCallWithInstructions() {
+            if (!callModalPatientId) return;
+
+            const instructions = document.getElementById('doctorInstructions').value.trim();
+            const initiateBtn = document.getElementById('callModalInitiateBtn');
+            const originalText = initiateBtn.innerHTML;
+            
+            initiateBtn.innerHTML = '<span class="animate-spin" style="display:inline-block">⏳</span> Initiating...';
+            initiateBtn.disabled = true;
+
+            try {
+                const response = await fetch('/retell_calling/initiate-checkup-call/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        patient_id: callModalPatientId,
+                        doctor_instructions: instructions
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update the call button in the table
+                    if (callModalBtn) {
+                        callModalBtn.innerHTML = '✅ Call Initiated';
+                        callModalBtn.classList.add('success');
+                        callModalBtn.disabled = true;
+                    }
+                    closeCallModal();
+                    alert('Checkup call initiated successfully!');
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to initiate call'));
+                    initiateBtn.innerHTML = originalText;
+                    initiateBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while initiating the call.');
+                initiateBtn.innerHTML = originalText;
+                initiateBtn.disabled = false;
             }
         }
 
@@ -584,6 +615,7 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeStickyNoteModal();
+                closeCallModal();
                 closeBulkCallModal();
             }
         });
@@ -1312,6 +1344,32 @@
           <div class="modal-footer">
             <button class="modal-btn modal-btn-cancel" onclick="closeStickyNoteModal()">Cancel</button>
             <button class="modal-btn modal-btn-save" onclick="saveStickyNote()">Save Note</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Call Instructions Modal -->
+      <div id="callInstructionModal" class="modal-overlay" onclick="if(event.target === this) closeCallModal()">
+        <div class="modal-content" style="max-width: 550px;">
+          <div class="modal-header">
+            <h3>📞 Call <span id="callModalPatientName"></span></h3>
+            <button class="modal-close" onclick="closeCallModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <label style="display: block; color: var(--text); font-size: 14px; margin-bottom: 8px; font-weight: 500;">
+              Doctor Instructions <span style="color: rgba(224, 195, 252, 0.5); font-weight: 400;">(optional)</span>
+            </label>
+            <textarea id="doctorInstructions" placeholder="Add any specific instructions for the AI agent during this call... e.g., 'Ask about medication adherence', 'Check if patient is experiencing dizziness', 'Remind about upcoming appointment on Friday'" maxlength="1000" style="width: 100%; height: 140px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; color: white; font-family: 'Poppins', sans-serif; font-size: 14px; resize: vertical;"></textarea>
+            <p style="font-size: 11px; color: rgba(224, 195, 252, 0.4); margin-top: 6px;">Leave blank to initiate a standard checkup call without special instructions.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-btn modal-btn-cancel" onclick="closeCallModal()">Cancel</button>
+            <button id="callModalInitiateBtn" class="modal-btn modal-btn-save" onclick="initiateCallWithInstructions()" style="background: linear-gradient(135deg, #00C9FF, #92FE9D); color: #0F1116;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline; vertical-align: middle;">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              Initiate Call
+            </button>
           </div>
         </div>
       </div>

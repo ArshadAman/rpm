@@ -197,8 +197,42 @@ def initiate_checkup_call(request):
         # 3. Prepare Dynamic Variables
         pmh_list = list(PastMedicalHistory.objects.filter(patient=patient).values_list('pmh', flat=True))
         
+        # Fetch last 30 days of documentations
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        recent_docs = Documentation.objects.filter(
+            patient=patient,
+            created_at__gte=thirty_days_ago
+        ).order_by('-created_at')
+        
+        docs_summary_parts = []
+        for doc in recent_docs:
+            date_str = doc.created_at.strftime('%Y-%m-%d')
+            parts = [f"[{date_str}] {doc.title}"]
+            if doc.chief_complaint:
+                parts.append(f"Chief Complaint: {doc.chief_complaint}")
+            if doc.subjective:
+                parts.append(f"Subjective: {doc.subjective}")
+            if doc.history_of_present_illness:
+                parts.append(f"HPI: {doc.history_of_present_illness}")
+            if doc.objective:
+                parts.append(f"Objective: {doc.objective}")
+            if doc.assessment:
+                parts.append(f"Assessment: {doc.assessment}")
+            if doc.plan:
+                parts.append(f"Plan: {doc.plan}")
+            if doc.written_by:
+                parts.append(f"Written by: {doc.written_by}")
+            if doc.history_of_present_illness:
+                parts.append(f"history_of_present_illness: {doc.history_of_present_illness}")
+            docs_summary_parts.append(" | ".join(parts))
+        
+        recent_documentations_str = "\n".join(docs_summary_parts) if docs_summary_parts else "No documentations in the last 30 days."
+        
         # Extract analysis data safely
         analysis_data = analysis_result if isinstance(analysis_result, dict) else {}
+        
+        # Get doctor instructions from the request
+        doctor_instructions = data.get('doctor_instructions', '').strip()
         
         raw_dynamic_variables = {
             'patient_id': str(patient.id),
@@ -214,7 +248,13 @@ def initiate_checkup_call(request):
             'health_patterns': analysis_data.get('patterns', 'Not available'),
             'risk_flags': ", ".join(analysis_data.get('risk_flags', [])) if isinstance(analysis_data.get('risk_flags'), list) else str(analysis_data.get('risk_flags', '')),
             'suggested_questions': ", ".join(analysis_data.get('suggested_questions', [])) if isinstance(analysis_data.get('suggested_questions'), list) else str(analysis_data.get('suggested_questions', '')),
-            'call_context': analysis_data.get('call_context', 'Standard checkup call.')
+            'call_context': analysis_data.get('call_context', 'Standard checkup call.'),
+            
+            # Doctor instructions passed from the moderator/doctor
+            'doctor_instructions': doctor_instructions if doctor_instructions else 'No special instructions provided.',
+            
+            # Recent documentations from the last 30 days
+            'recent_documentations': recent_documentations_str,
         }
         
         # Ensure strings for Retell
