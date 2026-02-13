@@ -37,7 +37,8 @@ services:
 
   certbot:
     image: certbot/certbot:latest
-    command: sh -c "while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h; done"
+    entrypoint: /bin/sh
+    command: -c "while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h; done"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
       - certbot_www:/var/www/certbot
