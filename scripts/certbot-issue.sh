@@ -31,7 +31,7 @@ echo "DEPLOY_ENV=${DEPLOY_ENV:-dev}"
 echo "DOMAIN=${DOMAIN}"
 echo "CERT_NAME=${CERT_NAME}"
 
-docker compose run --rm --entrypoint "" certbot \
+docker compose run --rm --entrypoint certbot certbot \
   certonly \
   --webroot -w /var/www/certbot \
   -d "$DOMAIN" \
