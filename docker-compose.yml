@@ -45,7 +45,7 @@ services:
 
   cron:
     build: .
-    command: sh -c "apt-get update && apt-get install -y cron && echo '0 0 1 * * cd /app && python manage.py reset_patient_status >> /var/log/cron.log 2>&1' > /etc/cron.d/reset_status && chmod 0644 /etc/cron.d/reset_status && crontab /etc/cron.d/reset_status && cron -f"
+    command: sh -c "echo '0 0 1 * * cd /app && python manage.py reset_patient_status >> /var/log/cron.log 2>&1' > /etc/cron.d/reset_status && chmod 0644 /etc/cron.d/reset_status && crontab /etc/cron.d/reset_status && cron -f"
     volumes:
       - .:/app
     env_file:

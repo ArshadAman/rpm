@@ -28,7 +28,8 @@ ALLOWED_HOSTS = [
     "fuzzy-bugs-arrive.loca.lt",
     "https://750fc27bb95c.ngrok-free.app/",
     "750fc27bb95c.ngrok-free.app",
-    "*.retellai.com"
+    "*.retellai.com",
+    "147.182.198.98"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
