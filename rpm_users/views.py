@@ -1000,95 +1000,85 @@ def moderator_logout(request):
 def view_assigned_patient(request):
     moderator = Moderator.objects.get(user=request.user)
     # Order patients by signup date (created_at)
-    patient_obj = Patient.objects.filter(moderator_assigned=moderator).order_by('created_at')
+    all_patients = Patient.objects.filter(moderator_assigned=moderator).order_by('created_at')
+    active_patients = all_patients.filter(is_archived=False)
+    archived_patients = all_patients.filter(is_archived=True)
     
     # Import models for call status
     from retell_calling.models import RetellCallSession, CallSummary
     
-    formatted_patients = []
-    serial_number = 1  # Start serial number from 1
-    for patient in patient_obj:
-        # Format medications into a list if they exist
-        medications = []
-        if patient.medications:
-            medications = [med.strip() for med in patient.medications.split('\n') if med.strip()]
-
-        # Format pharmacy info into structured data if it exists
-        pharmacy_info = {}
-        if patient.pharmacy_info:
-            try:
-                lines = patient.pharmacy_info.split('\n')
-                for line in lines:
-                    if ':' in line:
-                        key, value = line.split(':', 1)
-                        pharmacy_info[key.strip()] = value.strip()
-            except:
-                pharmacy_info = {'Details': patient.pharmacy_info}
-
-        # Format allergies into a list if they exist
-        allergies = []
-        if patient.allergies:
-            allergies = [allergy.strip() for allergy in patient.allergies.split(',') if allergy.strip()]
-
-        # Format family history into structured sections if it exists
-        family_history = []
-        if patient.family_history:
-            history_lines = patient.family_history.split('\n')
-            for line in history_lines:
-                if line.strip():
-                    family_history.append(line.strip())
-
-        # Get last documentation for this patient
-        last_documentation = Documentation.objects.filter(patient=patient).order_by('-created_at').first()
-        last_doc_text = None
-        if last_documentation:
-            last_doc_text = f"{last_documentation.title} - {timezone.localtime(last_documentation.created_at).strftime('%m/%d/%Y %I:%M %p')}"
-        
-        # Get last vital (report) for this patient
-        last_vital = Reports.objects.filter(patient=patient).order_by('-created_at').first()
-        last_vital_text = None
-        if last_vital:
-            vital_parts = []
-            if last_vital.systolic_blood_pressure and last_vital.diastolic_blood_pressure:
-                vital_parts.append(f"BP: {last_vital.systolic_blood_pressure}/{last_vital.diastolic_blood_pressure}")
-            if last_vital.pulse:
-                vital_parts.append(f"HR: {last_vital.pulse}")
-            if last_vital.blood_glucose:
-                vital_parts.append(f"BG: {last_vital.blood_glucose}")
-            if last_vital.spo2:
-                vital_parts.append(f"SpO2: {last_vital.spo2}%")
-            
-            if vital_parts:
-                last_vital_text = f"{', '.join(vital_parts)} - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
-            else:
-                last_vital_text = f"Vital recorded - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
-
-        # Get latest call status for this patient
-        latest_call = RetellCallSession.objects.filter(patient=patient).order_by('-created_at').first()
-        call_status = latest_call.call_status if latest_call else None
-        
-        # Get summary count for this patient
-        summary_count = CallSummary.objects.filter(patient=patient).count()
-
-        formatted_patient = {
-            'serial_number': serial_number,
-            'patient': patient,
-            'formatted_medications': medications,
-            'formatted_pharmacy': pharmacy_info,
-            'formatted_allergies': allergies,
-            'formatted_family_history': family_history,
-            'last_documentation': last_doc_text,
-            'last_vital': last_vital_text,
-            'status': patient.status or 'green',
-            'sticky_note': patient.sticky_note or '',
-            'call_status': call_status,
-            'summary_count': summary_count
-        }
-        formatted_patients.append(formatted_patient)
-        serial_number += 1  # Increment serial number
+    def build_patient_list(patient_queryset, start_serial=1):
+        formatted = []
+        serial_number = start_serial
+        for patient in patient_queryset:
+            medications = []
+            if patient.medications:
+                medications = [med.strip() for med in patient.medications.split('\n') if med.strip()]
+            pharmacy_info = {}
+            if patient.pharmacy_info:
+                try:
+                    lines = patient.pharmacy_info.split('\n')
+                    for line in lines:
+                        if ':' in line:
+                            key, value = line.split(':', 1)
+                            pharmacy_info[key.strip()] = value.strip()
+                except:
+                    pharmacy_info = {'Details': patient.pharmacy_info}
+            allergies = []
+            if patient.allergies:
+                allergies = [allergy.strip() for allergy in patient.allergies.split(',') if allergy.strip()]
+            family_history = []
+            if patient.family_history:
+                history_lines = patient.family_history.split('\n')
+                for line in history_lines:
+                    if line.strip():
+                        family_history.append(line.strip())
+            last_documentation = Documentation.objects.filter(patient=patient).order_by('-created_at').first()
+            last_doc_text = None
+            if last_documentation:
+                last_doc_text = f"{last_documentation.title} - {timezone.localtime(last_documentation.created_at).strftime('%m/%d/%Y %I:%M %p')}"
+            last_vital = Reports.objects.filter(patient=patient).order_by('-created_at').first()
+            last_vital_text = None
+            if last_vital:
+                vital_parts = []
+                if last_vital.systolic_blood_pressure and last_vital.diastolic_blood_pressure:
+                    vital_parts.append(f"BP: {last_vital.systolic_blood_pressure}/{last_vital.diastolic_blood_pressure}")
+                if last_vital.pulse:
+                    vital_parts.append(f"HR: {last_vital.pulse}")
+                if last_vital.blood_glucose:
+                    vital_parts.append(f"BG: {last_vital.blood_glucose}")
+                if last_vital.spo2:
+                    vital_parts.append(f"SpO2: {last_vital.spo2}%")
+                if vital_parts:
+                    last_vital_text = f"{', '.join(vital_parts)} - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
+                else:
+                    last_vital_text = f"Vital recorded - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
+            latest_call = RetellCallSession.objects.filter(patient=patient).order_by('-created_at').first()
+            call_status = latest_call.call_status if latest_call else None
+            summary_count = CallSummary.objects.filter(patient=patient).count()
+            formatted.append({
+                'serial_number': serial_number,
+                'patient': patient,
+                'formatted_medications': medications,
+                'formatted_pharmacy': pharmacy_info,
+                'formatted_allergies': allergies,
+                'formatted_family_history': family_history,
+                'last_documentation': last_doc_text,
+                'last_vital': last_vital_text,
+                'status': patient.status or 'green',
+                'sticky_note': patient.sticky_note or '',
+                'call_status': call_status,
+                'summary_count': summary_count
+            })
+            serial_number += 1
+        return formatted
+    
+    formatted_patients = build_patient_list(active_patients)
+    formatted_archived = build_patient_list(archived_patients)
 
     context = {
         'patient_obj': formatted_patients,
+        'archived_patients': formatted_archived,
     }
     return render(request, 'view_assigned_patient.html', context)
 
@@ -3758,6 +3748,19 @@ def update_patient_status(request, patient_id):
         return JsonResponse({'success': True, 'status': status_value})
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def toggle_patient_archive(request, patient_id):
+    """Toggle patient archive status"""
+    try:
+        patient = get_object_or_404(Patient, id=patient_id)
+        patient.is_archived = not patient.is_archived
+        patient.save()
+        return JsonResponse({'success': True, 'is_archived': patient.is_archived})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 

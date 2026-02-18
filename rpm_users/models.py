@@ -54,6 +54,7 @@ class Patient(models.Model):
     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='green', blank=True, null=True)
     sticky_note = models.TextField(max_length=500, blank=True, null=True, help_text="Reminder notes for this patient (max 500 chars)")
+    is_archived = models.BooleanField(default=False, help_text="Whether the patient is archived from the main list")
     
     def __str__(self):
         return self.user.email

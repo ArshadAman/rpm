@@ -242,6 +242,89 @@
       ::-webkit-scrollbar-thumb:hover {
         background: var(--primary-dark);
       }
+
+      /* Archive Button */
+      .archive-btn {
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(224, 195, 252, 0.6);
+        padding: 6px 10px;
+        font-size: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .archive-btn:hover {
+        background: rgba(255, 149, 0, 0.15);
+        color: #FF9500;
+        border-color: rgba(255, 149, 0, 0.3);
+        transform: translateY(-1px);
+      }
+      .unarchive-btn {
+        background: rgba(0, 204, 136, 0.1);
+        color: #00CC88;
+        padding: 6px 12px;
+        font-size: 12px;
+        border: 1px solid rgba(0, 204, 136, 0.2);
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+      }
+      .unarchive-btn:hover {
+        background: rgba(0, 204, 136, 0.2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 204, 136, 0.2);
+      }
+      /* Archived Section */
+      .archived-section {
+        margin-top: 30px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .archived-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: rgba(255, 255, 255, 0.03);
+        cursor: pointer;
+        transition: background 0.3s ease;
+        user-select: none;
+      }
+      .archived-header:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .archived-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: rgba(224, 195, 252, 0.7);
+        font-size: 15px;
+        font-weight: 500;
+      }
+      .archived-count {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(224, 195, 252, 0.7);
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .archived-list-container {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .archived-row {
+        opacity: 0.75;
+      }
+      .archived-row:hover {
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
@@ -295,6 +378,7 @@
               <th>Summaries</th>
               <th>Status</th>
               <th>Notes</th>
+              <th>Archive</th>
             </tr>
           </thead>
           <tbody>
@@ -370,12 +454,22 @@
                   </button>
                   {% endif %}
                 </td>
+                <td>
+                  <button class="btn archive-btn" onclick="toggleArchive('{{ patient.id }}', '{{ patient.user.first_name }} {{ patient.user.last_name }}', this)" title="Archive this patient">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                      <rect x="1" y="3" width="22" height="5"></rect>
+                      <line x1="10" y1="12" x2="14" y2="12"></line>
+                    </svg>
+                  </button>
+                </td>
               </tr>
               {% endwith %}
             {% endfor %}
           </tbody>
         </table>
       </div>
+
       <script>
         // Call modal state
         let callModalPatientId = null;
@@ -1401,9 +1495,133 @@
       </div>
       {% else %}
       <div class="empty-state">
-        <p>No patients assigned yet.</p>
+        <p>No active patients. All patients may be archived.</p>
       </div>
       {% endif %}
+
+      <!-- Archived Patients Section (always outside the if/else so it shows even when all are archived) -->
+      {% if archived_patients %}
+      <div class="archived-section">
+        <div class="archived-header" onclick="toggleArchivedList()">
+          <div class="archived-header-left">
+            <svg id="archivedChevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s ease;">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="21 8 21 21 3 21 3 8"></polyline>
+              <rect x="1" y="3" width="22" height="5"></rect>
+              <line x1="10" y1="12" x2="14" y2="12"></line>
+            </svg>
+            <span>Archived Patients</span>
+          </div>
+          <span class="archived-count">{{ archived_patients|length }}</span>
+        </div>
+        <div id="archivedListContainer" class="archived-list-container" style="display: none;">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>S.No</th>
+                  <th>Name</th>
+                  <th>Date of Birth</th>
+                  <th>Last Documentation</th>
+                  <th>Last Vital</th>
+                  <th>Insurance</th>
+                  <th>Status</th>
+                  <th>Unarchive</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for entry in archived_patients %}
+                  {% with entry.patient as patient %}
+                  <tr class="archived-row">
+                    <td style="text-align: center; font-weight: 600;">{{ entry.serial_number }}</td>
+                    <td>
+                      <a href="{% url 'moderator_actions' patient.id %}?action=access" class="table-link">
+                        {{ patient.user.first_name }} {{ patient.user.last_name }}
+                      </a>
+                    </td>
+                    <td>{{ patient.date_of_birth }}</td>
+                    <td>{{ entry.last_documentation|default:"No documentation yet" }}</td>
+                    <td>{{ entry.last_vital|default:"No vital recorded" }}</td>
+                    <td>{{ patient.insurance }}</td>
+                    <td>
+                      <div class="status-dot status-{{ entry.status }}" style="cursor: default;"></div>
+                    </td>
+                    <td>
+                      <button class="btn unarchive-btn" onclick="toggleArchive('{{ patient.id }}', '{{ patient.user.first_name }} {{ patient.user.last_name }}', this)" title="Unarchive this patient">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                          <rect x="1" y="3" width="22" height="5"></rect>
+                          <line x1="12" y1="12" x2="12" y2="18"></line>
+                          <polyline points="9 15 12 12 15 15"></polyline>
+                        </svg>
+                        Restore
+                      </button>
+                    </td>
+                  </tr>
+                  {% endwith %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Global scripts for archive functionality (available even when no active patients) -->
+      <script>
+        function getCookieGlobal(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        window.toggleArchive = async function(patientId, patientName, btn) {
+            const isArchiving = btn.closest('.archived-row') ? false : true;
+            const action = isArchiving ? 'archive' : 'unarchive';
+            if (!confirm(`Are you sure you want to ${action} ${patientName}?`)) return;
+            try {
+                const response = await fetch(`/api/patient/${patientId}/archive/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookieGlobal('csrftoken')
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to update'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred.');
+            }
+        };
+
+        window.toggleArchivedList = function() {
+            const container = document.getElementById('archivedListContainer');
+            const chevron = document.getElementById('archivedChevron');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                container.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        };
+      </script>
     </div>
   </body>
 </html>
