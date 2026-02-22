@@ -368,29 +368,6 @@
         <div class="form-card">
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                
-                <div class="form-group">
-                    <label class="form-label">Customer Photo</label>
-                    {% if is_edit and testimonial.customer_image %}
-                    <div class="current-image-section">
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 10px;">Current image:</p>
-                        <img src="{{ testimonial.customer_image.url }}" alt="Current photo">
-                        <div class="checkbox-group" style="margin-top: 10px;">
-                            <input type="checkbox" name="remove_image" id="remove_image" class="checkbox-input">
-                            <label for="remove_image" class="checkbox-label">Remove current image</label>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="image-upload-area" onclick="document.getElementById('customer_image').click()">
-                        <div id="upload-placeholder">
-                            <div class="upload-icon">📷</div>
-                            <p class="upload-text">Click to upload customer photo<br>(Recommended: Square image, min 200x200px)</p>
-                        </div>
-                        <img id="image-preview" class="image-preview" style="display: none;">
-                    </div>
-                    <input type="file" name="customer_image" id="customer_image" accept="image/*" style="display: none;" onchange="previewImage(this)">
-                    <p class="form-hint">Optional. A photo adds credibility to the testimonial.</p>
-                </div>
 
                 <div class="form-group">
                     <label class="form-label" for="customer_name">Customer Name <span class="required">*</span></label>
@@ -405,17 +382,6 @@
                            placeholder="e.g., New York, NY"
                            value="{% if is_edit %}{{ testimonial.location|default:'' }}{% endif %}">
                     <p class="form-hint">Optional. Customer's city/state for added authenticity.</p>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Rating <span class="required">*</span></label>
-                    <div class="star-rating">
-                        {% for i in "54321" %}
-                        <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" 
-                               {% if is_edit %}{% if testimonial.rating == i|add:0 %}checked{% endif %}{% elif i == "5" %}checked{% endif %}>
-                        <label for="star{{ i }}">★</label>
-                        {% endfor %}
-                    </div>
                 </div>
 
                 <div class="form-group">

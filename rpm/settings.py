@@ -17,7 +17,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4$7tarn#dic1f!i&7vmhg6+8%@w@!+_-$dkt2qs(6@%!aw*cd5')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     "strattonhealth.com",
@@ -28,7 +28,8 @@ ALLOWED_HOSTS = [
     "fuzzy-bugs-arrive.loca.lt",
     "https://750fc27bb95c.ngrok-free.app/",
     "750fc27bb95c.ngrok-free.app",
-    "*.retellai.com"
+    "*.retellai.com",
+    "147.182.198.98"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -333,3 +334,9 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = False
 # Ensure Django doesn’t re-redirect HTTPS requests
 USE_X_FORWARDED_HOST = True
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME', '')
+CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY', '')
+CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET', '')

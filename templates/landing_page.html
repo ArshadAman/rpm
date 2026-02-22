@@ -816,6 +816,7 @@
     .testimonial-card {
       flex: 0 0 calc(33.333% - 16px);
       min-width: 320px;
+      max-width: 400px;
       background: var(--glass-bg);
       backdrop-filter: blur(var(--blur));
       border: 1px solid var(--card-border);
@@ -823,6 +824,8 @@
       padding: 32px;
       position: relative;
       transition: var(--transition);
+      display: flex;
+      flex-direction: column;
     }
 
     .testimonial-card::before {
@@ -855,35 +858,6 @@
       margin-bottom: 20px;
     }
 
-    .testimonial-avatar {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid transparent;
-      background: linear-gradient(var(--background), var(--background)) padding-box,
-                  linear-gradient(135deg, var(--primary), var(--secondary)) border-box;
-      flex-shrink: 0;
-    }
-
-    .testimonial-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .testimonial-avatar-placeholder {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      font-weight: 700;
-      color: white;
-    }
-
     .testimonial-info {
       flex: 1;
     }
@@ -904,21 +878,6 @@
       gap: 4px;
     }
 
-    .testimonial-rating {
-      display: flex;
-      gap: 4px;
-      margin-top: 6px;
-    }
-
-    .testimonial-rating .star {
-      color: #FFD700;
-      font-size: 16px;
-    }
-
-    .testimonial-rating .star.empty {
-      color: rgba(255, 255, 255, 0.2);
-    }
-
     .testimonial-quote {
       position: absolute;
       top: 24px;
@@ -937,6 +896,28 @@
       font-style: italic;
       position: relative;
       padding-left: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 6;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+    }
+    
+    .view-all-reviews-btn {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    
+    .view-all-reviews-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-primary);
     }
 
     .carousel-btn {
@@ -1325,6 +1306,10 @@
       
       <div class="carousel-dots" id="carouselDots">
         <!-- Dots will be generated dynamically -->
+      </div>
+      
+      <div style="text-align: center;">
+        <a href="{% url 'all_reviews' %}" class="view-all-reviews-btn">View All Reviews →</a>
       </div>
     </div>
   </section>
@@ -1898,21 +1883,6 @@
       card.className = 'testimonial-card';
       card.style.animationDelay = `${index * 0.1}s`;
       
-      // Generate stars
-      let starsHtml = '';
-      for (let i = 1; i <= 5; i++) {
-        starsHtml += `<span class="star${i > testimonial.rating ? ' empty' : ''}">★</span>`;
-      }
-      
-      // Avatar HTML
-      let avatarHtml = '';
-      if (testimonial.image_url) {
-        avatarHtml = `<img src="${testimonial.image_url}" alt="${testimonial.customer_name}">`;
-      } else {
-        const initial = testimonial.customer_name.charAt(0).toUpperCase();
-        avatarHtml = `<div class="testimonial-avatar-placeholder">${initial}</div>`;
-      }
-      
       // Location HTML
       let locationHtml = '';
       if (testimonial.location) {
@@ -1922,15 +1892,9 @@
       card.innerHTML = `
         <span class="testimonial-quote">"</span>
         <div class="testimonial-header">
-          <div class="testimonial-avatar">
-            ${avatarHtml}
-          </div>
           <div class="testimonial-info">
             <div class="testimonial-name">${testimonial.customer_name}</div>
             ${locationHtml}
-            <div class="testimonial-rating">
-              ${starsHtml}
-            </div>
           </div>
         </div>
         <div class="testimonial-text">"${testimonial.review_text}"</div>

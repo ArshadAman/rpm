@@ -54,6 +54,7 @@ class Patient(models.Model):
     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='green', blank=True, null=True)
     sticky_note = models.TextField(max_length=500, blank=True, null=True, help_text="Reminder notes for this patient (max 500 chars)")
+    is_archived = models.BooleanField(default=False, help_text="Whether the patient is archived from the main list")
     
     def __str__(self):
         return self.user.email
@@ -246,10 +247,23 @@ class Interest(models.Model):
     phone_number = models.CharField(max_length=15)
     date_of_birth = models.DateField()
     age = models.IntegerField(blank=True, null=True)
+    sex = models.CharField(max_length=10, blank=True, null=True, choices=Patient.SEX_CHOICES)
+    
+    # Biometrics
+    height = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2)
+    weight = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2)
     
     # Medical information
     allergies = models.TextField(blank=True, null=True)
     insurance = models.CharField(max_length=255)
+    insurance_number = models.CharField(max_length=255, blank=True, null=True)
+    pharmacy_info = models.TextField(blank=True, null=True)
+    medications = models.TextField(null=True, blank=True)
+    family_history = models.TextField(null=True, blank=True)
+    
+    # Lifestyle
+    smoke = models.CharField(choices=(('YES', 'YES'), ('NO', 'NO'),), max_length=3, blank=True, null=True)
+    drink = models.CharField(choices=(('YES', 'YES'), ('NO', 'NO'),), max_length=3, blank=True, null=True)
     
     # Service interest
     service_interest = models.CharField(max_length=20, choices=SERVICE_CHOICES)
@@ -258,9 +272,24 @@ class Interest(models.Model):
     good_eyesight = models.BooleanField(default=False)
     can_follow_instructions = models.BooleanField(default=False)
     can_take_readings = models.BooleanField(default=False)
+    device_serial_number = models.CharField(max_length=255, blank=True, null=True)
+    
+    # Address
+    home_address = models.TextField(blank=True, null=True)
+    
+    # Emergency Contact
+    emergency_contact_name = models.CharField(max_length=255, blank=True, null=True)
+    emergency_contact_phone = models.CharField(max_length=15, blank=True, null=True)
+    emergency_contact_relationship = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Primary Care Physician
+    primary_care_physician = models.CharField(max_length=255, blank=True, null=True, help_text="Primary Care Physician name")
+    primary_care_physician_phone = models.CharField(max_length=15, blank=True, null=True)
+    primary_care_physician_email = models.EmailField(blank=True, null=True)
     
     # Additional info
     additional_comments = models.TextField(blank=True, null=True)
+    medical_summary_file = models.FileField(upload_to='medical_summaries/', blank=True, null=True)
     
     # Metadata
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
@@ -540,3 +569,57 @@ class Testimonial(models.Model):
         if self.customer_image:
             return self.customer_image.url
         return None
+
+
+class LabDocument(models.Model):
+    """Model to store lab documents uploaded by labs"""
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    patient_name = models.CharField(max_length=255, help_text="Name of the patient")
+    document = models.FileField(upload_to='lab_documents/', help_text="Uploaded lab document")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-uploaded_at']
+    
+    def __str__(self):
+        return f"{self.patient_name} - {self.uploaded_at.strftime('%Y-%m-%d')}"
+
+
+# Labs Models
+class LabCategory(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+
+    class Meta:
+        verbose_name_plural = "Lab Categories"
+
+    def __str__(self):
+        return self.name
+
+class LabTest(models.Model):
+    category = models.ForeignKey(LabCategory, on_delete=models.CASCADE, related_name='tests')
+    name = models.CharField(max_length=100)
+    unit = models.CharField(max_length=50, blank=True, null=True)
+    min_range = models.CharField(max_length=50, blank=True, null=True)
+    max_range = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.category.name})"
+
+class LabResult(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='lab_results')
+    test = models.ForeignKey(LabTest, on_delete=models.CASCADE, related_name='results')
+    value = models.CharField(max_length=255)
+    date_recorded = models.DateTimeField()
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    file = models.FileField(upload_to='lab_reports/', blank=True, null=True)
+    file_url = models.URLField(max_length=500, blank=True, null=True)  # Cloudinary URL
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date_recorded']
+
+    def __str__(self):
+        return f"{self.patient} - {self.test.name}: {self.value}"

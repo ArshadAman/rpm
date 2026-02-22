@@ -55,6 +55,26 @@ class InterestLeadAdmin(admin.ModelAdmin):
     list_display = [field.name for field in InterestLead._meta.fields]
     search_fields = ['email', 'first_name', 'last_name', 'phone_number']
 
+# Register Lab Models
+from .models import LabCategory, LabTest, LabResult
+
+@admin.register(LabCategory)
+class LabCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+
+@admin.register(LabTest)
+class LabTestAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category', 'unit', 'min_range', 'max_range')
+    list_filter = ('category',)
+    search_fields = ('name',)
+
+@admin.register(LabResult)
+class LabResultAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'test', 'value', 'date_recorded', 'recorded_by')
+    list_filter = ('test__category', 'date_recorded')
+    search_fields = ('patient__user__first_name', 'patient__user__last_name', 'test__name')
+
 # Debug section to print registered models
 print("==== DEBUG: REGISTERED MODELS IN ADMIN ====")
 from django.contrib import admin

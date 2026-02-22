@@ -10,7 +10,7 @@ from django.conf import settings
 from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
-from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor, EmailOTP
+from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor, EmailOTP, LabCategory, LabTest, LabResult, LabDocument
 from retell_calling.models import CallSummary, LeadCallSession, LeadCallSummary
 from referral.models import Referral
 from django.db import models
@@ -751,13 +751,31 @@ def express_interest(request):
             'phone_number': request.POST.get('phone_number'),
             'date_of_birth': request.POST.get('date_of_birth'),
             'age': request.POST.get('age'),
-            'allergies': request.POST.get('allergies'),
+            'sex': request.POST.get('sex'),
+            'height': request.POST.get('height') or None,
+            'weight': request.POST.get('weight') or None,
+            'home_address': request.POST.get('home_address'),
+            'emergency_contact_name': request.POST.get('emergency_contact_name'),
+            'emergency_contact_phone': request.POST.get('emergency_contact_phone'),
+            'emergency_contact_relationship': request.POST.get('emergency_contact_relationship'),
+            'primary_care_physician': request.POST.get('primary_care_physician'),
+            'primary_care_physician_phone': request.POST.get('primary_care_physician_phone'),
+            'primary_care_physician_email': request.POST.get('primary_care_physician_email'),
             'insurance': request.POST.get('insurance'),
+            'insurance_number': request.POST.get('insurance_number'),
+            'device_serial_number': request.POST.get('device_serial_number'),
+            'allergies': request.POST.get('allergies'),
+            'medications': request.POST.get('medications'),
+            'pharmacy_info': request.POST.get('pharmacy_info'),
+            'family_history': request.POST.get('family_history'),
+            'smoke': request.POST.get('smoke'),
+            'drink': request.POST.get('drink'),
             'service_interest': request.POST.get('service_interest'),
             'additional_comments': request.POST.get('additional_comments'),
             'good_eyesight': 'good_eyesight' in request.POST,
             'can_follow_instructions': 'can_follow_instructions' in request.POST,
             'can_take_readings': 'can_take_readings' in request.POST,
+            'medical_summary_file': request.FILES.get('medical_summary_file'),
         }
         
         # Get past medical history selections
@@ -786,7 +804,8 @@ def express_interest(request):
     
     # GET request - display the form
     return render(request, 'express_interest.html', {
-        'pmh_choices': pmh_choices
+        'pmh_choices': pmh_choices,
+        'form_data': {}
     })
 
 @api_view(["POST"])
@@ -981,95 +1000,85 @@ def moderator_logout(request):
 def view_assigned_patient(request):
     moderator = Moderator.objects.get(user=request.user)
     # Order patients by signup date (created_at)
-    patient_obj = Patient.objects.filter(moderator_assigned=moderator).order_by('created_at')
+    all_patients = Patient.objects.filter(moderator_assigned=moderator).order_by('created_at')
+    active_patients = all_patients.filter(is_archived=False)
+    archived_patients = all_patients.filter(is_archived=True)
     
     # Import models for call status
     from retell_calling.models import RetellCallSession, CallSummary
     
-    formatted_patients = []
-    serial_number = 1  # Start serial number from 1
-    for patient in patient_obj:
-        # Format medications into a list if they exist
-        medications = []
-        if patient.medications:
-            medications = [med.strip() for med in patient.medications.split('\n') if med.strip()]
-
-        # Format pharmacy info into structured data if it exists
-        pharmacy_info = {}
-        if patient.pharmacy_info:
-            try:
-                lines = patient.pharmacy_info.split('\n')
-                for line in lines:
-                    if ':' in line:
-                        key, value = line.split(':', 1)
-                        pharmacy_info[key.strip()] = value.strip()
-            except:
-                pharmacy_info = {'Details': patient.pharmacy_info}
-
-        # Format allergies into a list if they exist
-        allergies = []
-        if patient.allergies:
-            allergies = [allergy.strip() for allergy in patient.allergies.split(',') if allergy.strip()]
-
-        # Format family history into structured sections if it exists
-        family_history = []
-        if patient.family_history:
-            history_lines = patient.family_history.split('\n')
-            for line in history_lines:
-                if line.strip():
-                    family_history.append(line.strip())
-
-        # Get last documentation for this patient
-        last_documentation = Documentation.objects.filter(patient=patient).order_by('-created_at').first()
-        last_doc_text = None
-        if last_documentation:
-            last_doc_text = f"{last_documentation.title} - {timezone.localtime(last_documentation.created_at).strftime('%m/%d/%Y %I:%M %p')}"
-        
-        # Get last vital (report) for this patient
-        last_vital = Reports.objects.filter(patient=patient).order_by('-created_at').first()
-        last_vital_text = None
-        if last_vital:
-            vital_parts = []
-            if last_vital.systolic_blood_pressure and last_vital.diastolic_blood_pressure:
-                vital_parts.append(f"BP: {last_vital.systolic_blood_pressure}/{last_vital.diastolic_blood_pressure}")
-            if last_vital.pulse:
-                vital_parts.append(f"HR: {last_vital.pulse}")
-            if last_vital.blood_glucose:
-                vital_parts.append(f"BG: {last_vital.blood_glucose}")
-            if last_vital.spo2:
-                vital_parts.append(f"SpO2: {last_vital.spo2}%")
-            
-            if vital_parts:
-                last_vital_text = f"{', '.join(vital_parts)} - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
-            else:
-                last_vital_text = f"Vital recorded - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
-
-        # Get latest call status for this patient
-        latest_call = RetellCallSession.objects.filter(patient=patient).order_by('-created_at').first()
-        call_status = latest_call.call_status if latest_call else None
-        
-        # Get summary count for this patient
-        summary_count = CallSummary.objects.filter(patient=patient).count()
-
-        formatted_patient = {
-            'serial_number': serial_number,
-            'patient': patient,
-            'formatted_medications': medications,
-            'formatted_pharmacy': pharmacy_info,
-            'formatted_allergies': allergies,
-            'formatted_family_history': family_history,
-            'last_documentation': last_doc_text,
-            'last_vital': last_vital_text,
-            'status': patient.status or 'green',
-            'sticky_note': patient.sticky_note or '',
-            'call_status': call_status,
-            'summary_count': summary_count
-        }
-        formatted_patients.append(formatted_patient)
-        serial_number += 1  # Increment serial number
+    def build_patient_list(patient_queryset, start_serial=1):
+        formatted = []
+        serial_number = start_serial
+        for patient in patient_queryset:
+            medications = []
+            if patient.medications:
+                medications = [med.strip() for med in patient.medications.split('\n') if med.strip()]
+            pharmacy_info = {}
+            if patient.pharmacy_info:
+                try:
+                    lines = patient.pharmacy_info.split('\n')
+                    for line in lines:
+                        if ':' in line:
+                            key, value = line.split(':', 1)
+                            pharmacy_info[key.strip()] = value.strip()
+                except:
+                    pharmacy_info = {'Details': patient.pharmacy_info}
+            allergies = []
+            if patient.allergies:
+                allergies = [allergy.strip() for allergy in patient.allergies.split(',') if allergy.strip()]
+            family_history = []
+            if patient.family_history:
+                history_lines = patient.family_history.split('\n')
+                for line in history_lines:
+                    if line.strip():
+                        family_history.append(line.strip())
+            last_documentation = Documentation.objects.filter(patient=patient).order_by('-created_at').first()
+            last_doc_text = None
+            if last_documentation:
+                last_doc_text = f"{last_documentation.title} - {timezone.localtime(last_documentation.created_at).strftime('%m/%d/%Y %I:%M %p')}"
+            last_vital = Reports.objects.filter(patient=patient).order_by('-created_at').first()
+            last_vital_text = None
+            if last_vital:
+                vital_parts = []
+                if last_vital.systolic_blood_pressure and last_vital.diastolic_blood_pressure:
+                    vital_parts.append(f"BP: {last_vital.systolic_blood_pressure}/{last_vital.diastolic_blood_pressure}")
+                if last_vital.pulse:
+                    vital_parts.append(f"HR: {last_vital.pulse}")
+                if last_vital.blood_glucose:
+                    vital_parts.append(f"BG: {last_vital.blood_glucose}")
+                if last_vital.spo2:
+                    vital_parts.append(f"SpO2: {last_vital.spo2}%")
+                if vital_parts:
+                    last_vital_text = f"{', '.join(vital_parts)} - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
+                else:
+                    last_vital_text = f"Vital recorded - {timezone.localtime(last_vital.created_at).strftime('%m/%d/%Y %I:%M %p')}"
+            latest_call = RetellCallSession.objects.filter(patient=patient).order_by('-created_at').first()
+            call_status = latest_call.call_status if latest_call else None
+            summary_count = CallSummary.objects.filter(patient=patient).count()
+            formatted.append({
+                'serial_number': serial_number,
+                'patient': patient,
+                'formatted_medications': medications,
+                'formatted_pharmacy': pharmacy_info,
+                'formatted_allergies': allergies,
+                'formatted_family_history': family_history,
+                'last_documentation': last_doc_text,
+                'last_vital': last_vital_text,
+                'status': patient.status or 'green',
+                'sticky_note': patient.sticky_note or '',
+                'call_status': call_status,
+                'summary_count': summary_count
+            })
+            serial_number += 1
+        return formatted
+    
+    formatted_patients = build_patient_list(active_patients)
+    formatted_archived = build_patient_list(archived_patients)
 
     context = {
         'patient_obj': formatted_patients,
+        'archived_patients': formatted_archived,
     }
     return render(request, 'view_assigned_patient.html', context)
 
@@ -1670,6 +1679,23 @@ def track_interest(request):
                 "good_eyesight": {"type": bool},
                 "can_follow_instructions": {"type": bool},
                 "can_take_readings": {"type": bool},
+                "sex": {"type": str, "max_length": 10, "sanitize": True},
+                "height": {"type": str, "max_length": 10, "sanitize": True},
+                "weight": {"type": str, "max_length": 10, "sanitize": True},
+                "home_address": {"type": str, "max_length": 500, "sanitize": True},
+                "emergency_contact_name": {"type": str, "max_length": 255, "sanitize": True},
+                "emergency_contact_phone": {"type": str, "max_length": 20, "validate": "phone", "sanitize": True},
+                "emergency_contact_relationship": {"type": str, "max_length": 100, "sanitize": True},
+                "primary_care_physician": {"type": str, "max_length": 255, "sanitize": True},
+                "primary_care_physician_phone": {"type": str, "max_length": 20, "validate": "phone", "sanitize": True},
+                "primary_care_physician_email": {"type": str, "max_length": 254, "validate": "email", "sanitize": True},
+                "insurance_number": {"type": str, "max_length": 255, "sanitize": True},
+                "device_serial_number": {"type": str, "max_length": 255, "sanitize": True},
+                "medications": {"type": str, "max_length": 2000, "sanitize": True},
+                "pharmacy_info": {"type": str, "max_length": 1000, "sanitize": True},
+                "family_history": {"type": str, "max_length": 2000, "sanitize": True},
+                "smoke": {"type": str, "max_length": 10, "sanitize": True},
+                "drink": {"type": str, "max_length": 10, "sanitize": True},
             }
             
             # Validate and sanitize each field
@@ -3728,6 +3754,19 @@ def update_patient_status(request, patient_id):
 
 @login_required
 @require_POST
+def toggle_patient_archive(request, patient_id):
+    """Toggle patient archive status"""
+    try:
+        patient = get_object_or_404(Patient, id=patient_id)
+        patient.is_archived = not patient.is_archived
+        patient.save()
+        return JsonResponse({'success': True, 'is_archived': patient.is_archived})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
 def update_patient_sticky_note(request, patient_id):
     """Update patient sticky note"""
     try:
@@ -3756,3 +3795,261 @@ def get_patient_sticky_note(request, patient_id):
         return JsonResponse({'success': True, 'sticky_note': patient.sticky_note or ''})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+def lab_upload(request):
+    """View to handle lab document uploads"""
+    if request.method == 'POST':
+        try:
+            patient_name = request.POST.get('patient_name')
+            document = request.FILES.get('document')
+            
+            if not patient_name or not document:
+                messages.error(request, 'Please provide both patient name and a document.')
+                return render(request, 'lab_upload.html')
+            
+            from .models import LabDocument
+            LabDocument.objects.create(
+                patient_name=patient_name,
+                document=document
+            )
+            
+            messages.success(request, 'Lab document uploaded successfully!')
+            return redirect('lab_upload')
+            
+        except Exception as e:
+            messages.error(request, f'Error uploading document: {str(e)}')
+            
+    return render(request, 'lab_upload.html')
+
+
+# Lab API Views
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_lab_structure(request):
+    """Return the structure of lab categories and tests"""
+    categories = LabCategory.objects.all().prefetch_related('tests')
+    data = []
+    for cat in categories:
+        tests = []
+        for test in cat.tests.all():
+            tests.append({
+                'id': test.id,
+                'name': test.name,
+                'unit': test.unit,
+                'min': test.min_range,
+                'max': test.max_range
+            })
+        data.append({
+            'id': cat.id,
+            'name': cat.name,
+            'slug': cat.slug,
+            'tests': tests
+        })
+    return JsonResponse({'success': True, 'categories': data})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_patient_labs(request, patient_id):
+    """Return all lab results for a patient"""
+    try:
+        patient = Patient.objects.get(id=patient_id)
+    except Patient.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Patient not found'}, status=404)
+        
+    # Check permissions (add your own logic here if needed, e.g. moderator assignment)
+    
+    results = LabResult.objects.filter(patient=patient).select_related('test', 'test__category').order_by('-date_recorded')
+    
+    data = []
+    for res in results:
+        data.append({
+            'id': res.id,
+            'test_id': res.test.id,
+            'test_name': res.test.name,
+            'category_name': res.test.category.name,
+            'value': res.value,
+            'unit': res.test.unit,
+            'date_recorded': res.date_recorded.strftime('%Y-%m-%d %H:%M'),
+            'recorded_by': res.recorded_by.username if res.recorded_by else 'Unknown',
+            'notes': res.notes,
+            'file_url': res.file_url  # Cloudinary URL
+        })
+        
+    return JsonResponse({'success': True, 'results': data})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_lab_result(request):
+    """Save a single lab result with Cloudinary file storage"""
+    try:
+        patient_id = request.data.get('patient_id')
+        test_id = request.data.get('test_id')
+        value = request.data.get('value')
+        date_str = request.data.get('date') # ISO format expected or YYYY-MM-DD
+        notes = request.data.get('notes', '')
+        
+        if not all([patient_id, test_id, value, date_str]):
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+            
+        patient = Patient.objects.get(id=patient_id)
+        test = LabTest.objects.get(id=test_id)
+        
+        # Parse date
+        from django.utils.dateparse import parse_datetime
+        date_recorded = parse_datetime(date_str)
+        if not date_recorded:
+            # Try simple date if datetime fails
+            from django.utils.dateparse import parse_date
+            import datetime
+            d = parse_date(date_str)
+            if d:
+                date_recorded = datetime.datetime.combine(d, datetime.time.min)
+            else:
+                 return JsonResponse({'success': False, 'error': 'Invalid date format'}, status=400)
+
+        # Handle file upload to Cloudinary
+        cloudinary_url = None
+        uploaded_file = request.FILES.get('file')
+        if uploaded_file:
+            try:
+                import cloudinary
+                import cloudinary.uploader
+                from django.conf import settings
+                import uuid
+                
+                # Configure Cloudinary
+                cloudinary.config(
+                    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+                    api_key=settings.CLOUDINARY_API_KEY,
+                    api_secret=settings.CLOUDINARY_API_SECRET
+                )
+                
+                # Get file extension
+                file_ext = uploaded_file.name.split('.')[-1].lower()
+                
+                # Generate a unique filename to avoid special character issues
+                unique_id = str(uuid.uuid4())[:8]
+                safe_filename = f"{test.name.replace(' ', '_')}_{unique_id}"
+                
+                # PDFs are treated as images in Cloudinary (not raw)
+                # For other documents like doc, docx, use raw
+                if file_ext == 'pdf':
+                    # PDFs should be uploaded as images in Cloudinary
+                    upload_result = cloudinary.uploader.upload(
+                        uploaded_file,
+                        folder=f"lab_reports/{patient_id}",
+                        resource_type="image",  # PDF is treated as image type
+                        public_id=safe_filename,
+                        overwrite=True
+                    )
+                elif file_ext in ['doc', 'docx', 'txt', 'csv', 'xls', 'xlsx']:
+                    # Other documents use raw type
+                    upload_result = cloudinary.uploader.upload(
+                        uploaded_file,
+                        folder=f"lab_reports/{patient_id}",
+                        resource_type="raw",
+                        public_id=f"{safe_filename}.{file_ext}",
+                        overwrite=True
+                    )
+                else:
+                    # For images (jpg, png, etc.)
+                    upload_result = cloudinary.uploader.upload(
+                        uploaded_file,
+                        folder=f"lab_reports/{patient_id}",
+                        resource_type="image",
+                        public_id=safe_filename,
+                        overwrite=True
+                    )
+                
+                cloudinary_url = upload_result.get('secure_url')
+            except Exception as upload_error:
+                return JsonResponse({'success': False, 'error': f'File upload failed: {str(upload_error)}'}, status=500)
+
+        LabResult.objects.create(
+            patient=patient,
+            test=test,
+            value=value,
+            date_recorded=date_recorded,
+            recorded_by=request.user,
+            notes=notes,
+            file_url=cloudinary_url  # Store Cloudinary URL
+        )
+        
+        return JsonResponse({'success': True, 'message': 'Lab result saved'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def all_reviews(request):
+    """Public page to display all reviews with RPM information"""
+    return render(request, 'all_reviews.html')
+
+
+@login_required
+@require_POST
+def patient_submit_review(request):
+    """API endpoint for patients to submit their reviews"""
+    try:
+        from .models import Patient, Testimonial
+        import json
+        
+        # Get the logged-in patient
+        try:
+            patient = Patient.objects.get(user=request.user)
+        except Patient.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Patient profile not found'
+            }, status=404)
+        
+        # Parse request data
+        data = json.loads(request.body)
+        review_text = data.get('review_text', '').strip()
+        location = data.get('location', '').strip()
+        
+        if not review_text:
+            return JsonResponse({
+                'success': False,
+                'error': 'Review text is required'
+            }, status=400)
+        
+        if len(review_text) > 500:
+            return JsonResponse({
+                'success': False,
+                'error': 'Review text must be 500 characters or less'
+            }, status=400)
+        
+        # Create the testimonial (inactive by default, pending admin approval)
+        customer_name = f"{patient.user.first_name} {patient.user.last_name}".strip()
+        if not customer_name:
+            customer_name = patient.user.username
+        
+        testimonial = Testimonial.objects.create(
+            customer_name=customer_name,
+            review_text=review_text,
+            location=location if location else None,
+            rating=5,  # Default rating
+            is_active=False,  # Requires admin approval
+            created_by=request.user
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Review submitted successfully. It will be visible after admin approval.',
+            'review_id': str(testimonial.id)
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in patient_submit_review: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': 'An error occurred while submitting your review'
+        }, status=500)

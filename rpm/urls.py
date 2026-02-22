@@ -1,4 +1,6 @@
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from rpm_users.views import admin_logout
 from .admin import admin_site
 from reports.views import documentation_share_view
@@ -13,4 +15,4 @@ urlpatterns = [
     path('grappelli/', include('grappelli.urls')),  
     path("medications/", include("medications.urls")),  # Grappelli URLS
     path('referrals/', include('referral.urls')),  # Referral system URLs
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
