@@ -1621,6 +1621,15 @@
                 chevron.style.transform = 'rotate(0deg)';
             }
         };
+
+        // Move modals to document.body so that the container's backdrop-filter
+        // does not break position:fixed centering relative to the viewport.
+        document.addEventListener('DOMContentLoaded', function() {
+            ['stickyNoteModal', 'callInstructionModal', 'bulkCallModal'].forEach(function(id) {
+                var modal = document.getElementById(id);
+                if (modal) document.body.appendChild(modal);
+            });
+        });
       </script>
     </div>
   </body>
