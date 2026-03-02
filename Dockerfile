@@ -19,4 +19,7 @@ COPY . /app/
 # Create logs directory
 RUN mkdir -p /app/logs
 
-CMD ["uvicorn", "rpm.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+COPY entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
+
+CMD ["/app/entrypoint.sh"]

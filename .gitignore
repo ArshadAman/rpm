@@ -34,3 +34,5 @@ share/python-wheels/
 *.egg
 MANIFEST
 .kiro/
+celerybeat-schedule
+celerybeat.pid
