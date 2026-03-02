@@ -84,8 +84,8 @@ services:
       - "8080:8080"
     environment:
       - DOZZLE_BASE=/logs
-      - DOZZLE_USERNAME=${DOZZLE_USERNAME:-admin}
-      - DOZZLE_PASSWORD=${DOZZLE_PASSWORD:-pinksurfing_logs}
+      - DOZZLE_USERNAME=${DOZZLE_USERNAME}
+      - DOZZLE_PASSWORD=${DOZZLE_PASSWORD}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
