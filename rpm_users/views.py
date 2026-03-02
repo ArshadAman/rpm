@@ -97,8 +97,14 @@ def home(request):
     return render(request, 'home.html')
 
 def landing_page(request):
-    """Public landing page mapped to '/' route"""
-    return render(request, 'landing_page.html')
+    """Public landing page — Videos and Testimonials served from Redis cache (1h TTL)"""
+    from rpm_users.cache_utils import get_cached_videos, get_cached_testimonials
+    context = {
+        'videos': get_cached_videos(),
+        'testimonials': get_cached_testimonials(),
+    }
+    return render(request, 'landing_page.html', context)
+
 
 def admin_login(request):
     """Custom admin login page that only allows superusers"""
@@ -219,14 +225,13 @@ def moderator_list(request):
         # Order by username for consistent display
         moderators = moderators.order_by('user__username')
         
-        # Add patient count for each moderator
-        moderators_with_counts = []
-        for moderator in moderators:
-            patient_count = Patient.objects.filter(moderator_assigned=moderator).count()
-            moderators_with_counts.append({
-                'moderator': moderator,
-                'patient_count': patient_count
-            })
+        # Add patient count for each moderator — single annotated query (no N+1)
+        from django.db.models import Count
+        moderators = moderators.annotate(patient_count=Count('moderators'))
+        moderators_with_counts = [
+            {'moderator': m, 'patient_count': m.patient_count}
+            for m in moderators
+        ]
         
         context = {
             'moderators_with_counts': moderators_with_counts,
@@ -293,28 +298,30 @@ def moderator_detail(request, moderator_id):
     try:
         moderator = get_object_or_404(Moderator, id=moderator_id)
         
-        # Get all patients assigned to this moderator
-        assigned_patients = Patient.objects.filter(moderator_assigned=moderator).select_related('user').order_by('user__first_name')
-        
-        # Add additional info for each patient
+        # Prefetch latest report per patient — eliminates N+1 (1 query, not N queries)
+        from reports.models import Reports
+        from django.db.models import Prefetch
+        assigned_patients = Patient.objects.filter(
+            moderator_assigned=moderator
+        ).select_related('user', 'doctor_escalated__user').prefetch_related(
+            Prefetch(
+                'reports',
+                queryset=Reports.objects.order_by('-created_at'),
+                to_attr='prefetched_reports'
+            )
+        ).order_by('user__first_name')
+
+        from datetime import date as _date
         patients_with_info = []
         for patient in assigned_patients:
-            # Calculate age if date_of_birth exists
             age = None
             if patient.date_of_birth:
-                from datetime import date
-                today = date.today()
-                age = today.year - patient.date_of_birth.year - ((today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day))
-            
-            # Get latest report for this patient (if any)
-            from reports.models import Reports
-            latest_report = Reports.objects.filter(patient=patient).order_by('-created_at').first()
-            
-            # Get escalated doctor information if patient is escalated
-            escalated_doctor = None
-            if patient.is_escalated and patient.doctor_escalated:
-                escalated_doctor = patient.doctor_escalated
-            
+                today = _date.today()
+                age = today.year - patient.date_of_birth.year - (
+                    (today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day)
+                )
+            latest_report = patient.prefetched_reports[0] if patient.prefetched_reports else None
+            escalated_doctor = patient.doctor_escalated if patient.is_escalated else None
             patients_with_info.append({
                 'patient': patient,
                 'age': age,
@@ -322,6 +329,7 @@ def moderator_detail(request, moderator_id):
                 'escalated': patient.is_escalated,
                 'escalated_doctor': escalated_doctor
             })
+
         
         context = {
             'moderator': moderator,
@@ -446,14 +454,13 @@ def doctor_list(request):
         # Order by username for consistent display
         doctors = doctors.order_by('user__username')
         
-        # Add escalated patient count for each doctor
-        doctors_with_counts = []
-        for doctor in doctors:
-            escalated_patient_count = Patient.objects.filter(doctor_escalated=doctor).count()
-            doctors_with_counts.append({
-                'doctor': doctor,
-                'escalated_patient_count': escalated_patient_count
-            })
+        # Add escalated patient count — single annotated query (no N+1)
+        from django.db.models import Count
+        doctors = doctors.annotate(escalated_patient_count=Count('escalated_patients'))
+        doctors_with_counts = [
+            {'doctor': d, 'escalated_patient_count': d.escalated_patient_count}
+            for d in doctors
+        ]
         
         context = {
             'doctors_with_counts': doctors_with_counts,
@@ -2117,7 +2124,7 @@ def test_staff_ui(request):
         content = f.read()
     return HttpResponse(content, content_type='text/html')
 
-@csrf_exempt
+
 def verify_admin_password(request):
     """Verify admin password before allowing user creation"""
     if request.method == 'POST':
@@ -2308,8 +2315,8 @@ def get_shortcuts(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+
 @login_required
-@csrf_exempt
 def create_shortcut(request):
     """Create a new shortcut for the current moderator"""
     if request.method != 'POST':
@@ -2351,8 +2358,8 @@ def create_shortcut(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+
 @login_required
-@csrf_exempt
 def update_shortcut(request, shortcut_id):
     """Update an existing shortcut"""
     if request.method != 'PUT':
@@ -2394,8 +2401,8 @@ def update_shortcut(request, shortcut_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+
 @login_required
-@csrf_exempt
 def delete_shortcut(request, shortcut_id):
     """Delete a shortcut"""
     if request.method != 'DELETE':
@@ -3826,26 +3833,29 @@ def lab_upload(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_lab_structure(request):
-    """Return the structure of lab categories and tests"""
-    categories = LabCategory.objects.all().prefetch_related('tests')
-    data = []
-    for cat in categories:
-        tests = []
-        for test in cat.tests.all():
-            tests.append({
-                'id': test.id,
-                'name': test.name,
-                'unit': test.unit,
-                'min': test.min_range,
-                'max': test.max_range
-            })
-        data.append({
-            'id': cat.id,
-            'name': cat.name,
-            'slug': cat.slug,
-            'tests': tests
-        })
+    """Return lab categories+tests — served from Redis cache (24h TTL, changes rarely)"""
+    from rpm_users.cache_utils import get_cached_lab_categories
+    cache_key = 'rpm:lab_structure_serialized'
+    from django.core.cache import cache
+    data = cache.get(cache_key)
+    if data is None:
+        categories = get_cached_lab_categories()
+        data = []
+        for cat in categories:
+            tests = [
+                {
+                    'id': t.id,
+                    'name': t.name,
+                    'unit': t.unit,
+                    'min': t.min_range,
+                    'max': t.max_range,
+                }
+                for t in cat.tests.all()
+            ]
+            data.append({'id': cat.id, 'name': cat.name, 'slug': cat.slug, 'tests': tests})
+        cache.set(cache_key, data, 60 * 60 * 24)  # 24 hours
     return JsonResponse({'success': True, 'categories': data})
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
