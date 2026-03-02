@@ -64,7 +64,7 @@ services:
     environment:
       - DOMAIN=${DOMAIN}
       - CERTBOT_EMAIL=${CERTBOT_EMAIL:-admin@strattonhealth.com}
-      - CERTBOT_CERT_NAME=rpm-active
+      - CERTBOT_CERT_NAME=${DOMAIN}
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
