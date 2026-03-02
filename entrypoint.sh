@@ -2,8 +2,7 @@
 
 # Run migrations and setup tasks first
 echo "Running migrations..."
-python manage.py migrate gigs
-python manage.py populate_gig_categories
+python manage.py migrate
 
 # Replace the shell process with the actual application process
 # Utilizing Gunicorn as a process manager with 2 Uvicorn async workers.
