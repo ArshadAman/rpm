@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
   web:
@@ -57,6 +57,20 @@ services:
     stop_grace_period: 60s
     stop_signal: SIGTERM
 
+  init-ssl:
+    build:
+      context: .
+      dockerfile: Dockerfile.initssl
+    environment:
+      - DOMAIN=${DOMAIN}
+      - CERTBOT_EMAIL=${CERTBOT_EMAIL:-admin@strattonhealth.com}
+      - CERTBOT_CERT_NAME=rpm-active
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    ports:
+      - "80:80"
+
   nginx:
     image: nginx:latest
     ports:
@@ -69,7 +83,10 @@ services:
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot:ro
     depends_on:
-      - web
+      init-ssl:
+        condition: service_completed_successfully
+      web:
+        condition: service_started
 
   certbot:
     image: certbot/certbot
