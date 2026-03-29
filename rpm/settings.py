@@ -117,7 +117,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'mypassword'),
         'HOST': os.environ.get('POSTGRES_HOST', 'db'),
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-        "CONN_MAX_AGE": 60,
+        "CONN_MAX_AGE": 20,
         "CONN_HEALTH_CHECKS":True,
         'OPTIONS': {
             **({'sslmode': 'require'} if os.environ.get('POSTGRES_SSL', '').lower() == 'true' else {})
