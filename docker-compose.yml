@@ -31,7 +31,7 @@ services:
 
   celery:
     build: .
-    command: celery -A rpm worker --loglevel=info --pool=gevent --concurrency=100
+    command: celery -A rpm worker --loglevel=info --pool=gevent --concurrency=20
     volumes:
       - .:/app
     env_file:
