@@ -1707,18 +1707,15 @@
                   </div>
                   <div class="info-item">
                     <div class="item-icon">🔢</div>
-                    <span><strong>Insurance Number:</strong> {{ patient.insurance_number|default:"Not provided"
-                      }}</span>
+                    <span><strong>Insurance Number:</strong> {{ patient.insurance_number|default:"Not provided" }}</span>
                   </div>
                   <div class="info-item">
                     <div class="item-icon">📈</div>
-                    <span><strong>Monitoring Parameters:</strong> {{ patient.monitoring_parameters|default:"Not
-                      specified" }}</span>
+                    <span><strong>Monitoring Parameters:</strong> {{ patient.monitoring_parameters|default:"Not specified" }}</span>
                   </div>
                   <div class="info-item">
                     <div class="item-icon">📱</div>
-                    <span><strong>Device Serial:</strong> {{ patient.device_serial_number|default:"Not assigned"
-                      }}</span>
+                    <span><strong>Device Serial:</strong> {{ patient.device_serial_number|default:"Not assigned" }}</span>
                   </div>
                 </div>
               </div>
@@ -1760,28 +1757,23 @@
                   </div>
                   <div class="info-item">
                     <div class="item-icon">🚨</div>
-                    <span><strong>Emergency Contact:</strong> {{ patient.emergency_contact_name|default:"Not provided"
-                      }}</span>
+                    <span><strong>Emergency Contact:</strong> {{ patient.emergency_contact_name|default:"Not provided" }}</span>
                   </div>
                   <div class="info-item">
                     <div class="item-icon">📞</div>
-                    <span><strong>Emergency Phone:</strong> {{ patient.emergency_contact_phone|default:"Not provided"
-                      }}</span>
+                    <span><strong>Emergency Phone:</strong> {{ patient.emergency_contact_phone|default:"Not provided" }}</span>
                   </div>
                   <div class="info-item">
                     <div class="item-icon">👥</div>
-                    <span><strong>Relationship:</strong> {{ patient.emergency_contact_relationship|default:"Not
-                      specified" }}</span>
+                    <span><strong>Relationship:</strong> {{ patient.emergency_contact_relationship|default:"Not specified" }}</span>
                   </div>
                   <div class="info-item">
                     <div class="item-icon">👨‍⚕️</div>
-                    <span><strong>Primary Care Physician:</strong> {{ patient.primary_care_physician|default:"Not
-                      provided" }}</span>
+                    <span><strong>Primary Care Physician:</strong> {{ patient.primary_care_physician|default:"Not provided" }}</span>
                   </div>
                   <div class="info-item">
                     <div class="item-icon">☎️</div>
-                    <span><strong>PCP Phone:</strong> {{ patient.primary_care_physician_phone|default:"Not provided"
-                      }}</span>
+                    <span><strong>PCP Phone:</strong> {{ patient.primary_care_physician_phone|default:"Not provided" }}</span>
                   </div>
                 </div>
               </div>
@@ -1800,20 +1792,16 @@
                 <div class="info-grid">
                   <div class="info-item">
                     <div class="item-icon">👨‍💼</div>
-                    <span><strong>Assigned Moderator:</strong> {{
-                      patient.moderator_assigned.user.first_name|default:"Not assigned" }} {{
-                      patient.moderator_assigned.user.last_name|default:"" }}</span>
+                    <span><strong>Assigned Moderator:</strong> {{ patient.moderator_assigned.user.first_name|default:"Not assigned" }} {{ patient.moderator_assigned.user.last_name|default:"" }}</span>
                   </div>
                   {% if patient.is_escalated %}
                   <div class="info-item">
                     <div class="item-icon">👨‍⚕️</div>
-                    <span><strong>Escalated to Doctor:</strong> {{ patient.doctor_escalated.user.first_name }} {{
-                      patient.doctor_escalated.user.last_name }}</span>
+                    <span><strong>Escalated to Doctor:</strong> {{ patient.doctor_escalated.user.first_name }} {{ patient.doctor_escalated.user.last_name }}</span>
                   </div>
                   <div class="info-item">
                     <div class="item-icon">🏥</div>
-                    <span><strong>Specialization:</strong> {{ patient.doctor_escalated.specialization|default:"General
-                      Medicine" }}</span>
+                    <span><strong>Specialization:</strong> {{ patient.doctor_escalated.specialization|default:"General Medicine" }}</span>
                   </div>
                   {% endif %}
                 </div>
