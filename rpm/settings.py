@@ -117,6 +117,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'mypassword'),
         'HOST': os.environ.get('POSTGRES_HOST', 'db'),
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+        "CONN_MAX_AGE": 20, # Reduced from 60 to prevent connection buildup on DigitalOcean
         "CONN_MAX_AGE": 20,
         "CONN_HEALTH_CHECKS":True,
         'OPTIONS': {
@@ -358,7 +359,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Don't double redirect — let Nginx handle HTTPS redirection
 SECURE_SSL_REDIRECT = False
 # Ensure Django doesn’t re-redirect HTTPS requests
-USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_HOST = False
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Cloudinary Configuration
