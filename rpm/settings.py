@@ -118,6 +118,7 @@ DATABASES = {
         'HOST': os.environ.get('POSTGRES_HOST', 'db'),
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
         "CONN_MAX_AGE": 20, # Reduced from 60 to prevent connection buildup on DigitalOcean
+        "CONN_MAX_AGE": 20,
         "CONN_HEALTH_CHECKS":True,
         'OPTIONS': {
             **({'sslmode': 'require'} if os.environ.get('POSTGRES_SSL', '').lower() == 'true' else {})
