@@ -1,11 +1,11 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
+{% block title %}Lab Portal - Upload Document{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab Portal - Upload Document</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -115,9 +115,9 @@
             border: 1px solid rgba(255, 78, 78, 0.2);
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
+{% block content %}
     <div class="container">
         <h2>Lab Document Upload</h2>
 
@@ -145,6 +145,4 @@
             <button type="submit" class="submit-btn">Upload Document</button>
         </form>
     </div>
-</body>
-
-</html>
+{% endblock %}

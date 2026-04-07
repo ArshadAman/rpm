@@ -1,10 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% block title %}{% if edit_mode %}Edit Documentation{% else %}Add Documentation{% endif %}{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if edit_mode %}Edit Documentation{% else %}Add Documentation{% endif %}</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Quill Editor CSS -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -1081,8 +1083,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     {% comment %} Add docs section {% endcomment %}
     <div class="container">
         <div class="header-section">
@@ -2012,5 +2015,4 @@ function generateVitalsSection() {
             }
         });
     </script>
-</body>
-</html>
+{% endblock %}

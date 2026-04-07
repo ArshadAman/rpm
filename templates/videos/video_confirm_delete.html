@@ -1,9 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+
+{% block title %}Delete Video - RPM{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delete Video - RPM</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -140,8 +142,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="delete-card">
         <div class="warning-icon">⚠️</div>
         <h1>Delete Video?</h1>
@@ -180,5 +183,4 @@
             </div>
         </form>
     </div>
-</body>
-</html>
+{% endblock %}

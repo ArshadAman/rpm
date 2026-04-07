@@ -1,9 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+
+{% block title %}Voice Bot Dashboard - RPM System{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Bot Dashboard - RPM System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -162,8 +163,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="container">
         <div class="header">
             <h1>🎙️ Voice Bot Dashboard</h1>
@@ -297,5 +299,4 @@
             location.reload();
         }, 30000);
     </script>
-</body>
-</html>
+{% endblock %}

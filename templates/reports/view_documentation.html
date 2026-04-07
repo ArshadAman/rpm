@@ -1,9 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+
+{% block title %}Documentation{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation</title>
+    
     <style>
         :root {
             --primary: #7928CA;
@@ -223,8 +225,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="container">
         <a href="{% url 'view_all_assigned_patient' %}" class="back-button">← Back to Patients</a>
         
@@ -355,5 +358,4 @@
             });
         });
     </script>
-</body>
-</html> 
+{% endblock %}

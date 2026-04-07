@@ -1,11 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% load static %}
 
-<head>
+{% block title %}Express Interest in RPM{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Express Interest in RPM</title>
-    {% load static %}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -642,9 +642,9 @@
             background: var(--primary-dark);
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
+{% block content %}
     <div class="container">
         <h2>Express Interest in Remote Patient Monitoring</h2>
 
@@ -1038,6 +1038,4 @@
             });
         });
     </script>
-</body>
-
-</html>
+{% endblock %}

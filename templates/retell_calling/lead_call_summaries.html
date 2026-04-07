@@ -1,10 +1,12 @@
+{% extends "base.html" %}
 {% load phone_filters %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
+
+{% block title %}{{ lead.first_name }} {{ lead.last_name }} - Lead Call Summaries{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ lead.first_name }} {{ lead.last_name }} - Lead Call Summaries</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -422,8 +424,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="header">
         <div class="logo-section">
             <div class="logo">RPM</div>
@@ -633,5 +636,4 @@
         </div>
         {% endif %}
     </div>
-</body>
-</html>
+{% endblock %}

@@ -1,9 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+
+{% block title %}Delete Testimonial - RPM{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delete Testimonial - RPM</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -156,8 +158,9 @@
             margin-top: 20px;
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="container">
         <div class="delete-card">
             <div class="delete-icon">⚠️</div>
@@ -191,5 +194,4 @@
             <p class="warning-text">This will permanently remove the testimonial and its image.</p>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}

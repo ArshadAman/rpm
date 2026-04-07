@@ -1,9 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+
+{% block title %}Patient Login{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Login</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -172,8 +174,9 @@
             color: var(--primary);
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="login-container">
         <a href="/" class="back-btn">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -239,5 +242,4 @@
             });
         });
     </script>
-</body>
-</html>
+{% endblock %}

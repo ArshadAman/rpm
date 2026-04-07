@@ -1,11 +1,12 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
+
+{% block title %}Stratton Health — Wellness & Membership Tiers{% endblock %}
+
+{% block head_extra %}
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="csrf-token" content="{{ csrf_token }}">
-  <title>Stratton Health — Wellness & Membership Tiers</title>
   <meta name="description" content="Stratton Health Wellness & Relaxation packages integrated with RPM, Concierge Medicine, and Regenerative offerings." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1061,8 +1062,9 @@
       }
     }
   </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
   <!-- Custom Cursor -->
   <div class="cursor"></div>
   <div class="cursor-follower"></div>
@@ -2023,5 +2025,4 @@
       });
     });
   </script>
-</body>
-</html>
+{% endblock %}

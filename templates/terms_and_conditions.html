@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Terms and Conditions{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terms and Conditions</title>
-    {% load static %}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -139,8 +140,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="container">
         <h2>Terms and Conditions</h2>
 
@@ -257,5 +259,4 @@
         <p>By using our RPM services, you acknowledge that you understand and agree to these Terms and Conditions in full.</p>
 
     </div>
-</body>
-</html> 
+{% endblock %}

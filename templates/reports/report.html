@@ -1,9 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+
+{% block title %}View Report{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Report</title>
+    
     <style>
         body {
             background: #101113;
@@ -84,8 +86,9 @@
             font-style: italic;
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="container">
         <h2>Report Details</h2>
         <table>
@@ -115,5 +118,4 @@
             {% endfor %}
         </div>
     </div>
-</body>
-</html>
+{% endblock %}

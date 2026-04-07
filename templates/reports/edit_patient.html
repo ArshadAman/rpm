@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
+{% block title %}Edit Patient Information{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Patient Information</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -575,9 +576,9 @@
             font-size: 14px;
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
+{% block content %}
     <div class="page-container">
         <div class="header">
             <h2>Edit Patient Information</h2>
@@ -971,6 +972,4 @@
         `;
         document.head.appendChild(style);
     </script>
-</body>
-
-</html>
+{% endblock %}

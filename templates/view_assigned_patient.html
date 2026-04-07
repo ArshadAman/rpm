@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Assigned Patients{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Assigned Patients</title>
-    {% load static %}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
       /* Global Styles */
@@ -326,8 +327,9 @@
         opacity: 1;
       }
     </style>
-  </head>
-  <body>
+{% endblock %}
+
+{% block content %}
     <div class="container">
       <div class="header">
         <a href="{% url 'register_patient' %}" class="btn register-btn">
@@ -1632,5 +1634,4 @@
         });
       </script>
     </div>
-  </body>
-</html>
+{% endblock %}

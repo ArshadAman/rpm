@@ -1,9 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+
+{% block title %}Patient Reviews - RPM Healthcare{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Reviews - RPM Healthcare</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -392,8 +393,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <!-- Header -->
     <header class="header">
         <a href="{% url 'landing' %}" class="logo">Stratton Health</a>
@@ -528,5 +530,4 @@
         // Load reviews when page loads
         document.addEventListener('DOMContentLoaded', loadReviews);
     </script>
-</body>
-</html>
+{% endblock %}

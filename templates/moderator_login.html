@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Moderator Login{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moderator Login</title>
-    {% load static %}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -214,8 +215,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="login-container">
         <h2>Moderator Login</h2>
         
@@ -258,5 +260,4 @@
             <button type="submit">Login</button>
         </form>
     </div>
-</body>
-</html>
+{% endblock %}

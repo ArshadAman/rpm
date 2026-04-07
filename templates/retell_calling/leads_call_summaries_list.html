@@ -1,10 +1,12 @@
+{% extends "base.html" %}
 {% load phone_filters %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
+
+{% block title %}Lead Calls Summary - RPM Admin{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lead Calls Summary - RPM Admin</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -415,8 +417,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="header">
         <div class="logo-section">
             <div class="logo">RPM</div>
@@ -825,5 +828,4 @@
         `;
         document.head.appendChild(style);
     </script>
-</body>
-</html>
+{% endblock %}

@@ -1,14 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
+{% block title %}Vitals Summary{% endblock %}
+
+{% block head_extra %}
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <title>Vitals Summary</title>
   <style>
     * {
       margin: 0;
@@ -1273,9 +1273,9 @@
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
-</head>
+{% endblock %}
 
-<body>
+{% block content %}
   <!-- Patient Information Section -->
   <div style="
         display: flex;
@@ -4721,6 +4721,4 @@
       }
     }
   </script>
-</body>
-
-</html>
+{% endblock %}

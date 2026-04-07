@@ -1,9 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+
+{% block title %}{{ patient.user.first_name }} {{ patient.user.last_name }} - Call Summaries{% endblock %}
+
+{% block head_extra %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ patient.user.first_name }} {{ patient.user.last_name }} - Call Summaries</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -421,8 +423,9 @@
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="header">
         <div class="logo-section">
             <div class="logo">RPM</div>
@@ -632,5 +635,4 @@
         </div>
         {% endif %}
     </div>
-</body>
-</html>
+{% endblock %}
