@@ -167,6 +167,7 @@ class PastMedicalHistory(models.Model):
         ('Hyca', 'Hypercapnea'),
         ('Hypo', 'Hypotension'),
         ('HpTh', 'Hypothyroidism'),
+        ('Hyper', 'Hyperthyroidism'),
         ('HLD', 'Hyperlipidemia'),
         ('Hpxa', 'Hypoxia'),
         ('HTN', 'Hypertension'),
