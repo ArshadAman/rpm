@@ -17,7 +17,7 @@ from reports.models import Reports
 from rpm_users.models import  PastMedicalHistory
 from django.utils import timezone
 from datetime import timedelta
-from .services import RetellCallService, GeminiSummaryService, PatientAnalysisService
+from .services import RetellCallService, GeminiSummaryService, PatientAnalysisService, InboundLeadExtractorService
 from reports.models import Documentation
 from .models import RetellCallSession, CallSummary, LeadCallSession, LeadCallSummary, BulkCallSession
 
@@ -2086,3 +2086,86 @@ def get_patient_call_status(request, patient_id):
         return Response({
             'error': 'Patient not found'
         }, status=status.HTTP_404_NOT_FOUND)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def inbound_lead_webhook(request):
+    """
+    Webhook endpoint for inbound call events from Retell AI.
+    
+    When an inbound call ends with a transcript, this endpoint:
+    1. Extracts patient data from the transcript using Gemini AI
+    2. Creates an InterestLead record in the database
+    3. The admin can then review and convert the lead to a patient
+    """
+    try:
+        webhook_data = json.loads(request.body)
+        
+        event_type = webhook_data.get('event')
+        call_data = webhook_data.get('call', {})
+        call_id = call_data.get('call_id')
+        
+        logger.info(f"Inbound lead webhook received - event: {event_type}, call_id: {call_id}")
+        
+        # We only process call_ended events (that's when transcript is available)
+        if event_type != 'call_ended':
+            logger.info(f"Ignoring non call_ended event: {event_type}")
+            return JsonResponse({
+                'success': True,
+                'message': f'Event {event_type} acknowledged, no action taken'
+            }, status=200)
+        
+        transcript = call_data.get('transcript', '')
+        caller_phone = call_data.get('from_number', '')  # The number the caller used
+        
+        if not transcript or not transcript.strip():
+            logger.warning(f"Inbound call {call_id} ended with no transcript")
+            return JsonResponse({
+                'success': True,
+                'message': 'No transcript available, skipping lead creation'
+            }, status=200)
+        
+        logger.info(f"Processing inbound call transcript for lead extraction (call_id: {call_id})")
+        
+        # Extract lead data from transcript
+        extractor = InboundLeadExtractorService()
+        lead_data = extractor.extract_lead_from_transcript(transcript, caller_phone)
+        
+        if 'error' in lead_data:
+            logger.error(f"Failed to extract lead data: {lead_data['error']}")
+            return JsonResponse({
+                'success': False,
+                'message': f'Lead extraction failed: {lead_data["error"]}',
+                'call_id': call_id
+            }, status=200)  # Still return 200 so Retell doesn't retry
+        
+        # Create the InterestLead
+        lead = extractor.create_lead_from_data(lead_data)
+        
+        if lead:
+            logger.info(f"Lead created from inbound call {call_id}: {lead.id}")
+            return JsonResponse({
+                'success': True,
+                'message': 'Lead created successfully from inbound call',
+                'call_id': call_id,
+                'lead_id': str(lead.id),
+                'lead_name': f"{lead.first_name or ''} {lead.last_name or ''}".strip()
+            }, status=200)
+        else:
+            logger.error(f"Failed to create lead from inbound call {call_id}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Failed to create lead record',
+                'call_id': call_id
+            }, status=200)
+    
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON in inbound lead webhook")
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    except Exception as e:
+        logger.error(f"Error processing inbound lead webhook: {str(e)}")
+        return JsonResponse({
+            'error': f'Webhook processing failed: {str(e)}'
+        }, status=500)  
