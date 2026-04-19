@@ -36,4 +36,7 @@ urlpatterns = [
     path('patient-bulk-call-status/<uuid:bulk_session_id>/', views.patient_bulk_call_status, name='patient_bulk_call_status'),
     path('all-patient-call-summaries/', views.all_patient_call_summaries, name='all_patient_call_summaries'),
     path('patient-call-status/<uuid:patient_id>/', views.get_patient_call_status, name='get_patient_call_status'),
+    
+    # Inbound Call Lead Intake
+    path('inbound-lead-webhook/', views.inbound_lead_webhook, name='inbound_lead_webhook'), 
 ]

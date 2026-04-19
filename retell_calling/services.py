@@ -794,3 +794,155 @@ class PatientAnalysisService:
                 "suggested_questions": ["How have you been since our last visit?", "Any changes in your condition?"],
                 "risk_flags": []
             }
+
+
+class InboundLeadExtractorService:
+    """Service for extracting lead data from inbound call transcripts using Gemini AI"""
+    
+    def __init__(self):
+        self.gemini_service = GeminiSummaryService()
+    
+    def extract_lead_from_transcript(self, transcript: str, caller_phone: str = None) -> Dict[str, Any]:
+        """
+        Parse an inbound call transcript and extract structured patient intake data.
+        
+        Args:
+            transcript: The full call transcript text
+            caller_phone: The phone number the caller used (from Retell call data)
+            
+        Returns:
+            Dictionary containing extracted lead fields
+        """
+        if not transcript or not transcript.strip():
+            logger.warning("Empty transcript provided for lead extraction")
+            return {"error": "Empty transcript"}
+        
+        logger.info("Extracting lead data from inbound call transcript")
+        
+        prompt = f"""
+You are a medical data extraction AI. Analyze the following phone call transcript from an inbound patient intake call and extract structured patient information.
+
+Transcript:
+{transcript}
+
+Extract ALL of the following fields from the conversation. Return ONLY a valid JSON object. Use null for any field NOT mentioned or NOT collected during the call.
+
+{{
+    "first_name": "string or null",
+    "last_name": "string or null",
+    "phone_number": "string or null — the phone number the caller provided or confirmed",
+    "email": "string or null",
+    "date_of_birth": "YYYY-MM-DD format or null",
+    "sex": "M or F or null",
+    "street_address": "string or null",
+    "city": "string or null",
+    "zip_code": "string or null",
+    "insurance": "insurance provider name or null",
+    "primary_insured_id": "insurance ID/policy number or null",
+    "allergies": "comma-separated string of allergies or null",
+    "medications": "comma-separated string of medications or null",
+    "medical_conditions": "comma-separated string of medical conditions mentioned or null",
+    "service_interest": "Infer from conditions: 'blood_pressure' if hypertension/BP mentioned, 'heart_rate' if heart issues, 'SPO2' if oxygen/respiratory issues, 'Temperature' if fever/infection, or null",
+    "smoke": "YES or NO or null",
+    "drink": "YES or NO or null",
+    "emergency_contact_name": "string or null",
+    "emergency_contact_phone": "string or null",
+    "emergency_contact_relationship": "string or null",
+    "primary_care_physician": "string or null",
+    "primary_care_physician_phone": "string or null",
+    "additional_comments": "Any other relevant info mentioned by the caller or null"
+}}
+
+RULES:
+- Extract ONLY information explicitly stated in the transcript.
+- Do NOT guess or infer personal details (name, DOB, etc.) that were not spoken.
+- For date_of_birth, convert spoken dates like "March 15, 1960" to "1960-03-15".
+- For phone numbers, include country code if mentioned, otherwise just the digits.
+- For sex, convert "male" to "M" and "female" to "F".
+- Return ONLY the JSON object with no extra text.
+"""
+        
+        try:
+            response = self.gemini_service.model.generate_content(prompt)
+            
+            if not response.text:
+                raise Exception("Empty response from Gemini")
+            
+            # Clean and parse JSON
+            response_text = response.text.strip()
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]
+            if response_text.startswith('```'):
+                response_text = response_text[3:]
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]
+            
+            lead_data = json.loads(response_text.strip())
+            
+            # Override phone_number with actual caller phone if available and not collected
+            if caller_phone and not lead_data.get('phone_number'):
+                lead_data['phone_number'] = caller_phone
+            
+            logger.info(f"Lead data extracted successfully: {lead_data.get('first_name', 'Unknown')} {lead_data.get('last_name', '')}")
+            return lead_data
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse lead extraction JSON: {e}")
+            return {"error": f"JSON parse error: {str(e)}"}
+        except Exception as e:
+            logger.error(f"Error extracting lead from transcript: {str(e)}")
+            return {"error": str(e)}
+    
+    def create_lead_from_data(self, lead_data: Dict[str, Any]) -> Optional[Any]:
+        """
+        Create an InterestLead record from extracted data.
+        
+        Args:
+            lead_data: Dictionary of extracted lead fields
+            
+        Returns:
+            Created InterestLead instance or None
+        """
+        if 'error' in lead_data:
+            logger.error(f"Cannot create lead from error data: {lead_data['error']}")
+            return None
+        
+        # Must have at least a phone number to create a lead
+        if not lead_data.get('phone_number'):
+            logger.error("Cannot create lead without phone number")
+            return None
+         
+        try:
+            from datetime import datetime
+             
+            # Parse date_of_birth
+            dob = None
+            if lead_data.get('date_of_birth'):
+                try:
+                    dob = datetime.strptime(lead_data['date_of_birth'], '%Y-%m-%d').date()
+                except (ValueError, TypeError):
+                    logger.warning(f"Could not parse DOB: {lead_data.get('date_of_birth')}")
+            
+            lead = InterestLead.objects.create(
+                first_name=lead_data.get('first_name') or None,
+                last_name=lead_data.get('last_name') or None,
+                email=lead_data.get('email') or None,
+                phone_number=lead_data.get('phone_number'),
+                date_of_birth=dob,
+                sex=lead_data.get('sex') or None,
+                street_address=lead_data.get('street_address') or None,
+                city=lead_data.get('city') or None,
+                zip_code=lead_data.get('zip_code') or None,
+                insurance=lead_data.get('insurance') or None,
+                primary_insured_id=lead_data.get('primary_insured_id') or None,
+                allergies=lead_data.get('allergies') or None,
+                service_interest=lead_data.get('service_interest') or None,
+                additional_comments=lead_data.get('additional_comments') or None,
+            )
+            
+            logger.info(f"InterestLead created with ID: {lead.id}")
+            return lead
+            
+        except Exception as e:
+            logger.error(f"Error creating InterestLead: {str(e)}")
+            return None
