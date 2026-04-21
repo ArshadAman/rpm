@@ -26,8 +26,7 @@ from .models import (
     BulkCallSession
 )
 from .forms import FacilityLeadExcelUploadForm, FacilityLeadFilterForm
-from .services import RetellCallService
-from medications.gemini_service import GeminiSummaryService
+from .services import RetellCallService, GeminiSummaryService
 
 logger = logging.getLogger('retell_calling.views')
 
