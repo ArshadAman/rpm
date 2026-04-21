@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block title %}Facility Call Summaries{% endblock %}
+
+{% block extra_css %}
+<style>
+    .summaries-container {
+        margin: 20px 0;
+    }
+    
+    .summary-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+    }
+    
+    .summary-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .summary-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    
+    .summary-date {
+        color: #666;
+        font-size: 14px;
+        margin: 5px 0 0 0;
+    }
+    
+    .confidence-badge {
+        background: linear-gradient(135deg, #7928CA, #FF0080);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .summary-text {
+        color: #555;
+        line-height: 1.6;
+        margin: 15px 0;
+    }
+    
+    .key-points-section,
+    .flags-section {
+        margin: 15px 0;
+    }
+    
+    .section-title {
+        font-weight: 600;
+        color: #7928CA;
+        margin-bottom: 10px;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+    
+    .points-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .points-list li {
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        background: #f8f9fa;
+        border-left: 3px solid #7928CA;
+        color: #555;
+    }
+    
+    .flags-list li {
+        border-left-color: #d9534f;
+        background: #fff5f5;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 30px;
+    }
+    
+    .pagination a,
+    .pagination span {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #7928CA;
+    }
+    
+    .pagination .current {
+        background-color: #7928CA;
+        color: white;
+    }
+    
+    .search-bar {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .search-input {
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 100%;
+        max-width: 400px;
+        font-size: 14px;
+    }
+    
+    .empty-state {
+        background: white;
+        padding: 40px;
+        border-radius: 8px;
+        text-align: center;
+        color: #666;
+    }
+    
+    .empty-state h2 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-item {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 28px;
+        font-weight: bold;
+        color: #7928CA;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 style="margin-bottom: 10px;">Facility Call Summaries</h1>
+    <p style="color: #666; margin-bottom: 30px;">Review AI-generated summaries from facility calls</p>
+
+    <!-- Statistics -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-number">{{ total_summaries }}</div>
+            <div class="stat-label">Total Summaries</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{ recent_summaries }}</div>
+            <div class="stat-label">Last 7 Days</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{ filtered_count }}</div>
+            <div class="stat-label">Matching Filters</div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+        <form method="GET" style="display: flex; gap: 10px;">
+            <input type="text" name="search" class="search-input" placeholder="Search by facility name or city..." value="{{ search_query }}">
+            <button type="submit" style="padding: 10px 20px; background: #7928CA; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Search</button>
+            {% if search_query %}
+            <a href="{% url 'facility_call_summaries_list' %}" style="padding: 10px 20px; background: #ccc; color: #333; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; text-decoration: none;">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Summaries -->
+    {% if page_obj %}
+    <div class="summaries-container">
+        {% for summary in page_obj %}
+        <div class="summary-card">
+            <div class="summary-header">
+                <div>
+                    <p class="summary-title">{{ summary.facility.facility_name }}</p>
+                    <p class="summary-date">{{ summary.generated_at|date:"M d, Y \a\t H:i" }} • {{ summary.facility.city }}</p>
+                </div>
+                <div class="confidence-badge">
+                    {{ summary.ai_confidence_score|floatformat:0 }}% Confident
+                </div>
+            </div>
+
+            <div class="summary-text">
+                <strong>Summary:</strong> {{ summary.summary_text }}
+            </div>
+
+            {% if summary.key_points %}
+            <div class="key-points-section">
+                <div class="section-title">Key Points</div>
+                <ul class="points-list">
+                    {% for point in summary.key_points %}
+                    <li>{{ point }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if summary.concerning_flags %}
+            <div class="flags-section">
+                <div class="section-title" style="color: #d9534f;">⚠️ Concerning Flags</div>
+                <ul class="points-list flags-list">
+                    {% for flag in summary.concerning_flags %}
+                    <li>{{ flag }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0;">
+                <a href="{% url 'facility_lead_detail' summary.facility.id %}" style="color: #7928CA; text-decoration: none; font-weight: 600;">View Full Details →</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+        {% endif %}
+
+        {% for num in paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="current">{{ num }}</span>
+        {% else %}
+        <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+        <a href="?page={{ paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">Last</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <h2>No summaries found</h2>
+        <p>Call some facilities to see their summaries here.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

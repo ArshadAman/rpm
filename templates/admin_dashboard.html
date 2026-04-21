@@ -441,6 +441,27 @@
 
         <div class="action-card">
             <div>
+                <div class="action-icon">🏢</div>
+                <h2 class="action-title">Facility Leads</h2>
+                <p class="action-description">
+                    Upload and manage facility leads from assisted living facilities list. Track calls and manage outreach campaigns with bulk calling capabilities.
+                </p>
+                <div class="action-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ total_facilities|default:0 }}</span>
+                        <span class="stat-label">Total Facilities</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ facility_call_success_rate|default:0 }}%</span>
+                        <span class="stat-label">Contact Rate</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'facility_leads_list' %}" class="action-button">Manage Facilities</a>
+        </div>
+
+        <div class="action-card">
+            <div>
                 <div class="action-icon">🤝</div>
                 <h2 class="action-title">Referral Management</h2>
                 <p class="action-description">

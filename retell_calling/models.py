@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from django.utils import timezone
+from django.contrib.auth.models import User
 from rpm_users.models import Patient, InterestLead
 
 
@@ -263,6 +264,7 @@ class BulkCallSession(models.Model):
     SESSION_TYPE_CHOICES = [
         ('lead_calls', 'Lead Calls'),
         ('patient_calls', 'Patient Calls'),
+        ('facility_calls', 'Facility Calls'),
     ]
     
     STATUS_CHOICES = [
@@ -347,3 +349,146 @@ class BulkCallSession(models.Model):
     
     def __str__(self):
         return f"Bulk {self.get_session_type_display()} - {self.status} ({self.completed_calls}/{self.total_leads})"
+
+
+class FacilityLead(models.Model):
+    """Facility leads uploaded from assisted living facilities list"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    facility_name = models.CharField(max_length=255, help_text="Name of the facility")
+    category = models.CharField(max_length=100, blank=True, null=True, help_text="Facility category (e.g., General, Low Income)")
+    phone_number = models.CharField(max_length=20, help_text="Primary phone number")
+    address = models.TextField(help_text="Street address")
+    city = models.CharField(max_length=100, help_text="City")
+    zip_code = models.CharField(max_length=10, help_text="ZIP code")
+    capacity = models.PositiveIntegerField(blank=True, null=True, help_text="Facility capacity")
+    hospice = models.CharField(max_length=10, blank=True, null=True, choices=[('Y', 'Yes'), ('N', 'No')], help_text="Provides hospice services")
+    non_ambulatory = models.CharField(max_length=10, blank=True, null=True, choices=[('Y', 'Yes'), ('N', 'No')], help_text="Serves non-ambulatory patients")
+    
+    # Call tracking
+    call_attempted = models.BooleanField(default=False, help_text="Whether a call has been attempted")
+    call_completed = models.BooleanField(default=False, help_text="Whether the call was completed")
+    email_sent = models.BooleanField(default=False, help_text="Whether follow-up email has been sent")
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, help_text="Admin who uploaded this facility")
+    
+    class Meta:
+        ordering = ['facility_name']
+        verbose_name = "Facility Lead"
+        verbose_name_plural = "Facility Leads"
+        unique_together = ('facility_name', 'phone_number', 'city')  # Prevent duplicates
+    
+    def __str__(self):
+        return f"{self.facility_name} ({self.city})"
+    
+    @property
+    def full_address(self):
+        """Get full formatted address"""
+        return f"{self.address}, {self.city}, {self.zip_code}"
+
+
+class FacilityCallSession(models.Model):
+    """Call session for facility leads using Retell AI integration"""
+    
+    RETELL_STATUS_CHOICES = [
+        ('initiated', 'Initiated'),
+        ('ringing', 'Ringing'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('no_answer', 'No Answer'),
+        ('busy', 'Busy'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    facility = models.ForeignKey(FacilityLead, on_delete=models.CASCADE, related_name='call_sessions')
+    bulk_session_id = models.UUIDField(null=True, blank=True, help_text="Associated bulk calling session")
+    retell_call_id = models.CharField(max_length=100, unique=True, help_text="Unique call ID from Retell API")
+    call_status = models.CharField(max_length=20, choices=RETELL_STATUS_CHOICES, default='initiated')
+    from_number = models.CharField(max_length=20, help_text="Phone number used to make the call")
+    to_number = models.CharField(max_length=20, help_text="Facility's phone number")
+    start_timestamp = models.BigIntegerField(null=True, blank=True, help_text="Call start time as Unix timestamp")
+    end_timestamp = models.BigIntegerField(null=True, blank=True, help_text="Call end time as Unix timestamp")
+    duration_ms = models.IntegerField(null=True, blank=True, help_text="Call duration in milliseconds")
+    transcript = models.TextField(blank=True, help_text="Full call transcript from Retell")
+    transcript_object = models.JSONField(null=True, blank=True, help_text="Structured transcript object from Retell")
+    recording_url = models.URLField(blank=True, help_text="URL to call recording")
+    agent_id = models.CharField(max_length=100, blank=True, help_text="Retell agent ID used for the call")
+    disconnection_reason = models.CharField(max_length=50, blank=True, help_text="Reason for call disconnection")
+    ai_summary = models.JSONField(null=True, blank=True, help_text="AI-generated summary and analysis")
+    call_analysis = models.JSONField(null=True, blank=True, help_text="Retell's call analysis data")
+    email_sent = models.BooleanField(default=False, help_text="Whether follow-up email has been sent")
+    email_sent_at = models.DateTimeField(null=True, blank=True, help_text="When the email was sent")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Facility Call Session"
+        verbose_name_plural = "Facility Call Sessions"
+    
+    @property
+    def is_completed(self):
+        """Check if the call is in a completed state"""
+        return self.call_status in ['completed', 'failed', 'no_answer', 'busy', 'cancelled']
+    
+    @property
+    def duration_seconds(self):
+        """Get call duration in seconds"""
+        if self.duration_ms:
+            return self.duration_ms / 1000
+        return 0
+    
+    def __str__(self):
+        return f"Facility Call to {self.facility.facility_name} - {self.call_status}"
+
+
+class FacilityCallSummary(models.Model):
+    """AI-generated summaries of facility call transcripts"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    call_session = models.OneToOneField(
+        FacilityCallSession, 
+        on_delete=models.CASCADE, 
+        related_name='summary',
+        help_text="Associated facility call session"
+    )
+    facility = models.ForeignKey(
+        FacilityLead, 
+        on_delete=models.CASCADE, 
+        related_name='call_summaries',
+        help_text="Facility associated with this summary"
+    )
+    summary_text = models.TextField(help_text="AI-generated summary of the call")
+    key_points = models.JSONField(
+        default=list, 
+        help_text="List of key discussion points from the call"
+    )
+    concerning_flags = models.JSONField(
+        default=list, 
+        help_text="List of concerning responses or red flags identified"
+    )
+    health_metrics = models.JSONField(
+        default=dict, 
+        help_text="Structured data extracted from the call"
+    )
+    ai_confidence_score = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="AI confidence score for the summary (0.00-1.00)"
+    )
+    generated_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-generated_at']
+        verbose_name = "Facility Call Summary"
+        verbose_name_plural = "Facility Call Summaries"
+    
+    def __str__(self):
+        return f"Facility Summary for {self.facility.facility_name} - {self.generated_at.strftime('%Y-%m-%d %H:%M')}"

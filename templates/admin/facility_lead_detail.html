@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ facility.facility_name }} - Facility Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .facility-header {
+        background: linear-gradient(135deg, #7928CA, #FF0080);
+        color: white;
+        padding: 30px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .facility-header h1 {
+        margin: 0;
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+    
+    .facility-header p {
+        margin: 5px 0;
+        font-size: 16px;
+        opacity: 0.95;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .info-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .info-card h3 {
+        color: #7928CA;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+    
+    .info-item {
+        margin-bottom: 12px;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #666;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+    
+    .info-value {
+        color: #333;
+        font-size: 16px;
+        margin-top: 4px;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    .badge-yes {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .badge-no {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .call-sessions {
+        margin-bottom: 30px;
+    }
+    
+    .call-sessions h2 {
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #7928CA;
+    }
+    
+    .call-session-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+    }
+    
+    .call-status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+    
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-initiated {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-in-progress {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-failed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-no-answer {
+        background-color: #e7e8e9;
+        color: #383d41;
+    }
+    
+    .transcript-section {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .transcript-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        border-left: 4px solid #7928CA;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: monospace;
+        font-size: 13px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .summary-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+    
+    .summary-section h4 {
+        color: #7928CA;
+        margin-top: 0;
+    }
+    
+    .key-points {
+        list-style-position: inside;
+        margin: 12px 0;
+        padding-left: 0;
+    }
+    
+    .key-points li {
+        margin-bottom: 8px;
+        color: #555;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #7928CA;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <a href="{% url 'facility_leads_list' %}" class="back-link">← Back to Facility Leads</a>
+
+    <!-- Facility Header -->
+    <div class="facility-header">
+        <h1>{{ facility.facility_name }}</h1>
+        <p><strong>📍 Location:</strong> {{ facility.full_address }}</p>
+        <p><strong>📞 Phone:</strong> {{ facility.phone_number }}</p>
+        <p><strong>📋 Category:</strong> {{ facility.category|default:"Not specified" }}</p>
+    </div>
+
+    <!-- Facility Information -->
+    <div class="info-grid">
+        <!-- Basic Info -->
+        <div class="info-card">
+            <h3>Facility Information</h3>
+            <div class="info-item">
+                <div class="info-label">Capacity</div>
+                <div class="info-value">{{ facility.capacity|default:"Not specified" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Address</div>
+                <div class="info-value">{{ facility.address }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">ZIP Code</div>
+                <div class="info-value">{{ facility.zip_code }}</div>
+            </div>
+        </div>
+
+        <!-- Services Offered -->
+        <div class="info-card">
+            <h3>Services</h3>
+            <div class="info-item">
+                <div class="info-label">Hospice Services</div>
+                <div class="info-value">
+                    {% if facility.hospice == 'Y' %}
+                        <span class="badge badge-yes">Yes</span>
+                    {% elif facility.hospice == 'N' %}
+                        <span class="badge badge-no">No</span>
+                    {% else %}
+                        <span>Not specified</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Non-Ambulatory Patients</div>
+                <div class="info-value">
+                    {% if facility.non_ambulatory == 'Y' %}
+                        <span class="badge badge-yes">Yes</span>
+                    {% elif facility.non_ambulatory == 'N' %}
+                        <span class="badge badge-no">No</span>
+                    {% else %}
+                        <span>Not specified</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Call Status -->
+        <div class="info-card">
+            <h3>Call Status</h3>
+            <div class="info-item">
+                <div class="info-label">Attempted</div>
+                <div class="info-value">
+                    {% if facility.call_attempted %}
+                        <span class="badge badge-yes">Yes</span>
+                    {% else %}
+                        <span class="badge badge-no">No</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email Sent</div>
+                <div class="info-value">
+                    {% if facility.email_sent %}
+                        <span class="badge badge-yes">Yes</span>
+                    {% else %}
+                        <span class="badge badge-no">No</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Added</div>
+                <div class="info-value">{{ facility.created_at|date:"M d, Y @ H:i" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call Sessions -->
+    {% if has_calls %}
+    <div class="call-sessions">
+        <h2>Call History</h2>
+        {% for session in call_sessions %}
+        <div class="call-session-card">
+            <div>
+                <span class="call-status-badge status-{{ session.call_status }}">
+                    {{ session.get_call_status_display }}
+                </span>
+                <span style="color: #666; font-size: 14px;">
+                    {{ session.created_at|date:"M d, Y @ H:i" }}
+                </span>
+            </div>
+
+            <!-- Call Details -->
+            <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                    <div style="font-weight: 600; color: #666; font-size: 12px;">Duration</div>
+                    <div style="font-size: 16px; color: #333;">{{ session.duration_seconds|default:"—" }} seconds</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: #666; font-size: 12px;">Call ID</div>
+                    <div style="font-size: 14px; color: #666; font-family: monospace;">{{ session.retell_call_id }}</div>
+                </div>
+                {% if session.recording_url %}
+                <div>
+                    <div style="font-weight: 600; color: #666; font-size: 12px;">Recording</div>
+                    <div><a href="{{ session.recording_url }}" target="_blank" style="color: #7928CA;">Listen</a></div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Transcript -->
+            {% if session.transcript %}
+            <div class="transcript-section">
+                <div style="font-weight: 600; margin-bottom: 10px; color: #333;">Transcript</div>
+                <div class="transcript-content">{{ session.transcript }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Summary -->
+            {% if session.summary %}
+            <div class="summary-section">
+                <h4>Call Summary</h4>
+                <p>{{ session.summary.summary_text }}</p>
+
+                {% if session.summary.key_points %}
+                <h5 style="color: #7928CA; margin-top: 15px;">Key Points</h5>
+                <ul class="key-points">
+                    {% for point in session.summary.key_points %}
+                        <li>{{ point }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if session.summary.concerning_flags %}
+                <h5 style="color: #d9534f; margin-top: 15px;">Concerning Flags</h5>
+                <ul class="key-points" style="color: #d9534f;">
+                    {% for flag in session.summary.concerning_flags %}
+                        <li>{{ flag }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if session.summary.ai_confidence_score %}
+                <div style="margin-top: 15px; color: #666;">
+                    <strong>Confidence Score:</strong> {{ session.summary.ai_confidence_score|floatformat:2 }}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="background: white; padding: 30px; border-radius: 8px; text-align: center; color: #666;">
+        <h3>No calls yet</h3>
+        <p>This facility has not been called yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

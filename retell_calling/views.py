@@ -373,7 +373,7 @@ def retell_webhook(request):
                 'error': 'call_id is required in call object'
             }, status=400)
         
-        # Find the call session - check both patient and lead call sessions
+        # Find the call session - check patient, lead, and facility call sessions
         call_session = None
         call_type = None
         
@@ -387,10 +387,16 @@ def retell_webhook(request):
                 call_type = 'lead'
                 logger.info(f"Found lead call session for call_id: {call_id}")
             except LeadCallSession.DoesNotExist:
-                logger.error(f"Call session not found for call_id: {call_id}")
-                return JsonResponse({
-                    'error': f'Call session not found for call_id: {call_id}'
-                }, status=404)
+                try:
+                    from .models import FacilityCallSession
+                    call_session = FacilityCallSession.objects.get(retell_call_id=call_id)
+                    call_type = 'facility'
+                    logger.info(f"Found facility call session for call_id: {call_id}")
+                except:
+                    logger.error(f"Call session not found for call_id: {call_id}")
+                    return JsonResponse({
+                        'error': f'Call session not found for call_id: {call_id}'
+                    }, status=404)
         
         # Update call session based on event type and call data
         if event_type == 'call_started':
@@ -538,29 +544,54 @@ def retell_webhook(request):
                         except Exception as doc_err:
                             logger.error(f"Failed to create Documentation from AI summary for patient call {call_id}: {str(doc_err)}")
                 
-                else:  # lead call
-                    # Create or update LeadCallSummary record for lead calls
-                    from .models import LeadCallSummary
-                    lead_call_summary, created = LeadCallSummary.objects.get_or_create(
-                        call_session=call_session,
-                        defaults={
-                            'lead': call_session.lead,
-                            'summary_text': summary_data.get('summary', ''),
-                            'key_points': summary_data.get('key_points', []),
-                            'concerning_flags': summary_data.get('concerning_flags', []),
-                            'health_metrics': summary_data.get('health_metrics', {}),
-                            'ai_confidence_score': summary_data.get('confidence_score')
-                        }
-                    )
+                else:  # lead call or facility call
+                    if call_type == 'lead':
+                        # Create or update LeadCallSummary record for lead calls
+                        from .models import LeadCallSummary
+                        lead_call_summary, created = LeadCallSummary.objects.get_or_create(
+                            call_session=call_session,
+                            defaults={
+                                'lead': call_session.lead,
+                                'summary_text': summary_data.get('summary', ''),
+                                'key_points': summary_data.get('key_points', []),
+                                'concerning_flags': summary_data.get('concerning_flags', []),
+                                'health_metrics': summary_data.get('health_metrics', {}),
+                                'ai_confidence_score': summary_data.get('confidence_score')
+                            }
+                        )
+                        
+                        if not created:
+                            # Update existing summary
+                            lead_call_summary.summary_text = summary_data.get('summary', '')
+                            lead_call_summary.key_points = summary_data.get('key_points', [])
+                            lead_call_summary.concerning_flags = summary_data.get('concerning_flags', [])
+                            lead_call_summary.health_metrics = summary_data.get('health_metrics', {})
+                            lead_call_summary.ai_confidence_score = summary_data.get('confidence_score')
+                            lead_call_summary.save()
                     
-                    if not created:
-                        # Update existing summary
-                        lead_call_summary.summary_text = summary_data.get('summary', '')
-                        lead_call_summary.key_points = summary_data.get('key_points', [])
-                        lead_call_summary.concerning_flags = summary_data.get('concerning_flags', [])
-                        lead_call_summary.health_metrics = summary_data.get('health_metrics', {})
-                        lead_call_summary.ai_confidence_score = summary_data.get('confidence_score')
-                        lead_call_summary.save()
+                    elif call_type == 'facility':
+                        # Create or update FacilityCallSummary record for facility calls
+                        from .models import FacilityCallSummary
+                        facility_call_summary, created = FacilityCallSummary.objects.get_or_create(
+                            call_session=call_session,
+                            defaults={
+                                'facility': call_session.facility,
+                                'summary_text': summary_data.get('summary', ''),
+                                'key_points': summary_data.get('key_points', []),
+                                'concerning_flags': summary_data.get('concerning_flags', []),
+                                'health_metrics': summary_data.get('health_metrics', {}),
+                                'ai_confidence_score': summary_data.get('confidence_score')
+                            }
+                        )
+                        
+                        if not created:
+                            # Update existing summary
+                            facility_call_summary.summary_text = summary_data.get('summary', '')
+                            facility_call_summary.key_points = summary_data.get('key_points', [])
+                            facility_call_summary.concerning_flags = summary_data.get('concerning_flags', [])
+                            facility_call_summary.health_metrics = summary_data.get('health_metrics', {})
+                            facility_call_summary.ai_confidence_score = summary_data.get('confidence_score')
+                            facility_call_summary.save()
                 
                 action = "created" if created else "updated"
                 logger.info(f"{'CallSummary' if call_type == 'patient' else 'LeadCallSummary'} {action} for {call_type} call: {call_id}")
@@ -784,6 +815,102 @@ def retell_webhook(request):
                     logger.warning(f"Patient bulk session {bulk_session_id} not found")
                 except Exception as e:
                     logger.error(f"Error handling patient sequential calling: {str(e)}")
+        
+        # Handle sequential calling for facility bulk sessions
+        if event_type == 'call_ended' and call_type == 'facility':
+            logger.info(f"Processing call_ended for facility call {call_id}")
+            
+            # Check if this call is part of a bulk session
+            if hasattr(call_session, 'bulk_session_id') and call_session.bulk_session_id:
+                logger.info(f"Call {call_id} is part of bulk session {call_session.bulk_session_id}")
+                try:
+                    bulk_session = BulkCallSession.objects.get(id=call_session.bulk_session_id)
+                    logger.info(f"Found facility bulk session {bulk_session.id} with status {bulk_session.status}")
+                    
+                    # Determine if this call was successful
+                    call_was_successful = (
+                        call_session.call_status == 'completed' and 
+                        call_session.transcript and 
+                        call_session.transcript.strip()
+                    )
+                    
+                    logger.info(f"Call {call_id} - Status: {call_session.call_status}, Successful: {call_was_successful}")
+                    
+                    # Mark this call as completed in the bulk session
+                    bulk_session.mark_call_completed(
+                        success=call_was_successful,
+                        call_data={
+                            'facility_id': str(call_session.facility.id),
+                            'facility_name': call_session.facility.facility_name,
+                            'call_id': call_id,
+                            'call_session_id': str(call_session.id),
+                            'status': call_session.call_status,
+                            'duration_seconds': call_session.duration_seconds,
+                            'has_transcript': bool(call_session.transcript and call_session.transcript.strip()),
+                            'disconnection_reason': call_session.disconnection_reason or '',
+                            'timestamp': timezone.now().isoformat(),
+                            'answered': call_was_successful
+                        }
+                    )
+                    
+                    # Send follow-up email if call was successful
+                    if call_was_successful:
+                        try:
+                            from .facility_views import send_facility_email
+                            send_facility_email(call_session)
+                            call_session.email_sent = True
+                            call_session.email_sent_at = timezone.now()
+                            call_session.save()
+                            logger.info(f"Email sent to facility {call_session.facility.facility_name}")
+                        except Exception as email_err:
+                            logger.error(f"Error sending email to facility: {str(email_err)}")
+                    
+                    # NOW increment the index to move to the next facility
+                    bulk_session.current_index += 1
+                    bulk_session.save()
+                    
+                    logger.info(f"Bulk session {bulk_session.id}: Call completed, moved from index {bulk_session.current_index - 1} to index {bulk_session.current_index}")
+                    
+                    # Initiate next call if there are more facilities
+                    if bulk_session.current_index < len(bulk_session.leads_data) and bulk_session.status != 'completed':
+                        logger.info(f"Initiating next call in bulk session {bulk_session.id} - calling facility at index {bulk_session.current_index}")
+                        
+                        # Small delay to ensure everything is processed
+                        import time
+                        time.sleep(2)
+                        
+                        # Initiate next call
+                        from .facility_views import initiate_next_facility_call
+                        next_result = initiate_next_facility_call(bulk_session)
+                        if next_result['success']:
+                            logger.info(f"Next facility call initiated successfully: {next_result['call_id']} for facility at index {bulk_session.current_index}")
+                        else:
+                            logger.error(f"Failed to initiate next facility call: {next_result.get('error')}")
+                            # If the next call failed, try to move to the next facility
+                            bulk_session.current_index += 1
+                            bulk_session.save()
+                            
+                            if bulk_session.current_index < len(bulk_session.leads_data):
+                                logger.info("Moving to next facility after failure...")
+                                next_result = initiate_next_facility_call(bulk_session)
+                                if next_result['success']:
+                                    logger.info(f"Retry successful: {next_result['call_id']}")
+                                else:
+                                    logger.error(f"Retry also failed: {next_result.get('error')}")
+                    else:
+                        logger.info(f"Bulk session {bulk_session.id} completed - all calls processed")
+                        bulk_session.status = 'completed'
+                        bulk_session.completed_at = timezone.now()
+                        bulk_session.save()
+                        
+                except BulkCallSession.DoesNotExist:
+                    logger.warning(f"Facility bulk session {call_session.bulk_session_id} not found for call session {call_session.id}")
+                except Exception as e:
+                    logger.error(f"Error handling facility sequential calling: {str(e)}")
+                    import traceback
+                    logger.error(f"Traceback: {traceback.format_exc()}")
+            else:
+                logger.info(f"Facility call {call_id} is not part of a bulk session")
         
         # Return success response (Retell expects 2xx status)
         return JsonResponse({

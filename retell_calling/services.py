@@ -389,6 +389,126 @@ class RetellCallService:
         except Exception as e:
             logger.error(f"Error processing webhook data for call ID {call_id}: {str(e)}")
             return None
+    
+    def create_facility_call(self, facility, agent_id: str = None, dynamic_variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Create a phone call to a facility using Retell API.
+        
+        Args:
+            facility: FacilityLead instance to call
+            agent_id: Optional Retell agent ID (uses default if not provided)
+            dynamic_variables: Optional dynamic variables for the call
+            
+        Returns:
+            Dictionary containing call details and FacilityCallSession instance
+            
+        Raises:
+            ValidationError: If facility data is invalid
+            requests.RequestException: If API call fails
+        """
+        logger.info(f"Initiating call for facility: {facility.facility_name}")
+        
+        # Validate facility has phone number
+        if not facility.phone_number:
+            error_msg = f"Facility {facility.facility_name} has no phone number"
+            logger.error(error_msg)
+            raise ValidationError(error_msg)
+        
+        # Validate and format phone numbers
+        try:
+            to_number = self.validate_phone_number(facility.phone_number)
+            from_number = self.validate_phone_number(self.from_number)
+        except ValidationError as e:
+            logger.error(f"Phone number validation failed for facility {facility.facility_name}: {e}")
+            raise
+        
+        # Prepare API request payload
+        payload = {
+            "call_type": "phone_call",
+            "from_number": from_number,
+            "to_number": to_number,
+        }
+        
+        # Add agent ID if provided
+        if agent_id:
+            payload["agent_id"] = agent_id
+        
+        # Add provided dynamic variables
+        if dynamic_variables is not None:
+            payload["retell_llm_dynamic_variables"] = dynamic_variables
+        else:
+            payload["retell_llm_dynamic_variables"] = {
+                "facility_name": facility.facility_name,
+                "facility_city": facility.city
+            }
+        
+        logger.debug(f"Retell API payload for facility: {payload}")
+        
+        try:
+            # Make API request to Retell
+            response = requests.post(
+                f"{self.base_url}/create-phone-call",
+                headers=self.headers,
+                json=payload,
+                timeout=30
+            )
+            logger.info(f"Retell API response status: {response.status_code}")
+            
+            # Check if request was successful
+            response.raise_for_status()
+            
+            # Parse response
+            response_data = response.json()
+            call_id = response_data.get('call_id')
+            
+            if not call_id:
+                error_msg = "No call_id returned from Retell API"
+                logger.error(f"{error_msg}. Response: {response_data}")
+                raise ValueError(error_msg)
+            
+            logger.info(f"Facility call created successfully with ID: {call_id}")
+            
+            # Import here to avoid circular imports
+            from .models import FacilityCallSession
+            
+            # Create FacilityCallSession record
+            call_session = FacilityCallSession.objects.create(
+                facility=facility,
+                retell_call_id=call_id,
+                call_status='initiated',
+                from_number=from_number,
+                to_number=to_number,
+                agent_id=agent_id or ''
+            )
+            
+            logger.info(f"FacilityCallSession created with ID: {call_session.id}")
+            
+            return {
+                'success': True,
+                'call_id': call_id,
+                'call_session': call_session,
+                'response_data': response_data
+            }
+            
+        except requests.exceptions.Timeout:
+            error_msg = f"Timeout calling Retell API for facility {facility.facility_name}"
+            logger.error(error_msg)
+            raise requests.RequestException(error_msg)
+            
+        except requests.exceptions.HTTPError as e:
+            error_msg = f"HTTP error from Retell API: {e.response.status_code}"
+            logger.error(f"{error_msg}. Response: {e.response.text}")
+            raise requests.RequestException(f"{error_msg}: {e.response.text}")
+            
+        except requests.exceptions.RequestException as e:
+            error_msg = f"Request error calling Retell API for facility {facility.facility_name}: {str(e)}"
+            logger.error(error_msg)
+            raise
+            
+        except Exception as e:
+            error_msg = f"Unexpected error creating call for facility {facility.facility_name}: {str(e)}"
+            logger.error(error_msg)
+            raise
 
 
 class GeminiSummaryService:

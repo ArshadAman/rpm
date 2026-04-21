@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import facility_views
 
 app_name = 'retell_calling'
 
@@ -38,5 +39,12 @@ urlpatterns = [
     path('patient-call-status/<uuid:patient_id>/', views.get_patient_call_status, name='get_patient_call_status'),
     
     # Inbound Call Lead Intake
-    path('inbound-lead-webhook/', views.inbound_lead_webhook, name='inbound_lead_webhook'), 
+    path('inbound-lead-webhook/', views.inbound_lead_webhook, name='inbound_lead_webhook'),
+    
+    # Facility Leads Management
+    path('facility-leads/', facility_views.facility_leads_list, name='facility_leads_list'),
+    path('facility-lead/<uuid:facility_id>/', facility_views.facility_lead_detail, name='facility_lead_detail'),
+    path('trigger-facility-bulk-calls/', facility_views.trigger_facility_bulk_calls, name='trigger_facility_bulk_calls'),
+    path('facility-call-summaries/', facility_views.facility_call_summaries_list, name='facility_call_summaries_list'),
+    path('send-facility-emails/', facility_views.send_facility_followup_emails, name='send_facility_followup_emails'),
 ]

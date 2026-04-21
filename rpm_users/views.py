@@ -138,6 +138,7 @@ def admin_dashboard(request):
     """Admin dashboard with three main action sections"""
     try:
         from .models import Video
+        from retell_calling.models import FacilityLead
         
         # Get counts for dashboard display
         moderator_count = Moderator.objects.count()
@@ -155,6 +156,11 @@ def admin_dashboard(request):
         leads_with_calls_count = InterestLead.objects.annotate(
             call_count=models.Count('lead_call_summaries')
         ).filter(call_count__gt=0).count()
+        
+        # Get facility leads statistics
+        total_facilities = FacilityLead.objects.count()
+        facilities_called = FacilityLead.objects.filter(call_attempted=True).count()
+        facility_call_success_rate = round((facilities_called / total_facilities * 100), 1) if total_facilities > 0 else 0
         
         # Get referral statistics
         total_referrals = Referral.objects.count()
@@ -183,6 +189,9 @@ def admin_dashboard(request):
             'conversion_rate': conversion_rate,
             'lead_calls_count': lead_calls_count,
             'leads_with_calls_count': leads_with_calls_count,
+            'total_facilities': total_facilities,
+            'facilities_called': facilities_called,
+            'facility_call_success_rate': facility_call_success_rate,
             'total_referrals': total_referrals,
             'pending_referrals': pending_referrals,
             'video_count': video_count,

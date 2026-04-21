@@ -1,0 +1,534 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Facility Leads Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .facility-filters {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .filter-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    
+    .filter-group input,
+    .filter-group select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 15px;
+    }
+    
+    .btn-filter, .btn-reset {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-filter {
+        background-color: #7928CA;
+        color: white;
+    }
+    
+    .btn-filter:hover {
+        background-color: #6520A5;
+    }
+    
+    .btn-reset {
+        background-color: #ccc;
+        color: #333;
+    }
+    
+    .btn-reset:hover {
+        background-color: #bbb;
+    }
+    
+    .upload-section {
+        background: #f0f4ff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        border: 2px dashed #7928CA;
+    }
+    
+    .upload-section h3 {
+        color: #7928CA;
+        margin-bottom: 15px;
+    }
+    
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .file-input-wrapper input[type="file"] {
+        position: absolute;
+        left: -9999px;
+    }
+    
+    .file-input-label {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #7928CA;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s;
+    }
+    
+    .file-input-label:hover {
+        background-color: #6520A5;
+    }
+    
+    .file-name {
+        margin-left: 15px;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .btn-call-all {
+        background-color: #FF0080;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 15px;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-call-all:hover {
+        background-color: #CC0066;
+    }
+    
+    .btn-call-all:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+    
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .stat-card .number {
+        font-size: 28px;
+        font-weight: bold;
+        color: #7928CA;
+        margin-bottom: 5px;
+    }
+    
+    .stat-card .label {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .facilities-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .facilities-table thead {
+        background-color: #7928CA;
+        color: white;
+    }
+    
+    .facilities-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+    }
+    
+    .facilities-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .facilities-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .facility-name {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .badge-called {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .badge-not-called {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .badge-email-sent {
+        background-color: #cfe2ff;
+        color: #084298;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .action-buttons a, .action-buttons button {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .btn-view {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .btn-view:hover {
+        background-color: #0056b3;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 20px;
+    }
+    
+    .pagination a, .pagination span {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #7928CA;
+    }
+    
+    .pagination .current {
+        background-color: #7928CA;
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }
+    
+    .empty-state h2 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h1>Facility Leads Management</h1>
+        <p class="text-muted">Upload and manage facility leads from assisted living facilities list</p>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+        <h3>Upload Facility List</h3>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="display: flex; align-items: center;">
+                <div class="file-input-wrapper">
+                    <input type="file" id="excel_file" name="excel_file" accept=".xlsx,.xls,.csv" required>
+                    <label for="excel_file" class="file-input-label">Choose Excel File</label>
+                </div>
+                <span class="file-name" id="file-name">No file selected</span>
+                <button type="submit" class="btn-filter" style="margin-left: auto;">Upload Facilities</button>
+            </div>
+            <small style="display: block; margin-top: 10px; color: #666;">
+                Expected columns: Category, Facility Name, Phone Number, Address, City, ZIP, Capacity, Hospice, Non-Ambulatory
+            </small>
+        </form>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="number">{{ total_facilities }}</div>
+            <div class="label">Total Facilities</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ called_facilities }}</div>
+            <div class="label">Called</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ email_sent_count }}</div>
+            <div class="label">Emails Sent</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ call_success_rate }}%</div>
+            <div class="label">Success Rate</div>
+        </div>
+    </div>
+
+    <!-- Call All Button -->
+    {% if total_facilities > 0 %}
+    <div style="margin-bottom: 30px;">
+        <button class="btn-call-all" onclick="triggerBulkCalls()" id="bulk-call-btn">📞 Call All Facilities</button>
+        <div id="call-progress" style="display: none; margin-top: 15px;">
+            <div style="font-weight: 600; margin-bottom: 10px;">Calling Progress:</div>
+            <div style="background: #f0f0f0; border-radius: 4px; overflow: hidden;">
+                <div id="progress-bar" style="background: linear-gradient(90deg, #FF0080, #7928CA); width: 0%; height: 30px; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;"></div>
+            </div>
+            <div id="progress-text" style="margin-top: 10px; text-align: center; color: #666;"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filters Section -->
+    <div class="facility-filters">
+        <form method="GET" class="filter-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="search">Search</label>
+                    <input type="text" id="search" name="search" placeholder="Facility name, city, or phone" value="{{ search_query }}">
+                </div>
+                <div class="filter-group">
+                    <label for="category">Category</label>
+                    <input type="text" id="category" name="category" placeholder="Filter by category" value="{{ category_filter }}">
+                </div>
+                <div class="filter-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" placeholder="Filter by city" value="{{ city_filter }}">
+                </div>
+                <div class="filter-group">
+                    <label for="call_status">Call Status</label>
+                    <select id="call_status" name="call_status">
+                        <option value="">All</option>
+                        <option value="called" {% if call_status_filter == 'called' %}selected{% endif %}>Called</option>
+                        <option value="not_called" {% if call_status_filter == 'not_called' %}selected{% endif %}>Not Called</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="email_status">Email Status</label>
+                    <select id="email_status" name="email_status">
+                        <option value="">All</option>
+                        <option value="sent" {% if email_status_filter == 'sent' %}selected{% endif %}>Sent</option>
+                        <option value="not_sent" {% if email_status_filter == 'not_sent' %}selected{% endif %}>Not Sent</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-buttons">
+                <button type="submit" class="btn-filter">Filter</button>
+                <a href="{% url 'facility_leads_list' %}" class="btn-reset">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Facilities Table -->
+    {% if page_obj %}
+        <div class="table-responsive">
+            <table class="facilities-table">
+                <thead>
+                    <tr>
+                        <th>Facility Name</th>
+                        <th>City</th>
+                        <th>Phone</th>
+                        <th>Category</th>
+                        <th>Capacity</th>
+                        <th>Call Status</th>
+                        <th>Email Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for facility in page_obj %}
+                    <tr>
+                        <td>
+                            <span class="facility-name">{{ facility.facility_name }}</span>
+                        </td>
+                        <td>{{ facility.city }}</td>
+                        <td>{{ facility.phone_number }}</td>
+                        <td>{{ facility.category|default:"—" }}</td>
+                        <td>{{ facility.capacity|default:"—" }}</td>
+                        <td>
+                            {% if facility.call_attempted %}
+                                <span class="badge badge-called">Called</span>
+                            {% else %}
+                                <span class="badge badge-not-called">Not Called</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if facility.email_sent %}
+                                <span class="badge badge-email-sent">Sent</span>
+                            {% else %}
+                                <span class="badge">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'facility_lead_detail' facility.id %}" class="btn-view">View</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1&search={{ search_query }}&category={{ category_filter }}&city={{ city_filter }}&call_status={{ call_status_filter }}&email_status={{ email_status_filter }}">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&category={{ category_filter }}&city={{ city_filter }}&call_status={{ call_status_filter }}&email_status={{ email_status_filter }}">Previous</a>
+            {% endif %}
+
+            {% for num in paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="current">{{ num }}</span>
+                {% else %}
+                    <a href="?page={{ num }}&search={{ search_query }}&category={{ category_filter }}&city={{ city_filter }}&call_status={{ call_status_filter }}&email_status={{ email_status_filter }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&category={{ category_filter }}&city={{ city_filter }}&call_status={{ call_status_filter }}&email_status={{ email_status_filter }}">Next</a>
+                <a href="?page={{ paginator.num_pages }}&search={{ search_query }}&category={{ category_filter }}&city={{ city_filter }}&call_status={{ call_status_filter }}&email_status={{ email_status_filter }}">Last</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div style="text-align: center; margin-top: 20px; color: #666;">
+            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} facilities
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h2>No facilities found</h2>
+            <p>Upload an Excel file to get started with facility leads management.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    // Handle file name display
+    document.getElementById('excel_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || 'No file selected';
+        document.getElementById('file-name').textContent = fileName;
+    });
+
+    // Trigger bulk calls
+    function triggerBulkCalls() {
+        if (!confirm('Are you sure you want to start calling all facilities? This may take a while.')) {
+            return;
+        }
+
+        const btn = document.getElementById('bulk-call-btn');
+        const progress = document.getElementById('call-progress');
+        
+        btn.disabled = true;
+        progress.style.display = 'block';
+
+        fetch('{% url "trigger_facility_bulk_calls" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ agent_id: null })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Bulk calling started for ${data.facilities_to_call} facilities!`);
+                // Poll for progress
+                pollProgress(data.bulk_session_id);
+            } else {
+                alert('Error starting bulk calls: ' + data.error);
+                btn.disabled = false;
+                progress.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error starting bulk calls');
+            btn.disabled = false;
+            progress.style.display = 'none';
+        });
+    }
+
+    // Poll for call progress
+    function pollProgress(bulkSessionId) {
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        
+        setInterval(() => {
+            fetch(`/calling/bulk-call-status/${bulkSessionId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    const percentage = data.progress_percentage || 0;
+                    progressBar.style.width = percentage + '%';
+                    progressText.textContent = `${data.completed_calls || 0} of ${data.total_leads || 0} calls completed`;
+                    
+                    if (data.status === 'completed') {
+                        document.getElementById('bulk-call-btn').disabled = false;
+                        alert('All calls completed!');
+                    }
+                });
+        }, 5000); // Poll every 5 seconds
+    }
+</script>
+{% endblock %}
