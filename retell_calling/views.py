@@ -1804,7 +1804,7 @@ def trigger_bulk_facility_calls(request):
     if not request.user.is_authenticated or not request.user.is_superuser:
         return Response({'error': 'Only admins can trigger bulk facility calls'}, status=status.HTTP_403_FORBIDDEN)
 
-    agent_id = "agent_f1e1852a2a6b90b39d997f95b5"
+    agent_id = "agent_fb767dd41605eeffa55cf7de1f"
     facilities = FacilityCallTarget.objects.filter(is_active=True).exclude(phone_number__isnull=True).exclude(phone_number='').order_by('facility_name')
 
     if not facilities.exists():
