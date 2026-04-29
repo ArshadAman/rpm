@@ -11,7 +11,7 @@ from reports.models import Reports, Documentation
 from reports.serializers import ReportSerializer
 from reports.forms import ReportForm
 from .models import Patient, Moderator, PastMedicalHistory, Interest, InterestPastMedicalHistory, InterestLead, Doctor, EmailOTP, LabCategory, LabTest, LabResult, LabDocument
-from retell_calling.models import CallSummary, LeadCallSession, LeadCallSummary
+from retell_calling.models import CallSummary, LeadCallSession, LeadCallSummary, FacilityCallTarget, FacilityCallSession, FacilityCallSummary
 from referral.models import Referral
 from django.db import models
 from .serializers import PatientSerializer, ModeratorSerializer
@@ -155,6 +155,11 @@ def admin_dashboard(request):
         leads_with_calls_count = InterestLead.objects.annotate(
             call_count=models.Count('lead_call_summaries')
         ).filter(call_count__gt=0).count()
+
+        # Get facility call statistics
+        facility_count = FacilityCallTarget.objects.count()
+        facility_calls_count = FacilityCallSession.objects.count()
+        facilities_with_emails_count = FacilityCallSummary.objects.exclude(extracted_email__isnull=True).exclude(extracted_email='').values('facility_id').distinct().count()
         
         # Get referral statistics
         total_referrals = Referral.objects.count()
@@ -183,6 +188,9 @@ def admin_dashboard(request):
             'conversion_rate': conversion_rate,
             'lead_calls_count': lead_calls_count,
             'leads_with_calls_count': leads_with_calls_count,
+            'facility_count': facility_count,
+            'facility_calls_count': facility_calls_count,
+            'facilities_with_emails_count': facilities_with_emails_count,
             'total_referrals': total_referrals,
             'pending_referrals': pending_referrals,
             'video_count': video_count,

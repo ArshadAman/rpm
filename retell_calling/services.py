@@ -10,7 +10,7 @@ from typing import Dict, Optional, Any, List
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from rpm_users.models import Patient, InterestLead
-from .models import RetellCallSession, LeadCallSession
+from .models import RetellCallSession, LeadCallSession, FacilityCallSession, FacilityCallTarget
 import google.generativeai as genai
 
 try:
@@ -303,6 +303,107 @@ class RetellCallService:
             error_msg = f"Unexpected error creating call for lead {lead.email or 'No email'}: {str(e)}"
             logger.error(error_msg)
             raise
+
+    def create_facility_call(self, facility: FacilityCallTarget, agent_id: str = None, dynamic_variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Create a phone call to a facility using Retell API."""
+        logger.info(f"Initiating call for facility: {facility.facility_name}")
+
+        if not facility.phone_number:
+            error_msg = f"Facility {facility.facility_name} has no phone number"
+            logger.error(error_msg)
+            raise ValidationError(error_msg)
+
+        try:
+            to_number = self.validate_phone_number(facility.phone_number)
+            from_number = self.validate_phone_number(self.from_number)
+        except ValidationError as e:
+            logger.error(f"Phone number validation failed for facility {facility.facility_name}: {e}")
+            raise
+
+        payload = {
+            "call_type": "phone_call",
+            "from_number": from_number,
+            "to_number": to_number,
+        }
+
+        if agent_id:
+            payload["agent_id"] = agent_id
+
+        if dynamic_variables is not None:
+            payload["retell_llm_dynamic_variables"] = dynamic_variables
+        else:
+            payload["retell_llm_dynamic_variables"] = {
+                "facility_name": facility.facility_name or '',
+                "facility_address": facility.address or '',
+                "facility_city": facility.city or '',
+                "facility_state": facility.state or '',
+                "facility_zip": facility.zip_code or '',
+                "facility_phone": facility.phone_number or '',
+                "facility_notes_type": facility.notes_type or '',
+                "facility_county": facility.county or '',
+                "facility_source_name": facility.source_name or '',
+            }
+
+        logger.debug(f"Retell API payload for facility: {payload}")
+
+        try:
+            response = requests.post(
+                f"{self.base_url}/create-phone-call",
+                headers=self.headers,
+                json=payload,
+                timeout=30
+            )
+            logger.info(f"Retell API response status: {response.status_code}")
+
+            response.raise_for_status()
+
+            response_data = response.json()
+            call_id = response_data.get('call_id')
+
+            if not call_id:
+                error_msg = "No call_id returned from Retell API"
+                logger.error(f"{error_msg}. Response: {response_data}")
+                raise ValueError(error_msg)
+
+            logger.info(f"Facility call created successfully with ID: {call_id}")
+
+            call_session = FacilityCallSession.objects.create(
+                facility=facility,
+                retell_call_id=call_id,
+                call_status='initiated',
+                from_number=from_number,
+                to_number=to_number,
+                agent_id=agent_id or ''
+            )
+
+            logger.info(f"FacilityCallSession created with ID: {call_session.id}")
+
+            return {
+                'success': True,
+                'call_id': call_id,
+                'call_session': call_session,
+                'response_data': response_data
+            }
+
+        except requests.exceptions.Timeout:
+            error_msg = f"Timeout calling Retell API for facility {facility.facility_name}"
+            logger.error(error_msg)
+            raise requests.RequestException(error_msg)
+
+        except requests.exceptions.HTTPError as e:
+            error_msg = f"HTTP error from Retell API: {e.response.status_code}"
+            logger.error(f"{error_msg}. Response: {e.response.text}")
+            raise requests.RequestException(f"{error_msg}: {e.response.text}")
+
+        except requests.exceptions.RequestException as e:
+            error_msg = f"Request error calling Retell API for facility {facility.facility_name}: {str(e)}"
+            logger.error(error_msg)
+            raise
+
+        except Exception as e:
+            error_msg = f"Unexpected error creating call for facility {facility.facility_name}: {str(e)}"
+            logger.error(error_msg)
+            raise
     
     def get_call_details(self, call_id: str) -> Dict[str, Any]:
         """
@@ -546,6 +647,138 @@ Focus on healthcare-relevant information and maintain patient confidentiality. I
                 'health_metrics': {},
                 'concerning_flags': ["AI processing failed - manual review required"],
                 'confidence_score': 0.0
+            }
+
+    def generate_facility_summary(self, transcript: str, facility_context: Dict[str, Any] = None, call_status: str = 'completed') -> Dict[str, Any]:
+        """Generate a strict facility call summary and extract only explicitly stated email data."""
+        if not transcript or not transcript.strip():
+            facility_name = (facility_context or {}).get('facility_name', 'facility')
+            if call_status == 'no_answer':
+                disposition = 'no_answer'
+                summary_text = f"Call attempt to {facility_name} - No answer."
+            elif call_status == 'busy':
+                disposition = 'busy'
+                summary_text = f"Call attempt to {facility_name} - Line was busy."
+            elif call_status == 'failed':
+                disposition = 'failed'
+                summary_text = f"Call attempt to {facility_name} - Call failed to connect."
+            else:
+                disposition = 'unknown'
+                summary_text = f"Call attempt to {facility_name} ended with status: {call_status}. No transcript available."
+
+            return {
+                'summary': summary_text,
+                'key_points': [f'Call status: {call_status}'],
+                'concerning_flags': ['No transcript available'],
+                'extracted_email': None,
+                'contact_name': None,
+                'contact_title': None,
+                'reached_right_person': False,
+                'email_obtained': False,
+                'call_disposition': disposition,
+                'confidence_score': 0.5,
+            }
+
+        facility_name = (facility_context or {}).get('facility_name', 'the facility')
+        prompt = f"""
+You are analyzing a phone call between Stratton Healthcare and an assisted living facility.
+
+Return ONLY valid JSON. Do not infer or guess any contact details. If the transcript does not explicitly state an email address, return null for extracted_email.
+
+Facility name: {facility_name}
+Call transcript:
+{transcript}
+
+Return this exact JSON shape:
+{{
+  "summary": "A concise 2-3 sentence summary.",
+  "key_points": ["Short factual points only"],
+  "concerning_flags": ["Any issues or empty array"],
+  "extracted_email": null,
+  "contact_name": null,
+  "contact_title": null,
+  "reached_right_person": true,
+  "email_obtained": true,
+  "call_disposition": "right_person_email",
+  "confidence_score": 0.95
+}}
+
+Disposition rules:
+- Use "right_person_email" only if the transcript clearly shows the right person was reached and an email was given.
+- Use "right_person_no_email" if the right person was reached but no email was given.
+- Use "wrong_person" if the person says they are not the decision-maker or not the right contact.
+- Use "no_answer", "busy", or "failed" only when that is the actual outcome.
+"""
+
+        try:
+            response = self.model.generate_content(prompt)
+            if not response.text:
+                raise Exception("Empty response from Gemini API")
+
+            response_text = response.text.strip()
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]
+            if response_text.startswith('```'):
+                response_text = response_text[3:]
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]
+            response_text = response_text.strip()
+
+            summary_data = json.loads(response_text)
+
+            transcript_emails = re.findall(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', transcript)
+            transcript_email = transcript_emails[0] if transcript_emails else None
+            extracted_email = summary_data.get('extracted_email')
+            if extracted_email and transcript_email and extracted_email.lower() != transcript_email.lower():
+                extracted_email = transcript_email
+            elif extracted_email and not transcript_email:
+                extracted_email = None
+            elif not extracted_email:
+                extracted_email = transcript_email
+
+            summary_data['extracted_email'] = extracted_email
+            summary_data['email_obtained'] = bool(extracted_email)
+            summary_data['reached_right_person'] = bool(summary_data.get('reached_right_person', False))
+            if not summary_data.get('call_disposition'):
+                if summary_data['reached_right_person'] and summary_data['email_obtained']:
+                    summary_data['call_disposition'] = 'right_person_email'
+                elif summary_data['reached_right_person']:
+                    summary_data['call_disposition'] = 'right_person_no_email'
+                else:
+                    summary_data['call_disposition'] = 'wrong_person'
+
+            if not isinstance(summary_data.get('confidence_score'), (int, float)):
+                summary_data['confidence_score'] = 0.5
+
+            return summary_data
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse facility summary JSON: {e}")
+            return {
+                'summary': 'Facility call transcript processed but summary parsing failed.',
+                'key_points': ['Raw transcript available for manual review'],
+                'concerning_flags': ['Summary parsing failed - manual review recommended'],
+                'extracted_email': None,
+                'contact_name': None,
+                'contact_title': None,
+                'reached_right_person': False,
+                'email_obtained': False,
+                'call_disposition': 'unknown',
+                'confidence_score': 0.1,
+            }
+        except Exception as e:
+            logger.error(f"Error generating facility summary with Gemini: {str(e)}")
+            return {
+                'summary': f'Facility transcript processing failed: {str(e)}',
+                'key_points': ['AI processing unavailable - raw transcript stored'],
+                'concerning_flags': ['AI processing failed - manual review required'],
+                'extracted_email': None,
+                'contact_name': None,
+                'contact_title': None,
+                'reached_right_person': False,
+                'email_obtained': False,
+                'call_disposition': 'unknown',
+                'confidence_score': 0.0,
             }
     
     def extract_health_metrics(self, transcript: str) -> Dict[str, Any]:

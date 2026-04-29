@@ -30,6 +30,11 @@ urlpatterns = [
     path('test-summary-generation/', views.test_summary_generation, name='test_summary_generation'),
     path('leads-call-summaries/', views.leads_call_summaries_list, name='leads_call_summaries_list'),
     path('lead/<int:lead_id>/call-summaries/', views.lead_call_summaries, name='lead_call_summaries'),
+
+    # Facility Call Management
+    path('facility-calls/', views.facility_calls_dashboard, name='facility_calls_dashboard'),
+    path('trigger-bulk-facility-calls/', views.trigger_bulk_facility_calls, name='trigger_bulk_facility_calls'),
+    path('facility-bulk-call-status/<uuid:bulk_session_id>/', views.facility_bulk_call_status, name='facility_bulk_call_status'),
     
     # Patient Bulk Calling
     path('trigger-bulk-patient-calls/', views.trigger_bulk_patient_calls, name='trigger_bulk_patient_calls'),
