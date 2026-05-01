@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import models
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -17,11 +17,77 @@ from reports.models import Reports
 from rpm_users.models import  PastMedicalHistory
 from django.utils import timezone
 from datetime import timedelta
-from .services import RetellCallService, GeminiSummaryService, PatientAnalysisService
+from .services import RetellCallService, GeminiSummaryService, PatientAnalysisService, InboundLeadExtractorService
 from reports.models import Documentation
-from .models import RetellCallSession, CallSummary, LeadCallSession, LeadCallSummary, BulkCallSession
+from .models import RetellCallSession, CallSummary, LeadCallSession, LeadCallSummary, BulkCallSession, FacilityCallTarget, FacilityCallSession, FacilityCallSummary
 
 logger = logging.getLogger('retell_calling.views')
+
+
+FACILITY_UPLOAD_HEADERS = {
+    'facility_name': 'Facility Name',
+    'address': 'Address',
+    'city': 'City',
+    'state': 'State',
+    'zip_code': 'ZIP',
+    'phone_number': 'Phone',
+    'phone_missing_in': 'Phone Missing In',
+    'notes_type': 'Notes / Type',
+    'county': 'County',
+    'source_name': 'Source Name',
+}
+
+
+def _normalize_header(value):
+    if value is None:
+        return ''
+    return ' '.join(str(value).strip().lower().replace('_', ' ').replace('/', ' / ').split())
+
+
+def _load_spreadsheet_rows(uploaded_file):
+    import csv
+    import tempfile
+    import os
+    from openpyxl import load_workbook, Workbook
+
+    file_name_lower = uploaded_file.name.lower()
+    suffix = '.csv' if file_name_lower.endswith('.csv') else '.xlsx'
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
+        for chunk in uploaded_file.chunks():
+            tmp_file.write(chunk)
+        tmp_file_path = tmp_file.name
+
+    try:
+        if suffix == '.csv':
+            with open(tmp_file_path, 'r', encoding='utf-8-sig') as csvfile:
+                rows = list(csv.reader(csvfile))
+            if not rows:
+                raise ValueError('CSV file is empty')
+
+            workbook = Workbook()
+            worksheet = workbook.active
+            for row_idx, row in enumerate(rows, 1):
+                for col_idx, value in enumerate(row, 1):
+                    worksheet.cell(row=row_idx, column=col_idx, value=value)
+            return worksheet
+
+        try:
+            workbook = load_workbook(tmp_file_path)
+            return workbook.active
+        except Exception:
+            import pandas as pd
+            dataframe = pd.read_excel(tmp_file_path)
+            converted_path = tmp_file_path.replace(suffix, '_converted.xlsx')
+            dataframe.to_excel(converted_path, index=False, engine='openpyxl')
+            workbook = load_workbook(converted_path)
+            os.unlink(converted_path)
+            return workbook.active
+    finally:
+        try:
+            os.unlink(tmp_file_path)
+        except Exception:
+            pass
 
 
 @api_view(['POST'])
@@ -373,7 +439,7 @@ def retell_webhook(request):
                 'error': 'call_id is required in call object'
             }, status=400)
         
-        # Find the call session - check both patient and lead call sessions
+        # Find the call session - check patient, lead, and facility call sessions
         call_session = None
         call_type = None
         
@@ -387,10 +453,15 @@ def retell_webhook(request):
                 call_type = 'lead'
                 logger.info(f"Found lead call session for call_id: {call_id}")
             except LeadCallSession.DoesNotExist:
-                logger.error(f"Call session not found for call_id: {call_id}")
-                return JsonResponse({
-                    'error': f'Call session not found for call_id: {call_id}'
-                }, status=404)
+                try:
+                    call_session = FacilityCallSession.objects.get(retell_call_id=call_id)
+                    call_type = 'facility'
+                    logger.info(f"Found facility call session for call_id: {call_id}")
+                except FacilityCallSession.DoesNotExist:
+                    logger.error(f"Call session not found for call_id: {call_id}")
+                    return JsonResponse({
+                        'error': f'Call session not found for call_id: {call_id}'
+                    }, status=404)
         
         # Update call session based on event type and call data
         if event_type == 'call_started':
@@ -450,39 +521,54 @@ def retell_webhook(request):
                         'patient_name': call_session.patient.user.first_name,
                         'patient_id': call_session.patient.id
                     }
-                else:  # lead call
+                elif call_type == 'lead':
                     context = {
                         'lead_name': f"{call_session.lead.first_name or ''} {call_session.lead.last_name or ''}".strip(),
                         'lead_id': call_session.lead.id
+                    }
+                else:
+                    context = {
+                        'facility_name': call_session.facility.facility_name,
+                        'facility_id': str(call_session.facility.id),
+                        'facility_city': call_session.facility.city or '',
+                        'facility_state': call_session.facility.state or '',
                     }
                 
                 # Generate summary based on call outcome
                 if call_session.transcript and call_session.transcript.strip():
                     # Call was answered and we have transcript
                     logger.info(f"Generating AI summary from transcript for call {call_id}")
-                    summary_data = gemini_service.generate_summary(
-                        call_session.transcript, 
-                        context
-                    )
+                    if call_type == 'facility':
+                        summary_data = gemini_service.generate_facility_summary(
+                            call_session.transcript,
+                            context,
+                            call_status=call_session.call_status,
+                        )
+                    else:
+                        summary_data = gemini_service.generate_summary(
+                            call_session.transcript,
+                            context
+                        )
                 else:
                     # Call was not answered, rejected, or no transcript - create basic summary
                     logger.info(f"Creating basic summary for unanswered/rejected call {call_id} with status: {call_session.call_status}")
+                    target_label = context.get('lead_name', context.get('patient_name', context.get('facility_name', 'contact')))
                     
                     # Create a basic summary based on call status
                     if call_session.call_status == 'no_answer':
-                        summary_text = f"Call attempt to {context.get('lead_name', context.get('patient_name', 'contact'))} - No answer. The call was not picked up."
+                        summary_text = f"Call attempt to {target_label} - No answer. The call was not picked up."
                         concerning_flags = ["No response to call attempt"]
                     elif call_session.call_status == 'busy':
-                        summary_text = f"Call attempt to {context.get('lead_name', context.get('patient_name', 'contact'))} - Line was busy."
+                        summary_text = f"Call attempt to {target_label} - Line was busy."
                         concerning_flags = ["Line busy during call attempt"]
                     elif call_session.call_status == 'failed':
-                        summary_text = f"Call attempt to {context.get('lead_name', context.get('patient_name', 'contact'))} - Call failed to connect."
+                        summary_text = f"Call attempt to {target_label} - Call failed to connect."
                         concerning_flags = ["Failed to establish call connection"]
                     elif call_session.call_status == 'cancelled':
-                        summary_text = f"Call attempt to {context.get('lead_name', context.get('patient_name', 'contact'))} - Call was cancelled."
+                        summary_text = f"Call attempt to {target_label} - Call was cancelled."
                         concerning_flags = ["Call cancelled"]
                     else:
-                        summary_text = f"Call attempt to {context.get('lead_name', context.get('patient_name', 'contact'))} - Call ended with status: {call_session.call_status}. No transcript available."
+                        summary_text = f"Call attempt to {target_label} - Call ended with status: {call_session.call_status}. No transcript available."
                         concerning_flags = ["No transcript available"]
                     
                     # Create summary data for unanswered calls
@@ -497,6 +583,16 @@ def retell_webhook(request):
                         'health_metrics': {},
                         'confidence_score': 0.5  # Medium confidence for system-generated summaries
                     }
+
+                    if call_type == 'facility':
+                        summary_data.update({
+                            'extracted_email': None,
+                            'contact_name': None,
+                            'contact_title': None,
+                            'reached_right_person': False,
+                            'email_obtained': False,
+                            'call_disposition': call_session.call_status if call_session.call_status in ['no_answer', 'busy', 'failed', 'cancelled'] else 'unknown',
+                        })
                 
                 # Store the AI summary in the call session for backward compatibility
                 call_session.ai_summary = json.dumps(summary_data)
@@ -514,17 +610,15 @@ def retell_webhook(request):
                             'ai_confidence_score': summary_data.get('confidence_score')
                         }
                     )
-                    
+
                     if not created:
-                        # Update existing summary
                         call_summary.summary_text = summary_data.get('summary', '')
                         call_summary.key_points = summary_data.get('key_points', [])
                         call_summary.concerning_flags = summary_data.get('concerning_flags', [])
                         call_summary.health_metrics = summary_data.get('health_metrics', {})
                         call_summary.ai_confidence_score = summary_data.get('confidence_score')
                         call_summary.save()
-                    
-                    # Also create a Documentation record with the summary text if call was successful
+
                     if call_session.transcript and call_session.transcript.strip():
                         try:
                             Documentation.objects.create(
@@ -537,9 +631,11 @@ def retell_webhook(request):
                             logger.info(f"Documentation created from AI summary for patient call: {call_id}")
                         except Exception as doc_err:
                             logger.error(f"Failed to create Documentation from AI summary for patient call {call_id}: {str(doc_err)}")
-                
-                else:  # lead call
-                    # Create or update LeadCallSummary record for lead calls
+
+                    action = "created" if created else "updated"
+                    summary_label = 'CallSummary'
+
+                elif call_type == 'lead':
                     from .models import LeadCallSummary
                     lead_call_summary, created = LeadCallSummary.objects.get_or_create(
                         call_session=call_session,
@@ -552,18 +648,59 @@ def retell_webhook(request):
                             'ai_confidence_score': summary_data.get('confidence_score')
                         }
                     )
-                    
+
                     if not created:
-                        # Update existing summary
                         lead_call_summary.summary_text = summary_data.get('summary', '')
                         lead_call_summary.key_points = summary_data.get('key_points', [])
                         lead_call_summary.concerning_flags = summary_data.get('concerning_flags', [])
                         lead_call_summary.health_metrics = summary_data.get('health_metrics', {})
                         lead_call_summary.ai_confidence_score = summary_data.get('confidence_score')
                         lead_call_summary.save()
-                
-                action = "created" if created else "updated"
-                logger.info(f"{'CallSummary' if call_type == 'patient' else 'LeadCallSummary'} {action} for {call_type} call: {call_id}")
+
+                    action = "created" if created else "updated"
+                    summary_label = 'LeadCallSummary'
+
+                else:
+                    facility_call_summary, created = FacilityCallSummary.objects.get_or_create(
+                        call_session=call_session,
+                        defaults={
+                            'facility': call_session.facility,
+                            'summary_text': summary_data.get('summary', ''),
+                            'key_points': summary_data.get('key_points', []),
+                            'concerning_flags': summary_data.get('concerning_flags', []),
+                            'extracted_email': summary_data.get('extracted_email'),
+                            'contact_name': summary_data.get('contact_name'),
+                            'contact_title': summary_data.get('contact_title'),
+                            'reached_right_person': summary_data.get('reached_right_person', False),
+                            'email_obtained': summary_data.get('email_obtained', False),
+                            'call_disposition': summary_data.get('call_disposition', 'unknown'),
+                            'ai_confidence_score': summary_data.get('confidence_score')
+                        }
+                    )
+
+                    if not created:
+                        facility_call_summary.summary_text = summary_data.get('summary', '')
+                        facility_call_summary.key_points = summary_data.get('key_points', [])
+                        facility_call_summary.concerning_flags = summary_data.get('concerning_flags', [])
+                        facility_call_summary.extracted_email = summary_data.get('extracted_email')
+                        facility_call_summary.contact_name = summary_data.get('contact_name')
+                        facility_call_summary.contact_title = summary_data.get('contact_title')
+                        facility_call_summary.reached_right_person = summary_data.get('reached_right_person', False)
+                        facility_call_summary.email_obtained = summary_data.get('email_obtained', False)
+                        facility_call_summary.call_disposition = summary_data.get('call_disposition', 'unknown')
+                        facility_call_summary.ai_confidence_score = summary_data.get('confidence_score')
+                        facility_call_summary.save()
+
+                    call_session.facility.call_attempts = (call_session.facility.call_attempts or 0) + 1
+                    call_session.facility.last_call_status = call_session.call_status
+                    call_session.facility.last_extracted_email = summary_data.get('extracted_email')
+                    call_session.facility.last_summary_text = summary_data.get('summary', '')
+                    call_session.facility.save(update_fields=['call_attempts', 'last_call_status', 'last_extracted_email', 'last_summary_text', 'updated_at'])
+
+                    action = "created" if created else "updated"
+                    summary_label = 'FacilityCallSummary'
+
+                logger.info(f"{summary_label} {action} for {call_type} call: {call_id}")
                 logger.info(f"Summary generated and stored for {call_type} call: {call_id} (transcript available: {bool(call_session.transcript)})")
                 
                 # Log concerning flags if any
@@ -592,7 +729,7 @@ def retell_webhook(request):
                                 'ai_confidence_score': 0.0
                             }
                         )
-                    else:
+                    elif call_type == 'lead':
                         from .models import LeadCallSummary
                         LeadCallSummary.objects.get_or_create(
                             call_session=call_session,
@@ -602,6 +739,23 @@ def retell_webhook(request):
                                 'key_points': ["Summary generation failed"],
                                 'concerning_flags': ["Failed to process call summary"],
                                 'health_metrics': {},
+                                'ai_confidence_score': 0.0
+                            }
+                        )
+                    else:
+                        FacilityCallSummary.objects.get_or_create(
+                            call_session=call_session,
+                            defaults={
+                                'facility': call_session.facility,
+                                'summary_text': f"Call processing failed. Status: {call_session.call_status}",
+                                'key_points': ["Summary generation failed"],
+                                'concerning_flags': ["Failed to process call summary"],
+                                'extracted_email': None,
+                                'contact_name': None,
+                                'contact_title': None,
+                                'reached_right_person': False,
+                                'email_obtained': False,
+                                'call_disposition': 'unknown',
                                 'ai_confidence_score': 0.0
                             }
                         )
@@ -706,6 +860,69 @@ def retell_webhook(request):
                     logger.error(f"Traceback: {traceback.format_exc()}")
             else:
                 logger.info(f"Lead call {call_id} is not part of a bulk session (bulk_session_id: {getattr(call_session, 'bulk_session_id', 'not set')})")
+
+        if event_type == 'call_ended' and call_type == 'facility':
+            logger.info(f"Processing call_ended for facility call {call_id}")
+
+            if getattr(call_session, 'bulk_session_id', None):
+                logger.info(f"Facility call {call_id} is part of bulk session {call_session.bulk_session_id}")
+                try:
+                    bulk_session = BulkCallSession.objects.get(id=call_session.bulk_session_id)
+                    call_was_successful = (
+                        call_session.call_status == 'completed' and
+                        call_session.transcript and
+                        call_session.transcript.strip()
+                    )
+
+                    try:
+                        summary_obj = call_session.summary
+                    except Exception:
+                        summary_obj = None
+                    bulk_session.mark_call_completed(
+                        success=call_was_successful,
+                        call_data={
+                            'facility_id': str(call_session.facility.id),
+                            'facility_name': call_session.facility.facility_name,
+                            'call_id': call_id,
+                            'call_session_id': str(call_session.id),
+                            'status': call_session.call_status,
+                            'duration_seconds': call_session.duration_seconds,
+                            'has_transcript': bool(call_session.transcript and call_session.transcript.strip()),
+                            'disconnection_reason': call_session.disconnection_reason or '',
+                            'timestamp': timezone.now().isoformat(),
+                            'answered': call_was_successful,
+                            'extracted_email': getattr(summary_obj, 'extracted_email', None),
+                            'reached_right_person': getattr(summary_obj, 'reached_right_person', False),
+                            'email_obtained': getattr(summary_obj, 'email_obtained', False),
+                        }
+                    )
+
+                    bulk_session.current_index += 1
+                    bulk_session.save()
+
+                    if bulk_session.current_index < len(bulk_session.leads_data) and bulk_session.status != 'completed':
+                        logger.info(f"Initiating next facility call in bulk session {bulk_session.id}")
+                        import time
+                        time.sleep(2)
+
+                        next_result = initiate_next_facility_call(bulk_session)
+                        if not next_result['success']:
+                            logger.error(f"Failed to initiate next facility call: {next_result.get('error')}")
+                            bulk_session.current_index += 1
+                            bulk_session.save()
+
+                            if bulk_session.current_index < len(bulk_session.leads_data):
+                                initiate_next_facility_call(bulk_session)
+                    else:
+                        logger.info(f"Facility bulk session {bulk_session.id} completed")
+                        bulk_session.status = 'completed'
+                        bulk_session.completed_at = timezone.now()
+                        bulk_session.save()
+
+                except BulkCallSession.DoesNotExist:
+                    logger.warning(f"Facility bulk session {call_session.bulk_session_id} not found")
+                except Exception as e:
+                    logger.error(f"Error handling facility sequential calling: {str(e)}")
         
         logger.info(f"Call session updated successfully for call {call_id}, event: {event_type}")
         
@@ -1484,6 +1701,252 @@ def trigger_lead_call(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@user_passes_test(lambda u: u.is_superuser, login_url='admin_login')
+def facility_calls_dashboard(request):
+    """Admin page for uploading facility lists and starting bulk facility calls."""
+    imported_count = 0
+    updated_count = 0
+    import_errors = []
+
+    if request.method == 'POST' and request.FILES.get('facility_file'):
+        try:
+            worksheet = _load_spreadsheet_rows(request.FILES['facility_file'])
+            headers = [_normalize_header(cell.value) for cell in worksheet[1]]
+            header_index = {}
+            for idx, header in enumerate(headers, 1):
+                for field_name, expected_header in FACILITY_UPLOAD_HEADERS.items():
+                    if header == _normalize_header(expected_header):
+                        header_index[field_name] = idx
+
+            if 'facility_name' not in header_index:
+                messages.error(request, 'Facility Name column is required.')
+                return redirect('retell_calling:facility_calls_dashboard')
+
+            for row_num in range(2, worksheet.max_row + 1):
+                row_data = {}
+                for field_name, column_index in header_index.items():
+                    value = worksheet.cell(row=row_num, column=column_index).value
+                    row_data[field_name] = str(value).strip() if value is not None else ''
+
+                facility_name = row_data.get('facility_name', '').strip()
+                if not facility_name:
+                    continue
+
+                defaults = {
+                    'address': row_data.get('address', ''),
+                    'city': row_data.get('city', ''),
+                    'state': row_data.get('state', ''),
+                    'zip_code': row_data.get('zip_code', ''),
+                    'phone_number': row_data.get('phone_number', ''),
+                    'phone_missing_in': row_data.get('phone_missing_in', ''),
+                    'notes_type': row_data.get('notes_type', ''),
+                    'county': row_data.get('county', ''),
+                    'source_name': row_data.get('source_name', ''),
+                    'source_row_data': row_data,
+                }
+
+                facility, created = FacilityCallTarget.objects.update_or_create(
+                    facility_name=facility_name,
+                    address=defaults['address'] or None,
+                    city=defaults['city'] or None,
+                    state=defaults['state'] or None,
+                    zip_code=defaults['zip_code'] or None,
+                    phone_number=defaults['phone_number'] or None,
+                    defaults=defaults,
+                )
+
+                if created:
+                    imported_count += 1
+                else:
+                    updated_count += 1
+
+            if imported_count or updated_count:
+                messages.success(
+                    request,
+                    f'Imported {imported_count} new facilities and updated {updated_count} existing records.'
+                )
+            else:
+                messages.warning(request, 'No facility rows were imported.')
+
+            return redirect('retell_calling:facility_calls_dashboard')
+
+        except Exception as e:
+            logger.error(f"Facility import failed: {str(e)}")
+            import_errors.append(str(e))
+            messages.error(request, f'Failed to import facilities: {str(e)}')
+
+    facility_call_qs = FacilityCallTarget.objects.annotate(
+        call_count=models.Count('facility_call_sessions'),
+        latest_call=models.Max('facility_call_sessions__created_at')
+    ).order_by('facility_name')
+
+    recent_summaries = FacilityCallSummary.objects.select_related('facility', 'call_session').order_by('-generated_at')[:50]
+    latest_bulk_session = BulkCallSession.objects.filter(session_type='facility_calls').order_by('-created_at').first()
+
+    context = {
+        'facility_count': facility_call_qs.count(),
+        'facility_called_count': facility_call_qs.filter(call_count__gt=0).count(),
+        'facility_email_count': FacilityCallSummary.objects.filter(extracted_email__isnull=False).exclude(extracted_email='').count(),
+        'facility_call_sessions_count': FacilityCallSession.objects.count(),
+        'facility_call_summaries_count': FacilityCallSummary.objects.count(),
+        'facilities': facility_call_qs,
+        'recent_summaries': recent_summaries,
+        'latest_bulk_session': latest_bulk_session,
+        'import_errors': import_errors,
+    }
+
+    return render(request, 'retell_calling/facility_calls_dashboard.html', context)
+
+
+@api_view(['POST'])
+def trigger_bulk_facility_calls(request):
+    """Start sequential calling for all imported facilities with phone numbers."""
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return Response({'error': 'Only admins can trigger bulk facility calls'}, status=status.HTTP_403_FORBIDDEN)
+
+    agent_id = "agent_fb767dd41605eeffa55cf7de1f"
+    facilities = FacilityCallTarget.objects.filter(is_active=True).exclude(phone_number__isnull=True).exclude(phone_number='').order_by('facility_name')
+
+    if not facilities.exists():
+        return Response({'success': True, 'message': 'No facilities available for calling', 'facilities_to_call': 0, 'facilities': []}, status=status.HTTP_200_OK)
+
+    facility_list = []
+    for facility in facilities:
+        facility_list.append({
+            'id': str(facility.id),
+            'name': facility.facility_name,
+            'phone': facility.phone_number,
+        })
+
+    try:
+        bulk_session = BulkCallSession.objects.create(
+            session_type='facility_calls',
+            total_leads=len(facility_list),
+            leads_data=facility_list,
+            agent_id=agent_id,
+            status='initiated'
+        )
+
+        result = initiate_next_facility_call(bulk_session)
+
+        if result['success']:
+            return Response({
+                'success': True,
+                'message': f'Bulk calling process started for {len(facility_list)} facilities',
+                'bulk_session_id': str(bulk_session.id),
+                'facilities_to_call': len(facility_list),
+                'first_call_initiated': True,
+                'first_call_id': result.get('call_id'),
+                'facilities': facility_list,
+            }, status=status.HTTP_201_CREATED)
+
+        bulk_session.status = 'failed'
+        bulk_session.error_message = result.get('error', 'Failed to start first call')
+        bulk_session.save()
+        return Response({'success': False, 'error': f'Failed to start bulk calling: {result.get("error")}', 'bulk_session_id': str(bulk_session.id)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    except Exception as e:
+        logger.error(f"Error starting bulk facility calling process: {str(e)}")
+        return Response({'error': f'Failed to start bulk calling process: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def initiate_next_facility_call(bulk_session):
+    """Initiate the next call in a bulk facility calling session."""
+    try:
+        if bulk_session.current_index >= len(bulk_session.leads_data):
+            bulk_session.status = 'completed'
+            bulk_session.completed_at = timezone.now()
+            bulk_session.save()
+            return {'success': False, 'message': 'No more facilities to call'}
+
+        facility_data = bulk_session.leads_data[bulk_session.current_index]
+        try:
+            current_facility = FacilityCallTarget.objects.get(id=facility_data['id'])
+        except FacilityCallTarget.DoesNotExist:
+            bulk_session.mark_call_completed(
+                success=False,
+                call_data={
+                    'facility_id': facility_data['id'],
+                    'error': 'Facility not found',
+                    'timestamp': timezone.now().isoformat(),
+                    'index': bulk_session.current_index,
+                }
+            )
+            return {'success': False, 'error': 'Facility not found, will try next'}
+
+        call_service = RetellCallService()
+        dynamic_variables = {
+            'facility_id': str(current_facility.id),
+            'facility_name': current_facility.facility_name or '',
+            'facility_address': current_facility.address or '',
+            'facility_city': current_facility.city or '',
+            'facility_state': current_facility.state or '',
+            'facility_zip': current_facility.zip_code or '',
+            'facility_phone': current_facility.phone_number or '',
+            'facility_notes_type': current_facility.notes_type or '',
+            'facility_county': current_facility.county or '',
+            'facility_source_name': current_facility.source_name or '',
+        }
+
+        result = call_service.create_facility_call(current_facility, bulk_session.agent_id, dynamic_variables)
+        call_session = result['call_session']
+        call_id = result['call_id']
+
+        call_session.bulk_session_id = bulk_session.id
+        call_session.save(update_fields=['bulk_session_id', 'updated_at'])
+
+        bulk_session.status = 'in_progress'
+        bulk_session.save()
+
+        return {
+            'success': True,
+            'call_id': call_id,
+            'call_session_id': str(call_session.id),
+            'facility_id': str(current_facility.id),
+            'facility_name': current_facility.facility_name,
+            'bulk_session_id': str(bulk_session.id),
+            'current_index': bulk_session.current_index,
+        }
+
+    except Exception as e:
+        logger.error(f"Error initiating facility call at index {bulk_session.current_index}: {str(e)}")
+        bulk_session.mark_call_completed(
+            success=False,
+            call_data={
+                'facility_id': 'unknown',
+                'error': str(e),
+                'timestamp': timezone.now().isoformat(),
+                'index': bulk_session.current_index,
+            }
+        )
+        return {'success': False, 'error': str(e)}
+
+
+@api_view(['GET'])
+def facility_bulk_call_status(request, bulk_session_id):
+    """Get the status of a bulk facility calling session."""
+    try:
+        bulk_session = BulkCallSession.objects.get(id=bulk_session_id)
+        return Response({
+            'success': True,
+            'bulk_session_id': str(bulk_session.id),
+            'status': bulk_session.status,
+            'total_facilities': bulk_session.total_leads,
+            'completed_calls': bulk_session.completed_calls,
+            'successful_calls': bulk_session.successful_calls,
+            'failed_calls': bulk_session.failed_calls,
+            'no_answer_calls': bulk_session.no_answer_calls,
+            'busy_calls': bulk_session.busy_calls,
+            'progress_percentage': bulk_session.progress_percentage,
+            'remaining_calls': bulk_session.remaining_calls,
+            'current_index': bulk_session.current_index,
+            'started_at': bulk_session.started_at.isoformat() if bulk_session.started_at else None,
+            'completed_at': bulk_session.completed_at.isoformat() if bulk_session.completed_at else None,
+        }, status=status.HTTP_200_OK)
+    except BulkCallSession.DoesNotExist:
+        return Response({'error': 'Bulk session not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
 def leads_call_summaries_list(request):
     """
     Display all leads with their call summary counts for admin access.
@@ -2086,3 +2549,86 @@ def get_patient_call_status(request, patient_id):
         return Response({
             'error': 'Patient not found'
         }, status=status.HTTP_404_NOT_FOUND)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def inbound_lead_webhook(request):
+    """
+    Webhook endpoint for inbound call events from Retell AI.
+    
+    When an inbound call ends with a transcript, this endpoint:
+    1. Extracts patient data from the transcript using Gemini AI
+    2. Creates an InterestLead record in the database
+    3. The admin can then review and convert the lead to a patient
+    """
+    try:
+        webhook_data = json.loads(request.body)
+        
+        event_type = webhook_data.get('event')
+        call_data = webhook_data.get('call', {})
+        call_id = call_data.get('call_id')
+        
+        logger.info(f"Inbound lead webhook received - event: {event_type}, call_id: {call_id}")
+        
+        # We only process call_ended events (that's when transcript is available)
+        if event_type != 'call_ended':
+            logger.info(f"Ignoring non call_ended event: {event_type}")
+            return JsonResponse({
+                'success': True,
+                'message': f'Event {event_type} acknowledged, no action taken'
+            }, status=200)
+        
+        transcript = call_data.get('transcript', '')
+        caller_phone = call_data.get('from_number', '')  # The number the caller used
+        
+        if not transcript or not transcript.strip():
+            logger.warning(f"Inbound call {call_id} ended with no transcript")
+            return JsonResponse({
+                'success': True,
+                'message': 'No transcript available, skipping lead creation'
+            }, status=200)
+        
+        logger.info(f"Processing inbound call transcript for lead extraction (call_id: {call_id})")
+        
+        # Extract lead data from transcript
+        extractor = InboundLeadExtractorService()
+        lead_data = extractor.extract_lead_from_transcript(transcript, caller_phone)
+        
+        if 'error' in lead_data:
+            logger.error(f"Failed to extract lead data: {lead_data['error']}")
+            return JsonResponse({
+                'success': False,
+                'message': f'Lead extraction failed: {lead_data["error"]}',
+                'call_id': call_id
+            }, status=200)  # Still return 200 so Retell doesn't retry
+        
+        # Create the InterestLead
+        lead = extractor.create_lead_from_data(lead_data)
+        
+        if lead:
+            logger.info(f"Lead created from inbound call {call_id}: {lead.id}")
+            return JsonResponse({
+                'success': True,
+                'message': 'Lead created successfully from inbound call',
+                'call_id': call_id,
+                'lead_id': str(lead.id),
+                'lead_name': f"{lead.first_name or ''} {lead.last_name or ''}".strip()
+            }, status=200)
+        else:
+            logger.error(f"Failed to create lead from inbound call {call_id}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Failed to create lead record',
+                'call_id': call_id
+            }, status=200)
+    
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON in inbound lead webhook")
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    except Exception as e:
+        logger.error(f"Error processing inbound lead webhook: {str(e)}")
+        return JsonResponse({
+            'error': f'Webhook processing failed: {str(e)}'
+        }, status=500)  

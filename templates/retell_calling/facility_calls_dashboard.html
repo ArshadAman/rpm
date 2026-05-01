@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Facilities</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0c1020;
+            --bg-2: #10162d;
+            --card: rgba(255, 255, 255, 0.06);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --text: #f3f6ff;
+            --muted: rgba(243, 246, 255, 0.72);
+            --accent: #6ee7b7;
+            --accent-2: #60a5fa;
+            --accent-3: #f59e0b;
+            --danger: #f87171;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(96, 165, 250, 0.28), transparent 32%),
+                radial-gradient(circle at top right, rgba(110, 231, 183, 0.22), transparent 28%),
+                linear-gradient(135deg, var(--bg), var(--bg-2));
+        }
+
+        .page {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 32px 20px 48px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            line-height: 1.05;
+        }
+
+        .title-block p {
+            margin: 10px 0 0;
+            color: var(--muted);
+            max-width: 760px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card,
+        .panel,
+        .row-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(18px);
+            border-radius: 20px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+        }
+
+        .stat-card {
+            padding: 18px;
+        }
+
+        .stat-card .label {
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .stat-card .value {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .panel {
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .panel h2 {
+            margin: 0 0 10px;
+            font-size: 1.35rem;
+        }
+
+        .panel p,
+        .helper-text,
+        .meta,
+        .empty-note {
+            color: var(--muted);
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 18px;
+        }
+
+        .upload-box {
+            border: 1px dashed rgba(255, 255, 255, 0.22);
+            border-radius: 18px;
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .upload-box input[type="file"] {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            margin: 12px 0 14px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            appearance: none;
+            border: none;
+            border-radius: 14px;
+            padding: 13px 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            color: #07111f;
+            background: linear-gradient(135deg, var(--accent), #d1fae5);
+        }
+
+        .btn-secondary {
+            color: var(--text);
+            background: linear-gradient(135deg, var(--accent-2), #93c5fd);
+        }
+
+        .btn-warning {
+            color: #241500;
+            background: linear-gradient(135deg, #fbbf24, #fde68a);
+        }
+
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .columns-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .column-pill {
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--muted);
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1180px;
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            vertical-align: top;
+        }
+
+        th {
+            color: #dbeafe;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.04);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .tag.green { background: rgba(110, 231, 183, 0.14); color: #a7f3d0; }
+        .tag.blue { background: rgba(96, 165, 250, 0.14); color: #bfdbfe; }
+        .tag.yellow { background: rgba(245, 158, 11, 0.16); color: #fde68a; }
+        .tag.red { background: rgba(248, 113, 113, 0.14); color: #fecaca; }
+        .tag.gray { background: rgba(255, 255, 255, 0.08); color: #e5e7eb; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .summary-card {
+            padding: 18px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-card h3 {
+            margin: 0 0 8px;
+        }
+
+        .summary-card .email {
+            font-weight: 700;
+            color: #dbeafe;
+            word-break: break-word;
+        }
+
+        .summary-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0 0;
+        }
+
+        .status-box {
+            padding: 16px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 18px;
+        }
+
+        .messages li {
+            padding: 14px 16px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+        }
+
+        .messages .success { background: rgba(110, 231, 183, 0.14); color: #d1fae5; }
+        .messages .error { background: rgba(248, 113, 113, 0.14); color: #fecaca; }
+        .messages .warning { background: rgba(245, 158, 11, 0.16); color: #fde68a; }
+
+        @media (max-width: 980px) {
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="topbar">
+            <div class="title-block">
+                <h1>Call Facilities</h1>
+                <p>Upload the facility spreadsheet, create the call queue, and run bulk calls one at a time while capturing the best email, contact name, and call disposition for admin review.</p>
+            </div>
+            <a class="back-link" href="{% url 'admin_dashboard' %}">← Back to dashboard</a>
+        </div>
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="stats-grid">
+            <div class="stat-card"><span class="label">Facilities Uploaded</span><span class="value">{{ facility_count|default:0 }}</span></div>
+            <div class="stat-card"><span class="label">Facilities Called</span><span class="value">{{ facility_called_count|default:0 }}</span></div>
+            <div class="stat-card"><span class="label">Call Sessions</span><span class="value">{{ facility_call_sessions_count|default:0 }}</span></div>
+            <div class="stat-card"><span class="label">Emails Captured</span><span class="value">{{ facility_email_count|default:0 }}</span></div>
+        </div>
+
+        <div class="panel">
+            <div class="upload-grid">
+                <div class="upload-box">
+                    <h2>Upload Spreadsheet</h2>
+                    <p class="helper-text">Use the exact headers from the file: Facility Name, Address, City, State, ZIP, Phone, Phone Missing In, Notes / Type, County, Source Name.</p>
+                    <form method="post" enctype="multipart/form-data" action="{% url 'retell_calling:facility_calls_dashboard' %}">
+                        {% csrf_token %}
+                        <input type="file" name="facility_file" accept=".xlsx,.xls,.csv" required>
+                        <div class="button-row">
+                            <button type="submit" class="btn btn-primary">Import Facilities</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="status-box">
+                    <strong>Bulk Calling</strong>
+                    <div class="meta">Start the queue after import. The system will call one facility at a time and store the extracted email from each answered call.</div>
+                    <div class="button-row" style="margin-top: 14px;">
+                        <button type="button" id="bulkCallBtn" class="btn btn-secondary">Start Bulk Call</button>
+                    </div>
+                    <div id="bulkStatus" class="meta" style="margin-top: 14px;">
+                        {% if latest_bulk_session %}
+                            Latest session: {{ latest_bulk_session.status }} | {{ latest_bulk_session.completed_calls }}/{{ latest_bulk_session.total_leads }} completed
+                        {% else %}
+                            No facility bulk call has started yet.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">
+                <h2>Facility Records</h2>
+                <span class="meta">{{ facilities|length }} rows loaded</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Facility</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th>State</th>
+                            <th>ZIP</th>
+                            <th>Phone</th>
+                            <th>Notes / Type</th>
+                            <th>County</th>
+                            <th>Source Name</th>
+                            <th>Latest Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for facility in facilities %}
+                        <tr>
+                            <td>{{ facility.facility_name }}</td>
+                            <td>{{ facility.address|default:'-' }}</td>
+                            <td>{{ facility.city|default:'-' }}</td>
+                            <td>{{ facility.state|default:'-' }}</td>
+                            <td>{{ facility.zip_code|default:'-' }}</td>
+                            <td>{{ facility.phone_number|default:'-' }}</td>
+                            <td>{{ facility.notes_type|default:'-' }}</td>
+                            <td>{{ facility.county|default:'-' }}</td>
+                            <td>{{ facility.source_name|default:'-' }}</td>
+                            <td>
+                                {% if facility.last_call_status %}
+                                    <span class="tag blue">{{ facility.last_call_status }}</span>
+                                {% else %}
+                                    <span class="tag gray">Not called</span>
+                                {% endif %}
+                                {% if facility.last_extracted_email %}
+                                    <div style="margin-top: 8px; font-size: 0.85rem; color: #dbeafe;">{{ facility.last_extracted_email }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="empty-note">No facilities uploaded yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">
+                <h2>Recent Call Summaries</h2>
+                <span class="meta">Primary goal: email extracted from the call</span>
+            </div>
+            <div class="summary-grid">
+                {% for summary in recent_summaries %}
+                <div class="summary-card">
+                    <h3>{{ summary.facility.facility_name }}</h3>
+                    <div class="summary-meta">
+                        <span class="tag {% if summary.email_obtained %}green{% else %}yellow{% endif %}">{% if summary.email_obtained %}Email captured{% else %}No email{% endif %}</span>
+                        <span class="tag {% if summary.reached_right_person %}green{% else %}red{% endif %}">{% if summary.reached_right_person %}Right person{% else %}Wrong person{% endif %}</span>
+                        <span class="tag gray">{{ summary.get_call_disposition_display }}</span>
+                    </div>
+                    <p style="margin-top: 12px;">{{ summary.summary_text }}</p>
+                    {% if summary.extracted_email %}
+                        <div class="email">{{ summary.extracted_email }}</div>
+                    {% endif %}
+                    {% if summary.contact_name or summary.contact_title %}
+                        <div class="meta" style="margin-top: 10px;">{{ summary.contact_name|default:'' }}{% if summary.contact_name and summary.contact_title %} - {% endif %}{{ summary.contact_title|default:'' }}</div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="summary-card">
+                    <p class="empty-note">No call summaries yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% csrf_token %}
+    <script>
+        const bulkButton = document.getElementById('bulkCallBtn');
+        const bulkStatus = document.getElementById('bulkStatus');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        async function fetchBulkStatus(sessionId) {
+            const response = await fetch(`/retell_calling/facility-bulk-call-status/${sessionId}/`);
+            return await response.json();
+        }
+
+        async function pollBulkStatus(sessionId) {
+            const updateStatus = async () => {
+                try {
+                    const data = await fetchBulkStatus(sessionId);
+                    if (data.success) {
+                        bulkStatus.textContent = `Session ${data.status}: ${data.completed_calls}/${data.total_facilities} completed (${data.progress_percentage}%)`;
+                        if (data.status !== 'completed' && data.status !== 'failed') {
+                            setTimeout(updateStatus, 4000);
+                        }
+                    }
+                } catch (error) {
+                    bulkStatus.textContent = 'Unable to load bulk session status.';
+                }
+            };
+            updateStatus();
+        }
+
+        bulkButton.addEventListener('click', async () => {
+            bulkButton.disabled = true;
+            bulkStatus.textContent = 'Starting bulk facility calls...';
+            try {
+                const response = await fetch('/retell_calling/trigger-bulk-facility-calls/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({})
+                });
+                const data = await response.json();
+                if (data.success) {
+                    bulkStatus.textContent = `Started ${data.facilities_to_call} facility calls.`;
+                    if (data.bulk_session_id) {
+                        pollBulkStatus(data.bulk_session_id);
+                    }
+                } else {
+                    bulkStatus.textContent = data.error || 'Failed to start bulk calls.';
+                }
+            } catch (error) {
+                bulkStatus.textContent = 'Failed to start bulk calls.';
+            } finally {
+                bulkButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

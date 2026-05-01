@@ -441,6 +441,27 @@
 
         <div class="action-card">
             <div>
+                <div class="action-icon">🏢</div>
+                <h2 class="action-title">Call Facilities</h2>
+                <p class="action-description">
+                    Upload a facility spreadsheet, create facility call records, and start bulk calling facilities one by one while capturing the best email from each call.
+                </p>
+                <div class="action-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ facility_count|default:0 }}</span>
+                        <span class="stat-label">Facilities</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ facilities_with_emails_count|default:0 }}</span>
+                        <span class="stat-label">Emails Captured</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'retell_calling:facility_calls_dashboard' %}" class="action-button">Open Facilities</a>
+        </div>
+
+        <div class="action-card">
+            <div>
                 <div class="action-icon">🤝</div>
                 <h2 class="action-title">Referral Management</h2>
                 <p class="action-description">
