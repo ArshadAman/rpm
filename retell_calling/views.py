@@ -18,6 +18,7 @@ from rpm_users.models import  PastMedicalHistory
 from django.utils import timezone
 from datetime import timedelta
 from .services import RetellCallService, GeminiSummaryService, PatientAnalysisService, InboundLeadExtractorService
+from django.conf import settings
 from reports.models import Documentation
 from .models import RetellCallSession, CallSummary, LeadCallSession, LeadCallSummary, BulkCallSession, FacilityCallTarget, FacilityCallSession, FacilityCallSummary
 
@@ -1085,6 +1086,52 @@ def call_transcript(request, call_session_id):
         return Response({
             'error': f'Failed to get call transcript: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def trigger_single_facility_call(request, facility_id):
+    """Trigger a single facility call (manual per-row action)."""
+    try:
+        try:
+            facility = FacilityCallTarget.objects.get(id=facility_id)
+        except FacilityCallTarget.DoesNotExist:
+            return Response({'error': 'Facility not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not facility.phone_number:
+            return Response({'error': 'Facility has no phone number'}, status=status.HTTP_400_BAD_REQUEST)
+
+        agent_id = request.data.get('agent_id') if isinstance(request.data, dict) else None
+        # fall back to a facility-specific agent set in settings if present
+        if not agent_id:
+            agent_id = getattr(settings, 'RETELL_FACILITY_AGENT_ID', None)
+
+        call_service = RetellCallService()
+        result = call_service.create_facility_call(facility, agent_id=agent_id)
+
+        return Response({
+            'success': True,
+            'call_id': result.get('call_id'),
+            'call_session_id': result.get('call_session').id
+        }, status=status.HTTP_201_CREATED)
+
+    except ValidationError as e:
+        logger.error(f"Validation error creating facility call: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Error creating facility call: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def facility_emails_list(request):
+    """Return a list of unique captured emails from facility call summaries."""
+    try:
+        emails_qs = FacilityCallSummary.objects.filter(extracted_email__isnull=False).values_list('extracted_email', flat=True).distinct()
+        emails = [e for e in emails_qs if e and str(e).strip()]
+        return Response({'success': True, 'emails': emails, 'count': len(emails)})
+    except Exception as e:
+        logger.error(f"Error fetching facility emails: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
