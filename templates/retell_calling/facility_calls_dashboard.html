@@ -11,16 +11,19 @@
         }
 
         :root {
-            --bg: #0c1020;
-            --bg-2: #10162d;
-            --card: rgba(255, 255, 255, 0.06);
-            --card-border: rgba(255, 255, 255, 0.12);
-            --text: #f3f6ff;
-            --muted: rgba(243, 246, 255, 0.72);
-            --accent: #6ee7b7;
-            --accent-2: #60a5fa;
-            --accent-3: #f59e0b;
-            --danger: #f87171;
+            --bg: #0a0f1f;
+            --bg-2: #12142a;
+            --surface: #1c2035;
+            --surface-soft: #232942;
+            --card: linear-gradient(140deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text: #f2e8ff;
+            --muted: #a8a0c7;
+            --primary: #ff0c8a;
+            --primary-2: #9d35ff;
+            --blue: #79b6ff;
+            --mint: #98ffd8;
+            --danger: #ff4f56;
         }
 
         body {
@@ -29,15 +32,29 @@
             font-family: 'Poppins', sans-serif;
             color: var(--text);
             background:
-                radial-gradient(circle at top left, rgba(96, 165, 250, 0.28), transparent 32%),
-                radial-gradient(circle at top right, rgba(110, 231, 183, 0.22), transparent 28%),
-                linear-gradient(135deg, var(--bg), var(--bg-2));
+                radial-gradient(circle at top right, rgba(157, 53, 255, 0.28), transparent 32%),
+                radial-gradient(circle at 18% 0%, rgba(255, 12, 138, 0.18), transparent 34%),
+                linear-gradient(140deg, var(--bg), var(--bg-2));
         }
 
         .page {
-            max-width: 1500px;
+            max-width: 1600px;
             margin: 0 auto;
-            padding: 32px 20px 48px;
+            padding: 26px 24px 48px;
+        }
+
+        .breadcrumb {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--muted);
+            font-weight: 500;
+            margin-bottom: 22px;
+        }
+
+        .breadcrumb .active {
+            color: var(--primary);
         }
 
         .topbar {
@@ -45,13 +62,13 @@
             justify-content: space-between;
             gap: 16px;
             align-items: flex-start;
-            margin-bottom: 28px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
 
         .title-block h1 {
             margin: 0;
-            font-size: clamp(2rem, 4vw, 3.2rem);
+            font-size: clamp(2rem, 3.4vw, 3.1rem);
             line-height: 1.05;
         }
 
@@ -59,18 +76,20 @@
             margin: 10px 0 0;
             color: var(--muted);
             max-width: 760px;
+            font-size: 1.05rem;
         }
 
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 12px 16px;
-            border-radius: 14px;
+            padding: 11px 18px;
+            border-radius: 12px;
             text-decoration: none;
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--card-border);
+            color: #d8e7ff;
+            background: rgba(121, 182, 255, 0.16);
+            border: 1px solid rgba(121, 182, 255, 0.25);
+            font-weight: 600;
         }
 
         .stats-grid {
@@ -85,9 +104,9 @@
         .row-card {
             background: var(--card);
             border: 1px solid var(--card-border);
-            backdrop-filter: blur(18px);
-            border-radius: 20px;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            box-shadow: 0 15px 32px rgba(0, 0, 0, 0.28);
         }
 
         .stat-card {
@@ -97,23 +116,27 @@
         .stat-card .label {
             color: var(--muted);
             font-size: 0.88rem;
+            font-weight: 500;
         }
 
         .stat-card .value {
             display: block;
-            font-size: 2rem;
+            font-size: 2.15rem;
             font-weight: 700;
             margin-top: 8px;
+            color: var(--primary-2);
         }
 
         .panel {
             padding: 22px;
             margin-bottom: 22px;
+            background: linear-gradient(145deg, rgba(36, 42, 67, 0.9), rgba(27, 31, 53, 0.88));
         }
 
         .panel h2 {
             margin: 0 0 10px;
             font-size: 1.35rem;
+            color: #f4e0ff;
         }
 
         .panel p,
@@ -130,17 +153,17 @@
         }
 
         .upload-box {
-            border: 1px dashed rgba(255, 255, 255, 0.22);
-            border-radius: 18px;
+            border: 1px dashed rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
             padding: 18px;
-            background: rgba(255, 255, 255, 0.03);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
         }
 
         .upload-box input[type="file"] {
             width: 100%;
             padding: 14px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.07);
             color: var(--text);
             border: 1px solid rgba(255, 255, 255, 0.12);
             margin: 12px 0 14px;
@@ -155,8 +178,8 @@
         .btn {
             appearance: none;
             border: none;
-            border-radius: 14px;
-            padding: 13px 18px;
+            border-radius: 10px;
+            padding: 11px 18px;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.15s ease, opacity 0.15s ease;
@@ -167,18 +190,21 @@
         }
 
         .btn-primary {
-            color: #07111f;
-            background: linear-gradient(135deg, var(--accent), #d1fae5);
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary-2), var(--primary));
+            box-shadow: 0 8px 18px rgba(157, 53, 255, 0.34);
         }
 
         .btn-secondary {
-            color: var(--text);
-            background: linear-gradient(135deg, var(--accent-2), #93c5fd);
+            color: #fff;
+            background: linear-gradient(135deg, #5f73ff, #8e55ff);
+            box-shadow: 0 8px 18px rgba(95, 115, 255, 0.34);
         }
 
         .btn-warning {
-            color: #241500;
-            background: linear-gradient(135deg, #fbbf24, #fde68a);
+            color: #fff;
+            background: linear-gradient(135deg, #ff5f6d, #ff3f46);
+            box-shadow: 0 8px 18px rgba(255, 79, 86, 0.32);
         }
 
         .btn:disabled {
@@ -212,7 +238,9 @@
 
         .table-wrap {
             overflow-x: auto;
-            border-radius: 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
         }
 
         table {
@@ -230,9 +258,9 @@
         }
 
         th {
-            color: #dbeafe;
+            color: #e3d7ff;
             font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.05);
             position: sticky;
             top: 0;
             z-index: 1;
@@ -252,10 +280,10 @@
             font-weight: 600;
         }
 
-        .tag.green { background: rgba(110, 231, 183, 0.14); color: #a7f3d0; }
-        .tag.blue { background: rgba(96, 165, 250, 0.14); color: #bfdbfe; }
-        .tag.yellow { background: rgba(245, 158, 11, 0.16); color: #fde68a; }
-        .tag.red { background: rgba(248, 113, 113, 0.14); color: #fecaca; }
+        .tag.green { background: rgba(86, 226, 166, 0.16); color: #b7ffe0; }
+        .tag.blue { background: rgba(121, 182, 255, 0.16); color: #d1e8ff; }
+        .tag.yellow { background: rgba(255, 200, 87, 0.2); color: #ffeab0; }
+        .tag.red { background: rgba(255, 79, 86, 0.16); color: #ffd4d6; }
         .tag.gray { background: rgba(255, 255, 255, 0.08); color: #e5e7eb; }
 
         .summary-grid {
@@ -266,7 +294,7 @@
 
         .summary-card {
             padding: 18px;
-            border-radius: 18px;
+            border-radius: 14px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -277,7 +305,7 @@
 
         .summary-card .email {
             font-weight: 700;
-            color: #dbeafe;
+            color: #a0d4ff;
             word-break: break-word;
         }
 
@@ -290,9 +318,9 @@
 
         .status-box {
             padding: 16px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .status-box strong {
@@ -325,6 +353,8 @@
 </head>
 <body>
     <div class="page">
+        <div class="breadcrumb">Home &nbsp;›&nbsp; Dashboard &nbsp;›&nbsp; <span class="active">Call Facilities</span></div>
+
         <div class="topbar">
             <div class="title-block">
                 <h1>Call Facilities</h1>
@@ -367,6 +397,7 @@
                     <div class="meta">Start the queue after import. The system will call one facility at a time and store the extracted email from each answered call.</div>
                     <div class="button-row" style="margin-top: 14px;">
                         <button type="button" id="bulkCallBtn" class="btn btn-secondary">Start Bulk Call</button>
+                        <button type="button" id="mailtoAllBtn" class="btn btn-primary">Email All Captured</button>
                     </div>
                     <div id="bulkStatus" class="meta" style="margin-top: 14px;">
                         {% if latest_bulk_session %}
@@ -413,14 +444,21 @@
                             <td>{{ facility.county|default:'-' }}</td>
                             <td>{{ facility.source_name|default:'-' }}</td>
                             <td>
-                                {% if facility.last_call_status %}
-                                    <span class="tag blue">{{ facility.last_call_status }}</span>
-                                {% else %}
-                                    <span class="tag gray">Not called</span>
-                                {% endif %}
-                                {% if facility.last_extracted_email %}
-                                    <div style="margin-top: 8px; font-size: 0.85rem; color: #dbeafe;">{{ facility.last_extracted_email }}</div>
-                                {% endif %}
+                                <div style="display:flex;gap:8px;align-items:center;">
+                                    <div>
+                                        {% if facility.last_call_status %}
+                                            <span class="tag blue">{{ facility.last_call_status }}</span>
+                                        {% else %}
+                                            <span class="tag gray">Not called</span>
+                                        {% endif %}
+                                        {% if facility.last_extracted_email %}
+                                            <div style="margin-top: 8px; font-size: 0.85rem; color: #dbeafe;">{{ facility.last_extracted_email }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-warning singleCallBtn" data-facility-id="{{ facility.id }}">Call</button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         {% empty %}
@@ -469,6 +507,8 @@
         const bulkButton = document.getElementById('bulkCallBtn');
         const bulkStatus = document.getElementById('bulkStatus');
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const mailtoAllBtn = document.getElementById('mailtoAllBtn');
+        const singleCallButtons = document.querySelectorAll('.singleCallBtn');
 
         async function fetchBulkStatus(sessionId) {
             const response = await fetch(`/retell_calling/facility-bulk-call-status/${sessionId}/`);
@@ -517,6 +557,69 @@
                 bulkStatus.textContent = 'Failed to start bulk calls.';
             } finally {
                 bulkButton.disabled = false;
+            }
+        });
+
+        // Single row call handlers
+        async function triggerSingleCall(facilityId, btn) {
+            if (!facilityId) return;
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.textContent = 'Calling...';
+            try {
+                const resp = await fetch(`/retell_calling/trigger-facility-call/${facilityId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({})
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    btn.textContent = 'Started';
+                    setTimeout(() => btn.textContent = originalText, 3000);
+                } else {
+                    btn.textContent = originalText;
+                    alert(data.error || 'Failed to start call');
+                }
+            } catch (e) {
+                console.error(e);
+                btn.textContent = originalText;
+                alert('Error initiating call');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        singleCallButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const facilityId = btn.getAttribute('data-facility-id');
+                triggerSingleCall(facilityId, btn);
+            });
+        });
+
+        // Mailto-all handler
+        mailtoAllBtn.addEventListener('click', async () => {
+            mailtoAllBtn.disabled = true;
+            mailtoAllBtn.textContent = 'Preparing...';
+            try {
+                const resp = await fetch('/retell_calling/facility-emails/');
+                const data = await resp.json();
+                if (data.success && data.emails && data.emails.length) {
+                    const emails = data.emails.join(',');
+                    // Open default mail client with all emails in To
+                    const subject = encodeURIComponent('Outreach from Stratton Healthcare');
+                    window.location.href = `mailto:${emails}?subject=${subject}`;
+                } else {
+                    alert('No captured emails available');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Failed to fetch emails');
+            } finally {
+                mailtoAllBtn.disabled = false;
+                mailtoAllBtn.textContent = 'Email All Captured';
             }
         });
     </script>

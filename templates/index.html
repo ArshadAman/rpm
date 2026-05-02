@@ -1537,32 +1537,51 @@
               ">
             <h3>Documentation</h3>
 
-            <a href="{% url 'add_documentation' patient.id %}" class="add-button">
-              <button class="add-button" style="
-                    background: linear-gradient(
-                      135deg,
-                      var(--primary),
-                      var(--secondary)
-                    );
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <label for="documentation-note-filter" style="font-size: 12px; color: rgba(255, 255, 255, 0.8);">
+                Notes View
+              </label>
+              <select id="documentation-note-filter" style="
+                    background: rgba(255, 255, 255, 0.08);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
                     color: white;
-                    padding: 5px 10px;
-                    border-radius: 4px;
-                    text-decoration: none;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 6px;
-                    border: none;
-                    cursor: pointer;
+                    padding: 6px 10px;
+                    border-radius: 6px;
                     font-size: 12px;
-                    height: 30px;
+                    min-width: 240px;
                   ">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                  <path
-                    d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-                </svg>
-                Add
-              </button>
-            </a>
+                <option value="all_with_agent">1. All Notes (includes AI Agent calls)</option>
+                <option value="clinical_notes" selected>2. All Clinical Notes (staff + physician, excludes AI Agent)</option>
+                <option value="physician_only">3. Physician Notes Only</option>
+              </select>
+
+              <a href="{% url 'add_documentation' patient.id %}" class="add-button">
+                <button class="add-button" style="
+                      background: linear-gradient(
+                        135deg,
+                        var(--primary),
+                        var(--secondary)
+                      );
+                      color: white;
+                      padding: 5px 10px;
+                      border-radius: 4px;
+                      text-decoration: none;
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 6px;
+                      border: none;
+                      cursor: pointer;
+                      font-size: 12px;
+                      height: 30px;
+                    ">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                      d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                  </svg>
+                  Add
+                </button>
+              </a>
+            </div>
           </div>
           <div id="documentation-container" style="
                 display: flex;
@@ -2631,7 +2650,107 @@
     document.addEventListener("DOMContentLoaded", function () {
       const copyBtn = document.getElementById("copy-deliver-info");
       if (copyBtn) copyBtn.addEventListener("click", copyToClipboard);
+
+      const documentationFilterSelect = document.getElementById("documentation-note-filter");
+      if (documentationFilterSelect) {
+        documentationFilterSelect.value = "clinical_notes";
+        window.documentationNoteFilter = "clinical_notes";
+        documentationFilterSelect.addEventListener("change", function () {
+          window.documentationNoteFilter = this.value;
+          renderDocumentationList();
+        });
+      }
     });
+
+    function isAgentNote(doc) {
+      const title = String(doc?.title || "").toLowerCase();
+      const writtenBy = String(doc?.written_by || "").toLowerCase();
+      const combined = `${title} ${writtenBy}`;
+      return /\bai\b/.test(combined) || combined.includes("agent") || combined.includes("retell") || combined.includes("gemini");
+    }
+
+    function isPhysicianNote(doc) {
+      const title = String(doc?.title || "").toLowerCase();
+      return title.includes("physician");
+    }
+
+    function getFilteredDocumentationList(allDocs, filterMode) {
+      if (!Array.isArray(allDocs)) return [];
+
+      if (filterMode === "all_with_agent") {
+        return allDocs;
+      }
+
+      if (filterMode === "physician_only") {
+        return allDocs.filter((doc) => !isAgentNote(doc) && isPhysicianNote(doc));
+      }
+
+      // Default: all clinical notes (staff + physician), excluding AI/agent notes.
+      return allDocs.filter((doc) => !isAgentNote(doc));
+    }
+
+    function renderDocumentationList() {
+      const docListContainer = document.getElementById("documentation-list");
+      const docDetailsContainer = document.getElementById("documentation-details");
+      const allDocumentations = window.allDocumentations || [];
+      const filterMode = window.documentationNoteFilter || "clinical_notes";
+      const filteredDocs = getFilteredDocumentationList(allDocumentations, filterMode);
+
+      if (!allDocumentations.length) {
+        docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
+        return;
+      }
+
+      if (!filteredDocs.length) {
+        docListContainer.innerHTML = "<div style='padding: 15px; text-align: center;'>No notes found for the selected view.</div>";
+        docDetailsContainer.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.5);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-bottom: 10px; opacity: 0.5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p style="font-size: 12px">No note matches this filter</p>
+          </div>
+        `;
+        return;
+      }
+
+      window.documentations = filteredDocs;
+      window.patientDocumentations = filteredDocs;
+
+      let listContent = "";
+      filteredDocs.forEach((doc, index) => {
+        listContent += `
+          <div class="doc-item" data-index="${index}" style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;">
+            <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${doc.title}</h4>
+            <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 3px 0;">
+              ${doc.written_by}
+            </p>
+            <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
+              Date of Service: ${doc.doc_report_date || "N/A"}
+            </p>
+          </div>
+        `;
+      });
+
+      docListContainer.innerHTML = listContent;
+      document.querySelectorAll(".doc-item").forEach((item) => {
+        item.addEventListener("click", function () {
+          document.querySelectorAll(".doc-item").forEach((i) => {
+            i.style.background = "";
+            i.style.borderLeft = "";
+          });
+          this.style.background = "rgba(121, 40, 202, 0.2)";
+          this.style.borderLeft = "4px solid #7928CA";
+          const index = this.getAttribute("data-index");
+          const doc = window.documentations[index];
+          displayDocumentationDetails(doc);
+        });
+      });
+
+      if (document.querySelector(".doc-item")) {
+        document.querySelector(".doc-item").click();
+      }
+    }
 
 
     function fetchDocumentation() {
@@ -2668,48 +2787,11 @@
             docListContainer.innerHTML =
               "<div style='padding: 15px; text-align: center;'>No documentation found.</div>";
           } else {
-            window.documentations = data.documentations;
-            window.patientDocumentations = data.documentations;
-            let listContent = "";
-            data.documentations.forEach((doc, index) => {
-              const createdAtDate = new Date(doc.created_at);
-              const formattedCreatedAt = `${String(
-                createdAtDate.getMonth() + 1
-              ).padStart(2, "0")}/${String(createdAtDate.getDate()).padStart(
-                2,
-                "0"
-              )}/${createdAtDate.getFullYear()}`;
-              listContent += `
-          <div class="doc-item" data-index="${index}" style="padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;">
-            <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${doc.title}</h4>
-            <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 3px 0;">
-              ${doc.written_by}                   
-            </p>
-            <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 8px;">
-              Date of Service: ${doc.doc_report_date}
-            </p>
-          </div>
-        `;
-            });
-            docListContainer.innerHTML = listContent;
-            document.querySelectorAll(".doc-item").forEach((item) => {
-              item.addEventListener("click", function () {
-                document.querySelectorAll(".doc-item").forEach((i) => {
-                  i.style.background = "";
-                  i.style.borderLeft = "";
-                });
-                this.style.background = "rgba(121, 40, 202, 0.2)";
-                this.style.borderLeft = "4px solid #7928CA";
-                const index = this.getAttribute("data-index");
-                const doc = window.documentations[index];
-                displayDocumentationDetails(doc);
-              });
-            });
-
-            // Select the first document by default
-            if (document.querySelector(".doc-item")) {
-              document.querySelector(".doc-item").click();
+            window.allDocumentations = data.documentations;
+            if (!window.documentationNoteFilter) {
+              window.documentationNoteFilter = "clinical_notes";
             }
+            renderDocumentationList();
           }
         })
         .catch((error) => {

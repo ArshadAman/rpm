@@ -35,6 +35,8 @@ urlpatterns = [
     path('facility-calls/', views.facility_calls_dashboard, name='facility_calls_dashboard'),
     path('trigger-bulk-facility-calls/', views.trigger_bulk_facility_calls, name='trigger_bulk_facility_calls'),
     path('facility-bulk-call-status/<uuid:bulk_session_id>/', views.facility_bulk_call_status, name='facility_bulk_call_status'),
+    path('trigger-facility-call/<int:facility_id>/', views.trigger_single_facility_call, name='trigger_single_facility_call'),
+    path('facility-emails/', views.facility_emails_list, name='facility_emails_list'),
     
     # Patient Bulk Calling
     path('trigger-bulk-patient-calls/', views.trigger_bulk_patient_calls, name='trigger_bulk_patient_calls'),
