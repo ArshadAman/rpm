@@ -168,8 +168,15 @@
 
         .lead-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .lead-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
 
         .lead-info {
@@ -288,9 +295,17 @@
 
         .no-calls-lead {
             background: rgba(255, 255, 255, 0.03);
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .no-calls-lead:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: var(--warning);
+            transform: translateY(-3px);
         }
 
         .messages {
@@ -481,42 +496,57 @@
         <h2 class="section-title">Leads with Call Summaries</h2>
         <div class="leads-grid">
             {% for lead in leads_with_calls %}
-            <div class="lead-card">
-                <div class="lead-info">
-                    <div class="lead-name">
-                        {% if lead.first_name or lead.last_name %}
-                            {{ lead.first_name|default:'' }} {{ lead.last_name|default:'' }}
-                        {% else %}
-                            <em>No name provided</em>
+            <a href="{% url 'retell_calling:lead_call_summaries' lead.id %}" class="lead-card-link">
+                <div class="lead-card">
+                    <div class="lead-info">
+                        <div class="lead-name">
+                            {% if lead.first_name or lead.last_name %}
+                                {{ lead.first_name|default:'' }} {{ lead.last_name|default:'' }}
+                            {% else %}
+                                <em>No name provided</em>
+                            {% endif %}
+                        </div>
+                        <div class="lead-email">{{ lead.email|default:'No email' }}</div>
+                        {% if lead.phone_number %}
+                            <div class="lead-phone">{{ lead.phone_number|phone_with_country_code }}</div>
                         {% endif %}
+                        
+                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            {% if lead.service_interest %}
+                            <span style="font-size: 10px; background: rgba(121, 40, 202, 0.2); color: var(--primary); padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(121, 40, 202, 0.3);">
+                                {{ lead.service_interest|title }}
+                            </span>
+                            {% endif %}
+                            {% if lead.city %}
+                            <span style="font-size: 10px; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.6); padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                                📍 {{ lead.city }}
+                            </span>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="lead-email">{{ lead.email|default:'No email' }}</div>
-                    {% if lead.phone_number %}
-                        <div class="lead-phone">{{ lead.phone_number|phone_with_country_code }}</div>
-                    {% endif %}
-                </div>
-                <div class="call-stats">
-                    <div class="call-count">{{ lead.call_count }} call{{ lead.call_count|pluralize }}</div>
-                    <div class="last-call">
-                        Last: {{ lead.latest_call|date:"M d, Y H:i" }}
+                    <div class="call-stats">
+                        <div class="call-count">{{ lead.call_count }} call{{ lead.call_count|pluralize }}</div>
+                        <div class="last-call">
+                            Last: {{ lead.latest_call|date:"M d, Y H:i" }}
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <span class="btn btn-primary" style="flex: 1; justify-content: center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            View Details
+                        </span>
+                        <button class="btn btn-call" onclick="event.preventDefault(); initiateCall({{ lead.id }})">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            Call Again
+                        </button>
                     </div>
                 </div>
-                <div class="action-buttons">
-                    <a href="{% url 'retell_calling:lead_call_summaries' lead.id %}" class="btn btn-primary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        View Details
-                    </a>
-                    <button class="btn btn-call" onclick="initiateCall({{ lead.id }})">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                        </svg>
-                        Call Again
-                    </button>
-                </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
         {% endif %}
@@ -539,20 +569,35 @@
             </div>
             <div class="no-calls-grid">
                 {% for lead in leads_without_calls %}
-                <div class="no-calls-lead">
-                    <div class="lead-name">
-                        {% if lead.first_name or lead.last_name %}
-                            {{ lead.first_name|default:'' }} {{ lead.last_name|default:'' }}
-                        {% else %}
-                            <em>No name provided</em>
+                <div class="no-calls-lead" onclick="window.location.href='{% url 'retell_calling:lead_call_summaries' lead.id %}'">
+                    <div class="lead-info">
+                        <div class="lead-name">
+                            {% if lead.first_name or lead.last_name %}
+                                {{ lead.first_name|default:'' }} {{ lead.last_name|default:'' }}
+                            {% else %}
+                                <em>No name provided</em>
+                            {% endif %}
+                        </div>
+                        <div class="lead-email">{{ lead.email|default:'No email' }}</div>
+                        {% if lead.phone_number %}
+                            <div class="lead-phone">{{ lead.phone_number|phone_with_country_code }}</div>
                         {% endif %}
+                        
+                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            {% if lead.service_interest %}
+                            <span style="font-size: 10px; background: rgba(255, 184, 0, 0.15); color: var(--warning); padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(255, 184, 0, 0.3);">
+                                {{ lead.service_interest|title }}
+                            </span>
+                            {% endif %}
+                            {% if lead.city %}
+                            <span style="font-size: 10px; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.6); padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                                📍 {{ lead.city }}
+                            </span>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="lead-email">{{ lead.email|default:'No email' }}</div>
-                    {% if lead.phone_number %}
-                        <div class="lead-phone">{{ lead.phone_number|phone_with_country_code }}</div>
-                    {% endif %}
-                    <div style="margin-top: 10px;">
-                        <button class="btn btn-call" onclick="initiateCall({{ lead.id }})">
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-call" style="width: 100%; justify-content: center;" onclick="event.stopPropagation(); initiateCall({{ lead.id }})">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                             </svg>

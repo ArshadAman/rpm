@@ -136,6 +136,65 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+        /* Profile Card Styles */
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto 40px auto;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .profile-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .profile-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .profile-value {
+            font-size: 15px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .profile-value.empty {
+            color: rgba(255, 255, 255, 0.3);
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        .profile-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .calls-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -464,6 +523,88 @@
         <div class="stat-card">
             <span class="stat-number">{{ call_sessions_without_summaries.count }}</span>
             <span class="stat-label">Pending Analysis</span>
+        </div>
+    </div>
+
+    <!-- Lead Profile Section -->
+    <div class="profile-container">
+        <h2 class="section-title">Lead Information Profile</h2>
+        <div class="profile-card">
+            <div class="profile-section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Personal & Contact Details
+            </div>
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <span class="profile-label">Full Name</span>
+                    <span class="profile-value">{{ lead.first_name|default:'' }} {{ lead.last_name|default:'' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Email Address</span>
+                    <span class="profile-value">{{ lead.email|default:'Not provided' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Phone Number</span>
+                    <span class="profile-value">{{ lead.phone_number|phone_with_country_code|default:'Not provided' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Date of Birth</span>
+                    <span class="profile-value">{{ lead.date_of_birth|date:"M d, Y"|default:'Not provided' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Sex</span>
+                    <span class="profile-value">{{ lead.sex|default:'Not provided' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">City</span>
+                    <span class="profile-value">{{ lead.city|default:'Not provided' }}</span>
+                </div>
+            </div>
+
+            <div class="profile-section-title" style="margin-top: 30px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+                Medical & Interest Profile
+            </div>
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <span class="profile-label">Service Interest</span>
+                    <span class="profile-value" style="color: var(--warning);">{{ lead.service_interest|default:'Not specified'|title }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Insurance</span>
+                    <span class="profile-value">{{ lead.insurance|default:'Not provided' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Allergies</span>
+                    <span class="profile-value">{{ lead.allergies|default:'None reported' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Street Address</span>
+                    <span class="profile-value">{{ lead.street_address|default:'Not provided' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Zip Code</span>
+                    <span class="profile-value">{{ lead.zip_code|default:'Not provided' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Created At</span>
+                    <span class="profile-value">{{ lead.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+            </div>
+            
+            {% if lead.additional_comments %}
+            <div class="profile-item" style="margin-top: 20px;">
+                <span class="profile-label">Additional Comments</span>
+                <div class="profile-value" style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; margin-top: 5px; font-size: 14px; line-height: 1.5;">
+                    {{ lead.additional_comments }}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
