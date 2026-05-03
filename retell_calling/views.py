@@ -2651,35 +2651,11 @@ def inbound_lead_webhook(request):
             }, status=200)  # Still return 200 so Retell doesn't retry
         
         # Create the InterestLead
+        # This will automatically trigger the 'notify_new_lead' signal asynchronously
         lead = extractor.create_lead_from_data(lead_data)
         
         if lead:
             logger.info(f"Lead created from inbound call {call_id}: {lead.id}")
-            
-            # Send email notification for new lead from inbound call
-            try:
-                from rpm_users.email_service import send_lead_notification_email
-                email_lead_data = {
-                    'first_name': lead.first_name,
-                    'last_name': lead.last_name,
-                    'email': lead.email,
-                    'phone_number': lead.phone_number,
-                    'phone_number_2': lead.phone_number_2,
-                    'date_of_birth': str(lead.date_of_birth) if lead.date_of_birth else None,
-                    'sex': lead.sex,
-                    'insurance': lead.insurance,
-                    'primary_insured_id': lead.primary_insured_id,
-                    'service_interest': lead.service_interest,
-                    'allergies': lead.allergies,
-                    'street_address': lead.street_address,
-                    'city': lead.city,
-                    'zip_code': lead.zip_code,
-                    'marital_status': lead.marital_status,
-                    'additional_comments': lead.additional_comments,
-                }
-                send_lead_notification_email(email_lead_data, channel="inbound_call")
-            except Exception as email_error:
-                logger.error(f"Failed to send lead notification email: {str(email_error)}")
             
             return JsonResponse({
                 'success': True,

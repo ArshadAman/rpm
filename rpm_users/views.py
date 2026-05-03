@@ -800,35 +800,7 @@ def express_interest(request):
                     pmh=pmh
                 )
             
-            # Send email notification for new lead
-            try:
-                from .email_service import send_lead_notification_email
-                lead_data = {
-                    'first_name': interest.first_name,
-                    'last_name': interest.last_name,
-                    'email': interest.email,
-                    'phone_number': interest.phone_number,
-                    'date_of_birth': str(interest.date_of_birth) if interest.date_of_birth else None,
-                    'sex': interest.sex,
-                    'insurance': interest.insurance,
-                    'insurance_number': interest.insurance_number,
-                    'service_interest': interest.service_interest,
-                    'allergies': interest.allergies,
-                    'medications': interest.medications,
-                    'home_address': interest.home_address,
-                    'emergency_contact_name': interest.emergency_contact_name,
-                    'emergency_contact_phone': interest.emergency_contact_phone,
-                    'emergency_contact_relationship': interest.emergency_contact_relationship,
-                    'primary_care_physician': interest.primary_care_physician,
-                    'primary_care_physician_phone': interest.primary_care_physician_phone,
-                    'additional_comments': interest.additional_comments,
-                }
-                send_lead_notification_email(lead_data, channel="express_interest_form")
-            except Exception as email_error:
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error(f"Failed to send lead notification email: {str(email_error)}")
-            
+            # Signal will automatically trigger asynchronous email notification
             messages.success(request, "Thank you for your interest! We'll be in touch soon.")
             return redirect('home')
             
