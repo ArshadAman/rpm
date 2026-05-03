@@ -2010,8 +2010,8 @@ def leads_call_summaries_list(request):
         ).filter(call_count__gt=0)
         
         # Base queryset for leads without calls
-       # Get leads without calls
-        leads_without_calls = InterestLead.objects.annotate(
+        # Get leads without calls
+        leads_without_calls_qs = InterestLead.objects.annotate(
             call_count=models.Count('lead_call_sessions')
         ).filter(call_count=0).filter(phone_number__isnull=False).exclude(phone_number='')
         
