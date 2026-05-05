@@ -7,7 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-LEAD_NOTIFICATION_EMAIL = "sjilani@pinksurfing.com"
+LEAD_NOTIFICATION_EMAIL = "shaiqueljilani@gmail.com"
 FROM_EMAIL = "marketing@pinksurfing.com"
 
 

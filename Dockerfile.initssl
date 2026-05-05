@@ -1,0 +1,10 @@
+# Lightweight init container for SSL bootstrapping.
+# Uses the nginx image so it already has the nginx binary available.
+FROM nginx:stable-alpine
+
+RUN apk add --no-cache certbot openssl wget
+
+COPY scripts/init-ssl.sh /init-ssl.sh
+RUN chmod +x /init-ssl.sh
+
+ENTRYPOINT ["/init-ssl.sh"]

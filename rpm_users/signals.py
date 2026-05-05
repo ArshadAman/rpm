@@ -5,8 +5,9 @@ from django.conf import settings
 from django.template.loader import render_to_string
 import sendgrid
 from sendgrid.helpers.mail import Mail
-from .models import Doctor, Patient, Moderator
+from .models import Doctor, Patient, Moderator, InterestLead, Interest
 import logging
+from .tasks import send_new_lead_notification
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,20 @@ def send_patient_creation_email(sender, instance, created, **kwargs):
     """Send welcome email when a Patient profile is created."""
     if created and instance.user and instance.user.email:
         send_welcome_email(instance.user, 'patient')
+
+@receiver(post_save, sender=InterestLead)
+def notify_new_lead_ai(sender, instance, created, **kwargs):
+    """Send notification email to admin when a new AI lead is captured."""
+    if created:
+        # Call the celery task asynchronously for InterestLead
+        send_new_lead_notification.delay(str(instance.id), 'InterestLead')
+
+@receiver(post_save, sender=Interest)
+def notify_new_lead_web(sender, instance, created, **kwargs):
+    """Send notification email to admin when a new web lead is captured."""
+    if created:
+        # Call the celery task asynchronously for Interest
+        send_new_lead_notification.delay(str(instance.id), 'Interest')
 
 def send_welcome_email(user, user_type):
     """

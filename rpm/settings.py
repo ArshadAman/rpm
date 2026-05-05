@@ -28,7 +28,8 @@ ALLOWED_HOSTS = [
     "fuzzy-bugs-arrive.loca.lt",
     "https://750fc27bb95c.ngrok-free.app/",
     "750fc27bb95c.ngrok-free.app",
-    "*.retellai.com"
+    "*.retellai.com",
+    "147.182.198.98"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -116,6 +117,9 @@ DATABASES = {
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'mypassword'),
         'HOST': os.environ.get('POSTGRES_HOST', 'db'),
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+        "CONN_MAX_AGE": 20, # Reduced from 60 to prevent connection buildup on DigitalOcean
+        "CONN_MAX_AGE": 20,
+        "CONN_HEALTH_CHECKS":True,
         'OPTIONS': {
             **({'sslmode': 'require'} if os.environ.get('POSTGRES_SSL', '').lower() == 'true' else {})
         }
@@ -135,7 +139,30 @@ DATABASES = {
 #     }
 # }
 
+# Caching configuration
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get('REDIS_URL', 'redis://redis:6379/1'),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
+# Redis configuration
+# Celery Settings
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -332,7 +359,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Don't double redirect — let Nginx handle HTTPS redirection
 SECURE_SSL_REDIRECT = False
 # Ensure Django doesn’t re-redirect HTTPS requests
-USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_HOST = False
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Cloudinary Configuration

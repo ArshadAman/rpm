@@ -10,9 +10,16 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN pip install python-dotenv
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends cron \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY . /app/
 
 # Create logs directory
 RUN mkdir -p /app/logs
 
-CMD ["uvicorn", "rpm.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+COPY entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
+
+CMD ["/app/entrypoint.sh"]
