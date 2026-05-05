@@ -1083,7 +1083,7 @@ Extract ALL of the following fields from the conversation. Return ONLY a valid J
     "emergency_contact_relationship": "string or null",
     "primary_care_physician": "string or null",
     "primary_care_physician_phone": "string or null",
-    "additional_comments": "Any other relevant info mentioned by the caller or null"
+    "additional_comments": "A nicely formatted markdown table summarizing the key findings from the call (like medications, medical conditions, smoking/drinking, emergency contacts). Use null if nothing was mentioned."
 }}
 
 RULES:
@@ -1092,6 +1092,7 @@ RULES:
 - For date_of_birth, convert spoken dates like "March 15, 1960" to "1960-03-15".
 - For phone numbers, include country code if mentioned, otherwise just the digits.
 - For sex, convert "male" to "M" and "female" to "F".
+- Make sure `additional_comments` strictly uses markdown table format to summarize the clinical and other details.
 - Return ONLY the JSON object with no extra text.
 """
         
@@ -1115,6 +1116,10 @@ RULES:
             # Override phone_number with actual caller phone if available and not collected
             if caller_phone and not lead_data.get('phone_number'):
                 lead_data['phone_number'] = caller_phone
+            
+            # Append full transcript to additional comments
+            current_comments = lead_data.get('additional_comments') or ''
+            lead_data['additional_comments'] = f"{current_comments}\n\n### Full Call Transcript\n```text\n{transcript}\n```\n".strip()
             
             logger.info(f"Lead data extracted successfully: {lead_data.get('first_name', 'Unknown')} {lead_data.get('last_name', '')}")
             return lead_data

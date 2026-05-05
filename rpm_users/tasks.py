@@ -18,7 +18,7 @@ def send_new_lead_notification(lead_id, model_name='InterestLead'):
         LeadModel = apps.get_model('rpm_users', model_name)
         lead = LeadModel.objects.get(id=lead_id)
         
-        ADMIN_EMAIL = "sjilani@pinksurfing.com"
+        ADMIN_EMAIL = "shaiqueljilani@gmail.com"
         FROM_EMAIL = "marketing@pinksurfing.com"
         
         # Prepare data (handle differences between Interest and InterestLead)
