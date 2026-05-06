@@ -459,10 +459,30 @@ def retell_webhook(request):
                     call_type = 'facility'
                     logger.info(f"Found facility call session for call_id: {call_id}")
                 except FacilityCallSession.DoesNotExist:
-                    logger.error(f"Call session not found for call_id: {call_id}")
+                    logger.info(f"Call session not found for call_id: {call_id}. Handling as an inbound call.")
+                    
+                    if event_type == 'call_ended':
+                        transcript = call_data.get('transcript', '')
+                        caller_phone = call_data.get('from_number', '')
+                        
+                        if transcript and transcript.strip():
+                            logger.info(f"Processing inbound call transcript for lead extraction (call_id: {call_id})")
+                            extractor = InboundLeadExtractorService()
+                            lead_data = extractor.extract_lead_from_transcript(transcript, caller_phone)
+                            
+                            if 'error' not in lead_data:
+                                lead = extractor.create_lead_from_data(lead_data)
+                                if lead:
+                                    logger.info(f"Lead created from inbound call {call_id}: {lead.id}")
+                                else:
+                                    logger.error(f"Failed to create lead from inbound call {call_id}")
+                            else:
+                                logger.error(f"Failed to extract lead data: {lead_data['error']}")
+                                
                     return JsonResponse({
-                        'error': f'Call session not found for call_id: {call_id}'
-                    }, status=404)
+                        'success': True,
+                        'message': f'Inbound event {event_type} handled'
+                    }, status=200)
         
         # Update call session based on event type and call data
         if event_type == 'call_started':
