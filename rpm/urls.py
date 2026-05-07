@@ -1,4 +1,5 @@
 from django.urls import path, include
+from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 from rpm_users.views import admin_logout
@@ -8,6 +9,7 @@ from reports.views import documentation_share_view
 urlpatterns = [
     path('admin/logout/', admin_logout, name='admin_logout'),  # Must come before admin.site.urls
     path('admin/', admin_site.urls),
+    path('start/', RedirectView.as_view(pattern_name='express_interest', permanent=False)),
     path('', include('rpm_users.urls')),
     path('reports/', include('reports.urls')),
     path('documentation/<int:doc_id>/view/', documentation_share_view, name='documentation_share_view_global'),
